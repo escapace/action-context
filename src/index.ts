@@ -4,6 +4,7 @@ import { execa } from 'execa'
 import { isError, isString, last } from 'lodash-es'
 import assert from 'node:assert'
 import semver from 'semver'
+import { getGitDiff } from 'changelogen'
 
 const exec = async (cmd: string, args: string[]) => {
   const res = await execa(cmd, args)
@@ -14,6 +15,7 @@ const SEMVER_OPTIONS = { loose: false, includePrerelease: true }
 const COMMITISH = github.context.sha.slice(0, 7)
 const REF_TYPE = process.env.GITHUB_REF_TYPE as 'branch' | 'tag'
 const REF_NAME = process.env.GITHUB_REF_NAME as string
+const DEFAULT_INCREMENT = 'minor'
 
 export const assertRepoNotShallow = async () =>
   assert.notEqual(
@@ -39,7 +41,7 @@ const asserPreReleaseIdentifier = () => {
   }
 }
 
-export async function getLastGitVersion(): Promise<string | undefined> {
+export async function getLastGitTag(): Promise<string | undefined> {
   // const list = await exec('bash', [
   //   '-c',
   //   'git describe --abbrev=0 --always --tags $(git rev-list --tags --remove-empty --date-order) '
@@ -49,11 +51,16 @@ export async function getLastGitVersion(): Promise<string | undefined> {
     await exec('git', ['--no-pager', 'tag', '-l', '--sort=creatordate'])
   )
     .split('\n')
-    .map((value) => semver.clean(value, SEMVER_OPTIONS))
-    .filter((value): value is string => isString(value))
+    .filter(
+      (value): value is string => semver.clean(value, SEMVER_OPTIONS) !== null
+    )
 
   const listSorted = [...list].sort((a, b) =>
-    semver.compareBuild(a, b, SEMVER_OPTIONS)
+    semver.compareBuild(
+      semver.clean(a) as string,
+      semver.clean(b) as string,
+      SEMVER_OPTIONS
+    )
   )
 
   core.debug(`getLastGitVersion():\n ${JSON.stringify([list, listSorted])}`)
@@ -93,6 +100,59 @@ const toSemver = (props: {
   return version
 }
 
+const ConventionalCommitRegex =
+  /(?<type>[a-z]+)(\((?<scope>.+)\))?(?<breaking>!)?: (?<description>.+)/i
+
+const bump = async (
+  lastGitTag: string,
+  value: { major: number; minor: number; patch: number }
+) => {
+  const commits = (await getGitDiff(lastGitTag, 'HEAD'))
+    .map((value) => {
+      const match = value.message.match(ConventionalCommitRegex)
+
+      if (match === null) {
+        return undefined
+      }
+
+      const groups = match.groups ?? {}
+      const type = groups.type
+      const isBreaking =
+        Boolean(groups.breaking) || value.message.includes('BREAKING CHANGE:')
+
+      return isBreaking
+        ? 'major'
+        : type === 'feat'
+        ? 'minor'
+        : type === 'fix'
+        ? 'patch'
+        : undefined
+    })
+    .filter((value): value is 'major' | 'minor' | 'patch' => isString(value))
+    .reduce(
+      (prev, next): Record<'major' | 'minor' | 'patch', boolean> => {
+        prev[next] = true
+
+        return prev
+      },
+      { major: false, minor: false, patch: false }
+    )
+
+  const increment = commits.major
+    ? 'major'
+    : commits.minor
+    ? 'minor'
+    : commits.patch
+    ? 'patch'
+    : DEFAULT_INCREMENT
+
+  return {
+    major: increment === 'major' ? value.major + 1 : value.major,
+    minor: increment === 'minor' ? value.minor + 1 : value.minor,
+    patch: increment === 'patch' ? value.patch + 1 : value.patch
+  }
+}
+
 const getVersion = async () => {
   if (REF_TYPE === 'tag') {
     const version = semver.parse(
@@ -110,25 +170,27 @@ const getVersion = async () => {
     await assertRepoNotShallow()
     asserPreReleaseIdentifier()
 
-    const lastGitVersion = await getLastGitVersion()
+    const lastGitTag = await getLastGitTag()
 
-    if (lastGitVersion === undefined) {
+    if (lastGitTag === undefined) {
       return semver.parse(
         `0.1.0-${REF_NAME}+${COMMITISH}`,
         SEMVER_OPTIONS
       ) as semver.SemVer
     } else {
-      core.info(`Last version: ${lastGitVersion}`)
+      core.info(`Last tag: ${lastGitTag}`)
 
       const { major, minor, patch } = semver.parse(
-        lastGitVersion,
+        semver.clean(lastGitTag),
         SEMVER_OPTIONS
       ) as semver.SemVer
 
       return toSemver({
-        major,
-        minor: minor + 1,
-        patch,
+        ...(await bump(lastGitTag, {
+          major,
+          minor,
+          patch
+        })),
         prerelease: [REF_NAME, COMMITISH]
       })
     }

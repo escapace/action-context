@@ -16,7 +16,7 @@
     "@types/semver": "7.3.10",
     "@typescript-eslint/eslint-plugin": "5.30.7",
     "@typescript-eslint/parser": "5.30.7",
-    "changelogithub": "0.12.4",
+    "changelogen": "0.1.1",
     "esbuild": "0.14.49",
     "eslint": "8.20.0",
     "eslint-config-escapace": "3.14.0",
