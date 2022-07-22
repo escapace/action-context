@@ -1,5 +1,5 @@
-lib
-!lib/cjs/index.cjs
+/lib/*
+!/lib/cjs
 
 .DS_Store
 .awcache
