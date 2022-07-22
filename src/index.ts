@@ -55,19 +55,19 @@ export async function getLastGitTag(): Promise<string | undefined> {
       (value): value is string => semver.clean(value, SEMVER_OPTIONS) !== null
     )
 
-  const listSorted = [...list].sort((a, b) =>
-    semver.compareBuild(
-      semver.clean(a) as string,
-      semver.clean(b) as string,
-      SEMVER_OPTIONS
-    )
-  )
+  // const listSorted = [...list].sort((a, b) =>
+  //   semver.compareBuild(
+  //     semver.clean(a, SEMVER_OPTIONS) as string,
+  //     semver.clean(b, SEMVER_OPTIONS) as string,
+  //     SEMVER_OPTIONS
+  //   )
+  // )
 
-  core.debug(`getLastGitVersion():\n ${JSON.stringify([list, listSorted])}`)
+  core.debug(`getLastGitVersion():\n ${JSON.stringify(list)}`)
 
-  if (last(listSorted) !== last(list)) {
-    throw new Error('Git commit history is inconsistent.')
-  }
+  // if (last(listSorted) !== last(list)) {
+  //   throw new Error('Git commit history is inconsistent.')
+  // }
 
   return last(list)
 }
@@ -181,7 +181,7 @@ const getVersion = async () => {
       core.info(`Last tag: ${lastGitTag}`)
 
       const { major, minor, patch } = semver.parse(
-        semver.clean(lastGitTag),
+        semver.clean(lastGitTag, SEMVER_OPTIONS),
         SEMVER_OPTIONS
       ) as semver.SemVer
 
