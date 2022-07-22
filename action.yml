@@ -1,0 +1,13 @@
+name: 'action context'
+description: 'enrich action context'
+author: 'escapace'
+outputs:
+  version:
+    description: 'suggested version'
+  environment:
+    description: 'suggested environment: "testing", "staging" or "production"'
+  commitish:
+    description: 'short commit sha.'
+runs:
+  using: 'node16'
+  main: 'lib/cjs/index.cjs'
