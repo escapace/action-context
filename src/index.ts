@@ -43,9 +43,9 @@ export async function getLastGitVersion(): Promise<string | undefined> {
     .map((value) => semver.clean(value, SEMVER_OPTIONS))
     .filter((value): value is string => isString(value))
 
-  const listSorted = [...list]
-    .sort((a, b) => semver.compareBuild(a, b, SEMVER_OPTIONS))
-    .reverse()
+  const listSorted = [...list].sort((a, b) =>
+    semver.compareBuild(a, b, SEMVER_OPTIONS)
+  )
 
   if (listSorted[0] !== list[0]) {
     core.debug(
