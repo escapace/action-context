@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { execa } from 'execa'
-import { isError, isString } from 'lodash-es'
+import { isError, isString, last } from 'lodash-es'
 import assert from 'node:assert'
 import semver from 'semver'
 
@@ -58,11 +58,11 @@ export async function getLastGitVersion(): Promise<string | undefined> {
 
   core.debug(`getLastGitVersion():\n ${JSON.stringify([list, listSorted])}`)
 
-  if (listSorted[0] !== list[0]) {
+  if (last(listSorted) !== last(list)) {
     throw new Error('Git commit history is inconsistent.')
   }
 
-  return list[0]
+  return last(list)
 }
 
 const toSemver = (props: {
