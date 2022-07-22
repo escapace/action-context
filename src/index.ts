@@ -126,14 +126,18 @@ const getVersion = async () => {
 }
 
 const run = async () => {
-  const version = await getVersion()
-  const isPrerelese = version.prerelease.length > 0
+  const { version, prerelease } = await getVersion()
+  const isPrerelese = prerelease.length > 0
   const isTag = REF_TYPE === 'tag'
   const environment = isTag
     ? isPrerelese
       ? 'staging'
       : 'production'
     : 'testing'
+
+  core.info(`version: ${version}`)
+  core.info(`environment: ${environment}`)
+  core.info(`commitish: ${COMMITISH}`)
 
   core.setOutput('version', version)
   core.setOutput('environment', environment)
