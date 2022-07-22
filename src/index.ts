@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { execa } from 'execa'
-import { isError, isString, kebabCase } from 'lodash-es'
+import { isError, isString } from 'lodash-es'
 import assert from 'node:assert'
 import semver from 'semver'
 
@@ -26,6 +26,15 @@ const assertRepoLatestCommit = async () => {
     assert.equal(
       await exec('git', ['rev-parse', '--verify', REF_NAME]),
       github.context.sha
+    )
+  }
+}
+
+const asserPreReleaseIdentifier = () => {
+  if (REF_TYPE === 'branch') {
+    assert.ok(
+      /^[a-zA-Z0-9-]+$/.test(REF_NAME),
+      'Branch name does not pass /^[a-zA-Z0-9-]+$/.'
     )
   }
 }
@@ -100,6 +109,7 @@ const getVersion = async () => {
   } else {
     await assertRepoLatestCommit()
     await assertRepoNotShallow()
+    asserPreReleaseIdentifier()
 
     const lastGitVersion = await getLastGitVersion()
 
@@ -120,7 +130,7 @@ const getVersion = async () => {
         major,
         minor: minor + 1,
         patch,
-        prerelease: [REF_NAME, COMMITISH].map((value) => kebabCase(value))
+        prerelease: [REF_NAME, COMMITISH]
       })
     }
   }
