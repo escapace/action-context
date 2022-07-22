@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { execa } from 'execa'
-import { isError, isNumber, isString, last } from 'lodash-es'
+import { isError, isString, kebabCase } from 'lodash-es'
 import assert from 'node:assert'
 import semver from 'semver'
 
@@ -61,20 +61,19 @@ const toSemver = (props: {
   major: number
   minor: number
   patch: number
-  build: string[]
   prerelease: Array<number | string>
 }) => {
-  const { major, minor, patch, build, prerelease } = props
+  const { major, minor, patch, prerelease } = props
 
   const string = `${major}.${minor}.${patch}${
     prerelease.length === 0 ? '' : `-${prerelease.join('.')}`
-  }${build.length === 0 ? '' : `+${build.join('.')}`}`
+  }`
 
   const version = semver.parse(string, SEMVER_OPTIONS)
 
   core.debug(
     `toSemver()\n ${JSON.stringify([
-      { major, minor, patch, build, prerelease },
+      { major, minor, patch, prerelease },
       { string, version }
     ])}`
   )
@@ -110,7 +109,9 @@ const getVersion = async () => {
         SEMVER_OPTIONS
       ) as semver.SemVer
     } else {
-      const { major, minor, patch, prerelease, build } = semver.parse(
+      core.info(`Last version: ${lastGitVersion}`)
+
+      const { major, minor, patch } = semver.parse(
         lastGitVersion,
         SEMVER_OPTIONS
       ) as semver.SemVer
@@ -119,17 +120,7 @@ const getVersion = async () => {
         major,
         minor: minor + 1,
         patch,
-        prerelease: [
-          ...prerelease,
-          last(prerelease) === REF_NAME ? undefined : REF_NAME
-        ].filter(
-          (value): value is string | number =>
-            isString(value) || isNumber(value)
-        ),
-        build: [
-          ...build,
-          last(build) === COMMITISH ? undefined : COMMITISH
-        ].filter((value): value is string => isString(value))
+        prerelease: [REF_NAME, COMMITISH].map((value) => kebabCase(value))
       })
     }
   }
