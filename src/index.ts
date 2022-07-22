@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { execa } from 'execa'
-import { isError, isString, last } from 'lodash-es'
+import { isError, isNumber, isString, last } from 'lodash-es'
 import assert from 'node:assert'
 import semver from 'semver'
 
@@ -72,6 +72,13 @@ const toSemver = (props: {
 
   const version = semver.parse(string, SEMVER_OPTIONS)
 
+  core.debug(
+    `toSemver()\n ${JSON.stringify([
+      { major, minor, patch, build, prerelease },
+      { string, version }
+    ])}`
+  )
+
   if (version === null) {
     throw new Error(`Not semver string: ${string}`)
   }
@@ -115,7 +122,10 @@ const getVersion = async () => {
         prerelease: [
           ...prerelease,
           last(prerelease) === REF_NAME ? undefined : REF_NAME
-        ].filter((value): value is string => isString(value)),
+        ].filter(
+          (value): value is string | number =>
+            isString(value) || isNumber(value)
+        ),
         build: [
           ...build,
           last(build) === COMMITISH ? undefined : COMMITISH
