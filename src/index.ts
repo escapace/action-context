@@ -15,7 +15,7 @@ const SEMVER_OPTIONS = { loose: false, includePrerelease: true }
 const COMMITISH = github.context.sha.slice(0, 7)
 const REF_TYPE = process.env.GITHUB_REF_TYPE as 'branch' | 'tag'
 const REF_NAME = process.env.GITHUB_REF_NAME as string
-const DEFAULT_INCREMENT = 'minor'
+const DEFAULT_INCREMENT = 'patch' as const
 
 export const assertRepoNotShallow = async () =>
   assert.notEqual(
