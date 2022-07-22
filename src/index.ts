@@ -136,7 +136,7 @@ const getVersion = async () => {
 }
 
 const run = async () => {
-  const { version, prerelease } = await getVersion()
+  const { raw: version, prerelease } = await getVersion()
   const isPrerelese = prerelease.length > 0
   const isTag = REF_TYPE === 'tag'
   const environment = isTag
