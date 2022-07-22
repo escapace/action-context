@@ -1,0 +1,66 @@
+{
+  "name": "@escapace/action-context",
+  "description": "",
+  "version": "0.0.0",
+  "author": "escapace <opensource@escapace.com>",
+  "bugs": "https://github.com/escapace/action-context/issues",
+  "devDependencies": {
+    "@actions/core": "1.9.0",
+    "@actions/exec": "1.1.1",
+    "@actions/github": "5.0.3",
+    "@commitlint/cli": "17.0.3",
+    "@commitlint/config-conventional": "17.0.3",
+    "@ls-lint/ls-lint": "1.11.2",
+    "@types/lodash-es": "4.17.6",
+    "@types/node": "18.0.6",
+    "@types/semver": "7.3.10",
+    "@typescript-eslint/eslint-plugin": "5.30.7",
+    "@typescript-eslint/parser": "5.30.7",
+    "changelogithub": "0.12.4",
+    "esbuild": "0.14.49",
+    "eslint": "8.20.0",
+    "eslint-config-escapace": "3.14.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-plugin-editorconfig": "4.0.2",
+    "eslint-plugin-no-null": "1.0.2",
+    "execa": "6.1.0",
+    "fast-glob": "3.2.11",
+    "fs-extra": "10.1.0",
+    "husky": "8.0.1",
+    "is-ci": "3.0.1",
+    "lint-staged": "13.0.3",
+    "lodash-es": "4.17.21",
+    "prettier": "2.7.1",
+    "prettier-config-escapace": "1.0.4",
+    "semver": "7.3.7",
+    "syncpack": "8.2.4",
+    "typescript": "4.7.4"
+  },
+  "engines": {
+    "node": ">= 16.16.0",
+    "pnpm": ">= 7.1.7"
+  },
+  "exports": {
+    ".": {
+      "require": "./lib/cjs/index.cjs"
+    }
+  },
+  "files": [
+    "lib/cjs",
+    "lib/types"
+  ],
+  "homepage": "https://github.com/escapace/action-context",
+  "license": "MPL-2.0",
+  "main": "lib/cjs/index.cjs",
+  "private": true,
+  "repository": "https://github.com/escapace/action-context.git",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "lint": "ls-lint && eslint 'src/**/*.ts?(x)'",
+    "prepare": "is-ci || husky install",
+    "typecheck": "tsc --noEmit"
+  },
+  "sideEffects": false,
+  "type": "commonjs",
+  "types": "lib/types/index.d.ts"
+}
