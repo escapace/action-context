@@ -56,10 +56,9 @@ export async function getLastGitVersion(): Promise<string | undefined> {
     semver.compareBuild(a, b, SEMVER_OPTIONS)
   )
 
+  core.debug(`getLastGitVersion():\n ${JSON.stringify([list, listSorted])}`)
+
   if (listSorted[0] !== list[0]) {
-    core.debug(
-      `Different first entry in:\n ${JSON.stringify([list, listSorted])}`
-    )
     throw new Error('Git commit history is inconsistent.')
   }
 
