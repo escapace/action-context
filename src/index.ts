@@ -16,6 +16,7 @@ const COMMITISH = github.context.sha.slice(0, 7)
 const REF_TYPE = process.env.GITHUB_REF_TYPE as 'branch' | 'tag'
 const REF_NAME = process.env.GITHUB_REF_NAME as string
 const DEFAULT_INCREMENT = 'patch' as const
+const EVENT_NAME = process.env.GITHUB_EVENT_NAME as string
 
 core.debug(
   `${JSON.stringify({
@@ -32,7 +33,7 @@ export const getBranch = () => {
   // pull_request events, return the head (a.k.a., from) branch, not the base
   // (a.k.a., to) branch. For push events, return the branch that was pushed to.
 
-  if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
+  if (EVENT_NAME === 'pull_request') {
     return process.env.GITHUB_HEAD_REF as string
   }
 
@@ -60,7 +61,7 @@ export const assertRepoNotShallow = async () =>
   )
 
 const assertRepoLatestCommit = async (branch: string) => {
-  if (REF_TYPE === 'branch') {
+  if (REF_TYPE === 'branch' && EVENT_NAME !== 'pull_request') {
     assert.equal(
       await exec('git', ['rev-parse', '--verify', branch]),
       github.context.sha
