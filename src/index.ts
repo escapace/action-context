@@ -17,25 +17,49 @@ const REF_TYPE = process.env.GITHUB_REF_TYPE as 'branch' | 'tag'
 const REF_NAME = process.env.GITHUB_REF_NAME as string
 const DEFAULT_INCREMENT = 'patch' as const
 
+export const getBranch = () => {
+  // Return the branch associated with the current GitHub Actions event. For
+  // pull_request events, return the head (a.k.a., from) branch, not the base
+  // (a.k.a., to) branch. For push events, return the branch that was pushed to.
+
+  if (process.env.GITHUB_EVENT_NAME === 'GITHUB_EVENT_NAME') {
+    return process.env.GITHUB_HEAD_REF as string
+  }
+
+  const ref = process.env.GITHUB_REF as string
+
+  // const pattern =
+
+  const match = ref.match(/refs\/heads\/(?<value>[^/]+)/)
+  const groups = match?.groups ?? {}
+  const value = groups?.value
+
+  if (!isString(value)) {
+    assert.ok(`Expected ${ref} to match '/refs\\/heads\\/(?<value>[^/]+)/'`)
+  }
+
+  return value
+}
+
 export const assertRepoNotShallow = async () =>
   assert.notEqual(
     await exec('git', ['rev-parse', '--is-shallow-repository']),
     'true'
   )
 
-const assertRepoLatestCommit = async () => {
+const assertRepoLatestCommit = async (branch: string) => {
   if (REF_TYPE === 'branch') {
     assert.equal(
-      await exec('git', ['rev-parse', '--verify', REF_NAME]),
+      await exec('git', ['rev-parse', '--verify', branch]),
       github.context.sha
     )
   }
 }
 
-const asserPreReleaseIdentifier = () => {
+const asserPreReleaseIdentifier = (branch: string) => {
   if (REF_TYPE === 'branch') {
     assert.ok(
-      /^[a-zA-Z0-9-]+$/.test(REF_NAME),
+      /^[a-zA-Z0-9-]+$/.test(branch),
       'Branch name does not pass /^[a-zA-Z0-9-]+$/.'
     )
   }
@@ -166,15 +190,19 @@ const getVersion = async () => {
 
     return version
   } else {
-    await assertRepoLatestCommit()
     await assertRepoNotShallow()
-    asserPreReleaseIdentifier()
+    const branch = getBranch()
+
+    await assertRepoLatestCommit(branch)
+    asserPreReleaseIdentifier(branch)
+
+    core.info(`Current branch: ${branch}`)
 
     const lastGitTag = await getLastGitTag()
 
     if (lastGitTag === undefined) {
       return semver.parse(
-        `0.1.0-${REF_NAME}+${COMMITISH}`,
+        `0.1.0-${branch}+${COMMITISH}`,
         SEMVER_OPTIONS
       ) as semver.SemVer
     } else {
@@ -191,7 +219,7 @@ const getVersion = async () => {
           minor,
           patch
         })),
-        prerelease: [REF_NAME, COMMITISH]
+        prerelease: [branch, COMMITISH]
       })
     }
   }
