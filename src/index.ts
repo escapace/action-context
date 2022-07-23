@@ -69,14 +69,7 @@ const assertRepoLatestCommit = async (branch: string) => {
   }
 }
 
-const asserPreReleaseIdentifier = (branch: string) => {
-  if (REF_TYPE === 'branch') {
-    assert.ok(
-      /^[a-zA-Z0-9-]+$/.test(branch),
-      'Branch name does not pass /^[a-zA-Z0-9-]+$/.'
-    )
-  }
-}
+const preReleaseCase = (value: string) => value.replace(/[^0-9A-Za-z-]/gm, '-')
 
 export async function getLastGitTag(): Promise<string | undefined> {
   // const list = await exec('bash', [
@@ -129,10 +122,6 @@ const toSemver = (props: {
       { string, version }
     ])}`
   )
-
-  if (version === null) {
-    throw new Error(`Not semver string: ${string}`)
-  }
 
   return version
 }
@@ -205,17 +194,15 @@ const getVersion = async () => {
   } else {
     await assertRepoNotShallow()
     const branch = getBranch()
-
     await assertRepoLatestCommit(branch)
-    asserPreReleaseIdentifier(branch)
 
     const lastGitTag = await getLastGitTag()
 
     if (lastGitTag === undefined) {
       return semver.parse(
-        `0.1.0-${branch}+${COMMITISH}`,
+        `0.1.0-${preReleaseCase(branch)}+${COMMITISH}`,
         SEMVER_OPTIONS
-      ) as semver.SemVer
+      )
     } else {
       core.info(`Last tag: ${lastGitTag}`)
 
@@ -230,14 +217,21 @@ const getVersion = async () => {
           minor,
           patch
         })),
-        prerelease: [branch, COMMITISH]
+        prerelease: [preReleaseCase(branch), COMMITISH]
       })
     }
   }
 }
 
 const run = async () => {
-  const { raw: version, prerelease } = await getVersion()
+  const sv = await getVersion()
+
+  if (sv === null) {
+    throw new Error('Failed to derive a semantic version.')
+  }
+
+  const { version, prerelease } = sv
+
   const isPrerelese = prerelease.length > 0
   const isTag = REF_TYPE === 'tag'
   const environment = isTag
