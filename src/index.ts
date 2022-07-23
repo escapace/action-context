@@ -17,6 +17,16 @@ const REF_TYPE = process.env.GITHUB_REF_TYPE as 'branch' | 'tag'
 const REF_NAME = process.env.GITHUB_REF_NAME as string
 const DEFAULT_INCREMENT = 'patch' as const
 
+core.debug(
+  `${JSON.stringify({
+    GITHUB_EVENT_NAME: process.env.GITHUB_EVENT_NAME,
+    GITHUB_HEAD_REF: process.env.GITHUB_HEAD_REF,
+    GITHUB_REF: process.env.GITHUB_REF,
+    GITHUB_REF_NAME: process.env.GITHUB_REF_NAME,
+    GITHUB_REF_TYPE: process.env.GITHUB_REF_TYPE
+  })}`
+)
+
 export const getBranch = () => {
   // Return the branch associated with the current GitHub Actions event. For
   // pull_request events, return the head (a.k.a., from) branch, not the base
@@ -37,6 +47,8 @@ export const getBranch = () => {
   if (!isString(value)) {
     assert.ok(`Expected ${ref} to match '/refs\\/heads\\/(?<value>[^/]+)/'`)
   }
+
+  core.info(`Current branch: ${value}`)
 
   return value
 }
@@ -195,8 +207,6 @@ const getVersion = async () => {
 
     await assertRepoLatestCommit(branch)
     asserPreReleaseIdentifier(branch)
-
-    core.info(`Current branch: ${branch}`)
 
     const lastGitTag = await getLastGitTag()
 
