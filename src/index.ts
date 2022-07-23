@@ -32,7 +32,7 @@ export const getBranch = () => {
   // pull_request events, return the head (a.k.a., from) branch, not the base
   // (a.k.a., to) branch. For push events, return the branch that was pushed to.
 
-  if (process.env.GITHUB_EVENT_NAME === 'GITHUB_EVENT_NAME') {
+  if (process.env.GITHUB_EVENT_NAME === 'pull_request') {
     return process.env.GITHUB_HEAD_REF as string
   }
 
