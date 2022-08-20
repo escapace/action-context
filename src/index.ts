@@ -172,10 +172,13 @@ const bump = async (
     ? 'patch'
     : DEFAULT_INCREMENT
 
-  return {
-    major: increment === 'major' ? value.major + 1 : value.major,
-    minor: increment === 'minor' ? value.minor + 1 : value.minor,
-    patch: increment === 'patch' ? value.patch + 1 : value.patch
+  switch (increment) {
+    case 'major':
+      return { major: value.major + 1, minor: 0, patch: 0 }
+    case 'minor':
+      return { major: value.major, minor: value.minor + 1, patch: 0 }
+    case 'patch':
+      return { major: value.major, minor: value.minor, patch: value.patch + 1 }
   }
 }
 
