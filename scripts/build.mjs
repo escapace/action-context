@@ -31,6 +31,7 @@ await Promise.all(
       outbase: path.join(cwd, 'src'),
       outdir,
       platform: 'node',
+      minify: true,
       sourcemap: true,
       target,
       tsconfig: path.join(cwd, 'tsconfig-build.json')

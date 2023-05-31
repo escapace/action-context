@@ -1,10 +1,50 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import { getGitDiff } from 'changelogen'
+import type { ChangelogOptions } from 'changelogithub'
+import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
 import { execa } from 'execa'
 import { isError, isString, last } from 'lodash-es'
 import assert from 'node:assert'
 import semver from 'semver'
-import { getGitDiff } from 'changelogen'
+
+const createChangelog = async (
+  options: Pick<ChangelogOptions, 'token' | 'prerelease'>
+) => {
+  try {
+    const { config, md, commits } = await generate({
+      emoji: false,
+      capitalize: false,
+      ...options
+    })
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (!config.token) {
+      throw new Error('no GitHub token found')
+    }
+
+    if (!(await hasTagOnGitHub(config.to, config))) {
+      throw new Error(
+        `current ref "${config.to}" is not available as tags on GitHub`
+      )
+    }
+
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    if (!commits.length && (await isRepoShallow())) {
+      throw new Error(
+        'the repo seems to be clone shallowly, specify `fetch-depth: 0` in your ci config'
+      )
+    }
+
+    return md
+  } catch (e) {
+    if (e instanceof Error) {
+      core.error(e.message)
+    }
+
+    return undefined
+  }
+}
 
 const exec = async (cmd: string, args: string[]) => {
   const res = await execa(cmd, args)
@@ -228,6 +268,7 @@ const getVersion = async () => {
 
 const run = async () => {
   const sv = await getVersion()
+  const token = core.getInput('token')
 
   if (sv === null) {
     throw new Error('Failed to derive a semantic version.')
@@ -242,6 +283,7 @@ const run = async () => {
       ? 'staging'
       : 'production'
     : 'testing'
+  const changelog = await createChangelog({ prerelease: isPrerelese, token })
 
   core.info(`version: ${version}`)
   core.info(`environment: ${environment}`)
@@ -250,6 +292,7 @@ const run = async () => {
   core.setOutput('version', version)
   core.setOutput('environment', environment)
   core.setOutput('commitish', COMMITISH)
+  core.setOutput('changelog', changelog)
 }
 
 function handleError(err: unknown): void {

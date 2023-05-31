@@ -1,13 +1,20 @@
 name: 'action context'
 description: 'enrich action context'
 author: 'escapace'
+inputs:
+  token:
+    description: 'the GitHub token'
+    required: false
+    default: ${{ github.token }}
 outputs:
   version:
     description: 'suggested version'
   environment:
     description: 'suggested environment: "testing", "staging" or "production"'
   commitish:
-    description: 'short commit sha.'
+    description: 'short commit sha'
+  changelog:
+    description: 'changelog'
 runs:
   using: 'node16'
   main: 'lib/cjs/index.cjs'
