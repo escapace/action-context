@@ -39,7 +39,7 @@ const createChangelog = async (
     return md
   } catch (e) {
     if (e instanceof Error) {
-      core.error(e.message)
+      core.warning(e.message)
     }
 
     return undefined
