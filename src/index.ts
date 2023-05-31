@@ -293,6 +293,7 @@ const run = async () => {
   core.setOutput('environment', environment)
   core.setOutput('commitish', COMMITISH)
   core.setOutput('changelog', changelog)
+  core.setOutput('prerelease', isPrerelese)
 }
 
 function handleError(err: unknown): void {
