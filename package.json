@@ -2,7 +2,10 @@
   "name": "@escapace/action-context",
   "description": "",
   "version": "0.0.0",
-  "author": "escapace <opensource@escapace.com>",
+  "author": {
+    "name": "escapace",
+    "email": "opensource@escapace.com"
+  },
   "bugs": "https://github.com/escapace/action-context/issues",
   "devDependencies": {
     "@actions/core": "1.10.0",
@@ -38,8 +41,8 @@
     "typescript": "5.1.6"
   },
   "engines": {
-    "node": ">= 16.16.0",
-    "pnpm": ">= 8.4.0"
+    "node": ">=18.18.0",
+    "pnpm": ">=8.7.6"
   },
   "exports": {
     ".": {
@@ -54,7 +57,7 @@
   "license": "MPL-2.0",
   "main": "lib/cjs/index.cjs",
   "private": true,
-  "repository": "https://github.com/escapace/action-context.git",
+  "repository": "escapace/action-context.git",
   "scripts": {
     "build": "node ./scripts/build.mjs",
     "lint": "ls-lint && eslint 'src/**/*.ts?(x)'",
