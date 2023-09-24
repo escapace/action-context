@@ -18,5 +18,5 @@ outputs:
   prerelease:
     description: 'whether this is a prerelease'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'lib/cjs/index.cjs'
