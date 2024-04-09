@@ -299,18 +299,22 @@ const run = async () => {
       ? 'staging'
       : 'production'
     : 'testing'
-  const changelog = await createChangelog({ prerelease: isPrerelese, token })
+  const changelog = isTag
+    ? await createChangelog({ prerelease: isPrerelese, token })
+    : ''
+  const latest = await isLatest(currentVersion)
 
   core.info(`version: ${version}`)
   core.info(`environment: ${environment}`)
   core.info(`commitish: ${COMMITISH}`)
+  core.info(`latest: ${latest}`)
 
   core.setOutput('version', version)
   core.setOutput('environment', environment)
   core.setOutput('commitish', COMMITISH)
   core.setOutput('changelog', changelog)
   core.setOutput('prerelease', isPrerelese)
-  core.setOutput('latest', await isLatest(currentVersion))
+  core.setOutput('latest', latest)
 }
 
 function handleError(err: unknown): void {
