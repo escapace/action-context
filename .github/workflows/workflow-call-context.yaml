@@ -1,0 +1,56 @@
+on:
+  workflow_call:
+    outputs:
+      changelog:
+        description: 'changelog'
+        value: ${{ jobs.main.outputs.changelog }}
+      commitish:
+        description: 'short github sha'
+        value: ${{ jobs.main.outputs.commitish }}
+      environment:
+        description: 'version'
+        value: ${{ jobs.main.outputs.environment }}
+      latest:
+        description: 'is latest'
+        value: ${{ jobs.main.outputs.latest }}
+      prerelease:
+        description: 'is prerelease'
+        value: ${{ jobs.main.outputs.prerelease }}
+      ref:
+        description: 'ref'
+        value: ${{ jobs.main.outputs.ref }}
+      version:
+        description: 'version'
+        value: ${{ jobs.main.outputs.version }}
+jobs:
+  main:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.action-context.outputs.changelog }}
+      commitish: ${{ steps.action-context.outputs.commitish }}
+      environment: ${{ steps.action-context.outputs.environment }}
+      latest: ${{ fromJSON(steps.action-context.outputs.latest) }}
+      prerelease: ${{ fromJSON(steps.action-context.outputs.prerelease) }}
+      ref: ${{ steps.ref.outputs.value }}
+      version: ${{ steps.action-context.outputs.version }}
+    steps:
+      - id: ref
+        name: ref
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "value=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+          else
+            echo "value=${GITHUB_REF}" >> $GITHUB_OUTPUT
+          fi
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.value }}
+          fetch-depth: 0
+      - id: action-context
+        uses: ./
+        with:
+          token: ${{ github.token }}
