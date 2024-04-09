@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { getGitDiff } from 'changelogen'
@@ -51,12 +52,19 @@ const exec = async (cmd: string, args: string[]) => {
   return res.stdout.trim()
 }
 
+function shortenCommitHash(string: string): string {
+  return string.substring(
+    0,
+    string.startsWith('0') ? Math.max(7, string.search(/[a-zA-Z]/) + 1) : 7
+  )
+}
+
 const SEMVER_OPTIONS = { loose: false, includePrerelease: true }
-const COMMITISH = github.context.sha.slice(0, 7)
+const COMMITISH = shortenCommitHash(github.context.sha)
 const REF_TYPE = process.env.GITHUB_REF_TYPE as 'branch' | 'tag'
-const REF_NAME = process.env.GITHUB_REF_NAME as string
-const DEFAULT_INCREMENT = 'patch' as const
-const EVENT_NAME = process.env.GITHUB_EVENT_NAME as string
+const REF_NAME = process.env.GITHUB_REF_NAME!
+const DEFAULT_INCREMENT = 'patch'
+const EVENT_NAME = process.env.GITHUB_EVENT_NAME!
 
 core.debug(
   `${JSON.stringify({
@@ -74,12 +82,10 @@ export const getBranch = () => {
   // (a.k.a., to) branch. For push events, return the branch that was pushed to.
 
   if (EVENT_NAME === 'pull_request') {
-    return process.env.GITHUB_HEAD_REF as string
+    return process.env.GITHUB_HEAD_REF!
   }
 
-  const ref = process.env.GITHUB_REF as string
-
-  // const pattern =
+  const ref = process.env.GITHUB_REF!
 
   const match = ref.match(/refs\/heads\/(?<value>[^/]+)/)
   const groups = match?.groups ?? {}
@@ -111,33 +117,31 @@ const assertRepoLatestCommit = async (branch: string) => {
 
 const preReleaseCase = (value: string) => value.replace(/[^0-9A-Za-z-]/gm, '-')
 
-export async function getLastGitTag(): Promise<string | undefined> {
-  // const list = await exec('bash', [
-  //   '-c',
-  //   'git describe --abbrev=0 --always --tags $(git rev-list --tags --remove-empty --date-order) '
-  // ])
-
+export async function getLastGitTag(
+  branch?: string
+): Promise<string | undefined> {
   const list = (
-    await exec('git', ['--no-pager', 'tag', '-l', '--sort=creatordate'])
+    await exec('git', [
+      '--no-pager',
+      'tag',
+      '--list',
+      '--sort=taggerdate',
+      ...(typeof branch === 'string' ? ['--merged', branch] : [])
+    ])
   )
     .split('\n')
     .filter(
       (value): value is string => semver.clean(value, SEMVER_OPTIONS) !== null
     )
+    .sort((a, b) =>
+      semver.compareBuild(
+        semver.clean(a, SEMVER_OPTIONS)!,
+        semver.clean(b, SEMVER_OPTIONS)!,
+        SEMVER_OPTIONS
+      )
+    )
 
-  // const listSorted = [...list].sort((a, b) =>
-  //   semver.compareBuild(
-  //     semver.clean(a, SEMVER_OPTIONS) as string,
-  //     semver.clean(b, SEMVER_OPTIONS) as string,
-  //     SEMVER_OPTIONS
-  //   )
-  // )
-
-  core.debug(`getLastGitVersion():\n ${JSON.stringify(list)}`)
-
-  // if (last(listSorted) !== last(list)) {
-  //   throw new Error('Git commit history is inconsistent.')
-  // }
+  core.debug(`getLastGitTag():\n ${JSON.stringify(list)}`)
 
   return last(list)
 }
@@ -154,7 +158,7 @@ const toSemver = (props: {
     prerelease.length === 0 ? '' : `-${prerelease.join('.')}`
   }`
 
-  const version = semver.parse(string, SEMVER_OPTIONS)
+  const version = semver.parse(string, { ...SEMVER_OPTIONS, loose: true })
 
   core.debug(
     `toSemver()\n ${JSON.stringify([
@@ -189,10 +193,10 @@ const bump = async (
       return isBreaking
         ? 'major'
         : type === 'feat'
-        ? 'minor'
-        : type === 'fix'
-        ? 'patch'
-        : undefined
+          ? 'minor'
+          : type === 'fix'
+            ? 'patch'
+            : undefined
     })
     .filter((value): value is 'major' | 'minor' | 'patch' => isString(value))
     .reduce(
@@ -207,10 +211,10 @@ const bump = async (
   const increment = commits.major
     ? 'major'
     : commits.minor
-    ? 'minor'
-    : commits.patch
-    ? 'patch'
-    : DEFAULT_INCREMENT
+      ? 'minor'
+      : commits.patch
+        ? 'patch'
+        : DEFAULT_INCREMENT
 
   switch (increment) {
     case 'major':
@@ -239,7 +243,7 @@ const getVersion = async () => {
     const branch = getBranch()
     await assertRepoLatestCommit(branch)
 
-    const lastGitTag = await getLastGitTag()
+    const lastGitTag = await getLastGitTag(branch)
 
     if (lastGitTag === undefined) {
       return semver.parse(
@@ -252,7 +256,7 @@ const getVersion = async () => {
       const { major, minor, patch } = semver.parse(
         semver.clean(lastGitTag, SEMVER_OPTIONS),
         SEMVER_OPTIONS
-      ) as semver.SemVer
+      )!
 
       return toSemver({
         ...(await bump(lastGitTag, {
@@ -266,15 +270,27 @@ const getVersion = async () => {
   }
 }
 
+const isLatest = async (currentVersion: semver.SemVer) => {
+  const tag = await getLastGitTag()
+
+  if (tag === undefined) {
+    return true
+  }
+
+  const latestVersion = semver.clean(tag, SEMVER_OPTIONS)!
+
+  return semver.gte(currentVersion, latestVersion, SEMVER_OPTIONS)
+}
+
 const run = async () => {
-  const sv = await getVersion()
+  const currentVersion = await getVersion()
   const token = core.getInput('token')
 
-  if (sv === null) {
+  if (currentVersion === null) {
     throw new Error('Failed to derive a semantic version.')
   }
 
-  const { version, prerelease } = sv
+  const { version, prerelease } = currentVersion
 
   const isPrerelese = prerelease.length > 0
   const isTag = REF_TYPE === 'tag'
@@ -294,14 +310,15 @@ const run = async () => {
   core.setOutput('commitish', COMMITISH)
   core.setOutput('changelog', changelog)
   core.setOutput('prerelease', isPrerelese)
+  core.setOutput('latest', await isLatest(currentVersion))
 }
 
 function handleError(err: unknown): void {
   const message = isError(err)
     ? err.message
     : isString(err)
-    ? err
-    : 'Unknown Error'
+      ? err
+      : 'Unknown Error'
 
   core.setFailed(message)
 }

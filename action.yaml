@@ -17,6 +17,8 @@ outputs:
     description: 'changelog'
   prerelease:
     description: 'whether this is a prerelease'
+  latest:
+    description: 'whether this is the latest release'
 runs:
   using: 'node20'
   main: 'lib/cjs/index.cjs'
