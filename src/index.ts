@@ -106,7 +106,7 @@ export const assertRepoNotShallow = async () =>
     'true'
   )
 
-const assertRepoLatestCommit = async (branch: string) => {
+const assertBranchLatestCommit = async (branch: string) => {
   if (REF_TYPE === 'branch' && EVENT_NAME !== 'pull_request') {
     assert.equal(
       await exec('git', ['rev-parse', '--verify', branch]),
@@ -241,7 +241,7 @@ const getVersion = async () => {
   } else {
     await assertRepoNotShallow()
     const branch = getBranch()
-    await assertRepoLatestCommit(branch)
+    await assertBranchLatestCommit(branch)
 
     const lastGitTag = await getLastGitTag(branch)
 
