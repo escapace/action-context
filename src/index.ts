@@ -10,12 +10,12 @@ import assert from 'node:assert'
 import semver from 'semver'
 
 const createChangelog = async (
-  options: Pick<ChangelogOptions, 'token' | 'prerelease'>
+  options: Pick<ChangelogOptions, 'prerelease' | 'token'>
 ) => {
   try {
-    const { config, md, commits } = await generate({
-      emoji: false,
+    const { commits, config, md } = await generate({
       capitalize: false,
+      emoji: false,
       ...options
     })
 
@@ -38,28 +38,28 @@ const createChangelog = async (
     }
 
     return md
-  } catch (e) {
-    if (e instanceof Error) {
-      core.warning(e.message)
+  } catch (error) {
+    if (error instanceof Error) {
+      core.warning(error.message)
     }
 
-    return undefined
+    return
   }
 }
 
-const exec = async (cmd: string, args: string[]) => {
-  const res = await execa(cmd, args)
-  return res.stdout.trim()
+const exec = async (cmd: string, arguments_: string[]) => {
+  const process = await execa(cmd, arguments_)
+  return process.stdout.trim()
 }
 
 function shortenCommitHash(string: string): string {
   return string.substring(
     0,
-    string.startsWith('0') ? Math.max(7, string.search(/[a-zA-Z]/) + 1) : 7
+    string.startsWith('0') ? Math.max(7, string.search(/[A-Za-z]/) + 1) : 7
   )
 }
 
-const SEMVER_OPTIONS = { loose: false, includePrerelease: true }
+const SEMVER_OPTIONS = { includePrerelease: true, loose: false }
 const COMMITISH = shortenCommitHash(github.context.sha)
 const REF_TYPE = process.env.GITHUB_REF_TYPE as 'branch' | 'tag'
 const REF_NAME = process.env.GITHUB_REF_NAME!
@@ -85,14 +85,16 @@ export const getBranch = () => {
     return process.env.GITHUB_HEAD_REF!
   }
 
-  const ref = process.env.GITHUB_REF!
+  const reference = process.env.GITHUB_REF!
 
-  const match = ref.match(/refs\/heads\/(?<value>[^/]+)/)
+  const match = reference.match(/refs\/heads\/(?<value>[^/]+)/)
   const groups = match?.groups ?? {}
   const value = groups?.value
 
   if (!isString(value)) {
-    assert.ok(`Expected ${ref} to match '/refs\\/heads\\/(?<value>[^/]+)/'`)
+    assert.ok(
+      `Expected ${reference} to match '/refs\\/heads\\/(?<value>[^/]+)/'`
+    )
   }
 
   core.info(`Current branch: ${value}`)
@@ -115,7 +117,7 @@ const assertBranchLatestCommit = async (branch: string) => {
   }
 }
 
-const preReleaseCase = (value: string) => value.replace(/[^0-9A-Za-z-]/gm, '-')
+const preReleaseCase = (value: string) => value.replace(/[^\dA-Za-z-]/gm, '-')
 
 export async function getLastGitTag(
   branch?: string
@@ -146,17 +148,15 @@ export async function getLastGitTag(
   return last(list)
 }
 
-const toSemver = (props: {
+const toSemver = (properties: {
   major: number
   minor: number
   patch: number
   prerelease: Array<number | string>
 }) => {
-  const { major, minor, patch, prerelease } = props
+  const { major, minor, patch, prerelease } = properties
 
-  const string = `${major}.${minor}.${patch}${
-    prerelease.length === 0 ? '' : `-${prerelease.join('.')}`
-  }`
+  const string = `${major}.${minor}.${patch}${prerelease.length === 0 ? '' : `-${prerelease.join('.')}`}`
 
   const version = semver.parse(string, { ...SEMVER_OPTIONS, loose: true })
 
@@ -182,7 +182,7 @@ const bump = async (
       const match = value.message.match(ConventionalCommitRegex)
 
       if (match === null) {
-        return undefined
+        return
       }
 
       const groups = match.groups ?? {}
@@ -200,10 +200,10 @@ const bump = async (
     })
     .filter((value): value is 'major' | 'minor' | 'patch' => isString(value))
     .reduce(
-      (prev, next): Record<'major' | 'minor' | 'patch', boolean> => {
-        prev[next] = true
+      (previous, next): Record<'major' | 'minor' | 'patch', boolean> => {
+        previous[next] = true
 
-        return prev
+        return previous
       },
       { major: false, minor: false, patch: false }
     )
@@ -290,7 +290,7 @@ const run = async () => {
     throw new Error('Failed to derive a semantic version.')
   }
 
-  const { version, prerelease } = currentVersion
+  const { prerelease, version } = currentVersion
 
   const isPrerelese = prerelease.length > 0
   const isTag = REF_TYPE === 'tag'
@@ -317,11 +317,11 @@ const run = async () => {
   core.setOutput('latest', latest)
 }
 
-function handleError(err: unknown): void {
-  const message = isError(err)
-    ? err.message
-    : isString(err)
-      ? err
+function handleError(error: unknown): void {
+  const message = isError(error)
+    ? error.message
+    : isString(error)
+      ? error
       : 'Unknown Error'
 
   core.setFailed(message)
