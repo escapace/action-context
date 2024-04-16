@@ -127,7 +127,7 @@ export async function getLastGitTag(
       '--no-pager',
       'tag',
       '--list',
-      '--sort=taggerdate',
+      '--sort=authordate',
       ...(typeof branch === 'string' ? ['--merged', branch] : [])
     ])
   )
