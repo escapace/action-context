@@ -13,6 +13,9 @@ on:
       latest:
         description: 'is latest'
         value: ${{ jobs.main.outputs.latest }}
+      preid:
+        description: 'prerelease identifier'
+        value: ${{ jobs.main.outputs.preid }}
       prerelease:
         description: 'is prerelease'
         value: ${{ jobs.main.outputs.prerelease }}
@@ -22,34 +25,36 @@ on:
       version:
         description: 'version'
         value: ${{ jobs.main.outputs.version }}
+
 jobs:
   main:
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
     outputs:
       changelog: ${{ steps.action-context.outputs.changelog }}
       commitish: ${{ steps.action-context.outputs.commitish }}
       environment: ${{ steps.action-context.outputs.environment }}
       latest: ${{ fromJSON(steps.action-context.outputs.latest) }}
+      preid: ${{ steps.action-context.outputs.preid }}
       prerelease: ${{ fromJSON(steps.action-context.outputs.prerelease) }}
       ref: ${{ steps.ref.outputs.value }}
       version: ${{ steps.action-context.outputs.version }}
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
     steps:
       - id: ref
         name: ref
-        shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "value=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
           else
             echo "value=${GITHUB_REF}" >> $GITHUB_OUTPUT
           fi
+        shell: bash
       - name: checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.ref.outputs.value }}
           fetch-depth: 0
+          ref: ${{ steps.ref.outputs.value }}
       - id: action-context
         uses: ./
         with:
