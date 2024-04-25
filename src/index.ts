@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable typescript/no-non-null-assertion */
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { getGitDiff } from 'changelogen'
@@ -9,31 +9,27 @@ import { isError, isString, last } from 'lodash-es'
 import assert from 'node:assert'
 import semver from 'semver'
 
-const createChangelog = async (
-  options: Pick<ChangelogOptions, 'prerelease' | 'token'>
-) => {
+const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
   try {
     const { commits, config, md } = await generate({
       capitalize: false,
       emoji: false,
-      ...options
+      ...options,
     })
 
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    // eslint-disable-next-line typescript/strict-boolean-expressions
     if (!config.token) {
       throw new Error('no GitHub token found')
     }
 
     if (!(await hasTagOnGitHub(config.to, config))) {
-      throw new Error(
-        `current ref "${config.to}" is not available as tags on GitHub`
-      )
+      throw new Error(`current ref "${config.to}" is not available as tags on GitHub`)
     }
 
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+    // eslint-disable-next-line typescript/strict-boolean-expressions
     if (!commits.length && (await isRepoShallow())) {
       throw new Error(
-        'the repo seems to be clone shallowly, specify `fetch-depth: 0` in your ci config'
+        'the repo seems to be clone shallowly, specify `fetch-depth: 0` in your ci config',
       )
     }
 
@@ -53,10 +49,7 @@ const exec = async (cmd: string, arguments_: string[]) => {
 }
 
 function shortenCommitHash(string: string): string {
-  return string.substring(
-    0,
-    string.startsWith('0') ? Math.max(7, string.search(/[A-Za-z]/) + 1) : 7
-  )
+  return string.substring(0, string.startsWith('0') ? Math.max(7, string.search(/[A-Z]/i) + 1) : 7)
 }
 
 const SEMVER_OPTIONS = { includePrerelease: true, loose: false }
@@ -72,8 +65,8 @@ core.debug(
     GITHUB_HEAD_REF: process.env.GITHUB_HEAD_REF,
     GITHUB_REF: process.env.GITHUB_REF,
     GITHUB_REF_NAME: process.env.GITHUB_REF_NAME,
-    GITHUB_REF_TYPE: process.env.GITHUB_REF_TYPE
-  })}`
+    GITHUB_REF_TYPE: process.env.GITHUB_REF_TYPE,
+  })}`,
 )
 
 export const getBranch = () => {
@@ -92,9 +85,7 @@ export const getBranch = () => {
   const value = groups?.value
 
   if (!isString(value)) {
-    assert.ok(
-      `Expected ${reference} to match '/refs\\/heads\\/(?<value>[^/]+)/'`
-    )
+    assert.ok(`Expected ${reference} to match '/refs\\/heads\\/(?<value>[^/]+)/'`)
   }
 
   core.info(`Current branch: ${value}`)
@@ -103,44 +94,34 @@ export const getBranch = () => {
 }
 
 export const assertRepoNotShallow = async () =>
-  assert.notEqual(
-    await exec('git', ['rev-parse', '--is-shallow-repository']),
-    'true'
-  )
+  assert.notEqual(await exec('git', ['rev-parse', '--is-shallow-repository']), 'true')
 
 const assertBranchLatestCommit = async (branch: string) => {
   if (REF_TYPE === 'branch' && EVENT_NAME !== 'pull_request') {
-    assert.equal(
-      await exec('git', ['rev-parse', '--verify', branch]),
-      github.context.sha
-    )
+    assert.equal(await exec('git', ['rev-parse', '--verify', branch]), github.context.sha)
   }
 }
 
-const preReleaseCase = (value: string) => value.replace(/[^\dA-Za-z-]/gm, '-')
+const preReleaseCase = (value: string) => value.replace(/[^\dA-Z-]/gi, '-')
 
-export async function getLastGitTag(
-  branch?: string
-): Promise<string | undefined> {
+export async function getLastGitTag(branch?: string): Promise<string | undefined> {
   const list = (
     await exec('git', [
       '--no-pager',
       'tag',
       '--list',
       '--sort=authordate',
-      ...(typeof branch === 'string' ? ['--merged', branch] : [])
+      ...(typeof branch === 'string' ? ['--merged', branch] : []),
     ])
   )
     .split('\n')
-    .filter(
-      (value): value is string => semver.clean(value, SEMVER_OPTIONS) !== null
-    )
+    .filter((value): value is string => semver.clean(value, SEMVER_OPTIONS) !== null)
     .sort((a, b) =>
       semver.compareBuild(
         semver.clean(a, SEMVER_OPTIONS)!,
         semver.clean(b, SEMVER_OPTIONS)!,
-        SEMVER_OPTIONS
-      )
+        SEMVER_OPTIONS,
+      ),
     )
 
   core.debug(`getLastGitTag():\n ${JSON.stringify(list)}`)
@@ -163,8 +144,8 @@ const toSemver = (properties: {
   core.debug(
     `toSemver()\n ${JSON.stringify([
       { major, minor, patch, prerelease },
-      { string, version }
-    ])}`
+      { string, version },
+    ])}`,
   )
 
   return version
@@ -173,10 +154,7 @@ const toSemver = (properties: {
 const ConventionalCommitRegex =
   /(?<type>[a-z]+)(\((?<scope>.+)\))?(?<breaking>!)?: (?<description>.+)/i
 
-const bump = async (
-  lastGitTag: string,
-  value: { major: number; minor: number; patch: number }
-) => {
+const bump = async (lastGitTag: string, value: { major: number; minor: number; patch: number }) => {
   const commits = (await getGitDiff(lastGitTag, 'HEAD'))
     .map((value) => {
       const match = value.message.match(ConventionalCommitRegex)
@@ -187,16 +165,9 @@ const bump = async (
 
       const groups = match.groups ?? {}
       const type = groups.type
-      const isBreaking =
-        Boolean(groups.breaking) || value.message.includes('BREAKING CHANGE:')
+      const isBreaking = Boolean(groups.breaking) || value.message.includes('BREAKING CHANGE:')
 
-      return isBreaking
-        ? 'major'
-        : type === 'feat'
-          ? 'minor'
-          : type === 'fix'
-            ? 'patch'
-            : undefined
+      return isBreaking ? 'major' : type === 'feat' ? 'minor' : type === 'fix' ? 'patch' : undefined
     })
     .filter((value): value is 'major' | 'minor' | 'patch' => isString(value))
     .reduce(
@@ -205,7 +176,7 @@ const bump = async (
 
         return previous
       },
-      { major: false, minor: false, patch: false }
+      { major: false, minor: false, patch: false },
     )
 
   const increment = commits.major
@@ -228,10 +199,7 @@ const bump = async (
 
 const getVersion = async () => {
   if (REF_TYPE === 'tag') {
-    const version = semver.parse(
-      semver.clean(REF_NAME, SEMVER_OPTIONS),
-      SEMVER_OPTIONS
-    )
+    const version = semver.parse(semver.clean(REF_NAME, SEMVER_OPTIONS), SEMVER_OPTIONS)
 
     if (version === null) {
       throw new Error(`Not semver string: ${REF_NAME}`)
@@ -246,25 +214,22 @@ const getVersion = async () => {
     const lastGitTag = await getLastGitTag(branch)
 
     if (lastGitTag === undefined) {
-      return semver.parse(
-        `0.1.0-${preReleaseCase(branch)}+${COMMITISH}`,
-        SEMVER_OPTIONS
-      )
+      return semver.parse(`0.1.0-${preReleaseCase(branch)}+${COMMITISH}`, SEMVER_OPTIONS)
     } else {
       core.info(`Last tag: ${lastGitTag}`)
 
       const { major, minor, patch } = semver.parse(
         semver.clean(lastGitTag, SEMVER_OPTIONS),
-        SEMVER_OPTIONS
+        SEMVER_OPTIONS,
       )!
 
       return toSemver({
         ...(await bump(lastGitTag, {
           major,
           minor,
-          patch
+          patch,
         })),
-        prerelease: [preReleaseCase(branch), COMMITISH]
+        prerelease: [preReleaseCase(branch), COMMITISH],
       })
     }
   }
@@ -292,37 +257,29 @@ const run = async () => {
 
   const { prerelease, version } = currentVersion
 
-  const isPrerelese = prerelease.length > 0
+  const isPrerelease = prerelease.length > 0
   const isTag = REF_TYPE === 'tag'
-  const environment = isTag
-    ? isPrerelese
-      ? 'staging'
-      : 'production'
-    : 'testing'
-  const changelog = isTag
-    ? await createChangelog({ prerelease: isPrerelese, token })
-    : ''
+  const environment = isTag ? (isPrerelease ? 'staging' : 'production') : 'testing'
+  const changelog = isTag ? await createChangelog({ prerelease: isPrerelease, token }) : ''
   const latest = await isLatest(currentVersion)
+  const preid = isPrerelease ? `${prerelease[0]}` : ''
 
   core.info(`version: ${version}`)
   core.info(`environment: ${environment}`)
   core.info(`commitish: ${COMMITISH}`)
   core.info(`latest: ${latest}`)
 
-  core.setOutput('version', version)
-  core.setOutput('environment', environment)
-  core.setOutput('commitish', COMMITISH)
   core.setOutput('changelog', changelog)
-  core.setOutput('prerelease', isPrerelese)
+  core.setOutput('commitish', COMMITISH)
+  core.setOutput('environment', environment)
   core.setOutput('latest', latest)
+  core.setOutput('preid', preid)
+  core.setOutput('prerelease', isPrerelease)
+  core.setOutput('version', version)
 }
 
 function handleError(error: unknown): void {
-  const message = isError(error)
-    ? error.message
-    : isString(error)
-      ? error
-      : 'Unknown Error'
+  const message = isError(error) ? error.message : isString(error) ? error : 'Unknown Error'
 
   core.setFailed(message)
 }

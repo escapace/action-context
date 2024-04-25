@@ -7,7 +7,7 @@ pnpm exec syncpack format || exit 1
 
 pnpm install
 
-pnpm exec ls-lint || exit 1
+pnpm exec ls-lint --config .ls-lint.yaml || exit 1
 pnpm exec lint-staged || exit 1
 pnpm run typecheck || exit 1
 pnpm run build || exit 1
