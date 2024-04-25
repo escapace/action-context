@@ -1,24 +1,26 @@
-name: 'action context'
-description: 'enrich action context'
 author: 'escapace'
+description: 'enrich action context'
 inputs:
   token:
+    default: ${{ github.token }}
     description: 'the GitHub token'
     required: false
-    default: ${{ github.token }}
+name: 'action context'
 outputs:
-  version:
-    description: 'suggested version'
-  environment:
-    description: 'suggested environment: "testing", "staging" or "production"'
-  commitish:
-    description: 'short commit sha'
   changelog:
     description: 'changelog'
-  prerelease:
-    description: 'whether this is a prerelease'
+  commitish:
+    description: 'short commit sha'
+  environment:
+    description: 'suggested environment: "testing", "staging" or "production"'
   latest:
     description: 'whether this is the latest release'
+  preid:
+    description: 'the "prerelease identifier", like the rc in 1.2.0-rc.8'
+  prerelease:
+    description: 'whether this is a prerelease'
+  version:
+    description: 'suggested version'
 runs:
-  using: 'node20'
   main: 'lib/cjs/index.cjs'
+  using: 'node20'

@@ -1,8 +1,3 @@
-ls:
-  .ts: kebab-case
-  .d.ts: kebab-case
-  .spec.ts: kebab-case
-
 ignore:
   - coverage
   - .circleci
@@ -13,3 +8,8 @@ ignore:
   - .vscode
   - lib
   - node_modules
+ls:
+  .d.ts: kebab-case
+  .spec.ts: kebab-case
+
+  .ts: kebab-case
