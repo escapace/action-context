@@ -7,6 +7,8 @@ import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
 import { execa } from 'execa'
 import { isError, isString, last } from 'lodash-es'
 import assert from 'node:assert'
+import { readFile, stat } from 'node:fs/promises'
+import { isNativeError } from 'node:util/types'
 import semver from 'semver'
 
 const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
@@ -276,6 +278,33 @@ const run = async () => {
   core.setOutput('preid', preid)
   core.setOutput('prerelease', isPrerelease)
   core.setOutput('version', version)
+
+  try {
+    if ((await stat('package.json')).isFile()) {
+      const { engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
+        engines?: Record<string, string | undefined>
+      }
+
+      for (const [key, value] of Object.entries(engines ?? {})) {
+        if (typeof value !== 'string') {
+          continue
+        }
+
+        const version = semver.minVersion(value)?.toString()
+
+        if (typeof version !== 'string') {
+          continue
+        }
+
+        const name = `${key}-version`
+
+        core.info(`${name}: ${version}`)
+        core.setOutput(name, version)
+      }
+    }
+  } catch (error) {
+    core.error(isNativeError(error) ? error : 'Unknown Error')
+  }
 }
 
 function handleError(error: unknown): void {
