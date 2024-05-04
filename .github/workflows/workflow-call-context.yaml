@@ -33,6 +33,8 @@ jobs:
       commitish: ${{ steps.action-context.outputs.commitish }}
       environment: ${{ steps.action-context.outputs.environment }}
       latest: ${{ fromJSON(steps.action-context.outputs.latest) }}
+      node-version: ${{ steps.action-context.outputs.value }}
+      pnpm-version: ${{ steps.action-context.outputs.value }}
       preid: ${{ steps.action-context.outputs.preid }}
       prerelease: ${{ fromJSON(steps.action-context.outputs.prerelease) }}
       ref: ${{ steps.ref.outputs.value }}

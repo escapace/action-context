@@ -249,9 +249,11 @@ const isLatest = async (currentVersion: semver.SemVer) => {
   return semver.gte(currentVersion, latestVersion, SEMVER_OPTIONS)
 }
 
+const parseInput = (value: string) => (value === '' ? undefined : value)
+
 const run = async () => {
   const currentVersion = await getVersion()
-  const token = core.getInput('token')
+  const token = parseInput(core.getInput('token'))
 
   if (currentVersion === null) {
     throw new Error('Failed to derive a semantic version.')
@@ -280,12 +282,16 @@ const run = async () => {
   core.setOutput('version', version)
 
   try {
+    const nodeVersionFromInput = parseInput(core.getInput('node-version'))
+    const nodeVersion =
+      typeof nodeVersionFromInput === 'string' ? semver.clean(nodeVersionFromInput) : '22.1.0'
+
     if ((await stat('package.json')).isFile()) {
       const { engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
         engines?: Record<string, string | undefined>
       }
 
-      for (const [key, value] of Object.entries(engines ?? {})) {
+      for (const [key, value] of Object.entries({ node: `>=${nodeVersion}`, ...engines })) {
         if (typeof value !== 'string') {
           continue
         }
