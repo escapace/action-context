@@ -283,15 +283,17 @@ const run = async () => {
 
   try {
     const nodeVersionFromInput = parseInput(core.getInput('node-version'))
-    const nodeVersion =
-      typeof nodeVersionFromInput === 'string' ? semver.clean(nodeVersionFromInput) : '22.1.0'
+    const node =
+      typeof nodeVersionFromInput === 'string'
+        ? semver.clean(nodeVersionFromInput) ?? undefined
+        : undefined
 
     if ((await stat('package.json')).isFile()) {
       const { engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
         engines?: Record<string, string | undefined>
       }
 
-      for (const [key, value] of Object.entries({ node: `>=${nodeVersion}`, ...engines })) {
+      for (const [key, value] of Object.entries({ node, ...engines })) {
         if (typeof value !== 'string') {
           continue
         }
