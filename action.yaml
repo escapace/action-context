@@ -19,7 +19,7 @@ outputs:
   latest:
     description: 'whether this is the latest release'
   node-version:
-    description: 'Node.js version'
+    description: 'default Node.js version'
   preid:
     description: 'the "prerelease identifier", like the rc in 1.2.0-rc.8'
   prerelease:
