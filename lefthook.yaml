@@ -50,7 +50,7 @@ pre-commit:
       exclude: '(^|/)pnpm-lock.yaml$'
       glob: '*.{js,mjs,cjs,ts,mts,cts,yml,yaml,json}'
       priority: 6
-      run: pnpm exec eslint --fix {staged_files}
+      run: pnpm exec eslint --no-warn-ignored --fix {staged_files}
       stage_fixed: true
 
     prettier:
@@ -68,6 +68,6 @@ pre-commit:
       priority: 9
       run: pnpm run test
 
-    build:
+    pack:
       priority: 10
-      run: pnpm run build
+      run: pnpm run pack && git add lib

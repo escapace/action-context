@@ -7,12 +7,14 @@
     "email": "opensource@escapace.com"
   },
   "bugs": "https://github.com/escapace/action-context/issues",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "execa": "^8.0.1"
+  },
   "devDependencies": {
-    "@actions/core": "1.10.1",
-    "@actions/github": "6.0.0",
     "@commitlint/cli": "19.3.0",
     "@commitlint/config-conventional": "19.2.2",
-    "@escapace/pnpm-pack": "0.3.0",
     "@ls-lint/ls-lint": "2.2.3",
     "@types/lodash-es": "4.17.12",
     "@types/node": "20.12.10",
@@ -23,7 +25,6 @@
     "eslint": "9.2.0",
     "eslint-config-escapace": "5.0.10",
     "esroll": "0.1.1",
-    "execa": "8.0.1",
     "knip": "5.12.3",
     "lefthook": "1.6.10",
     "lodash-es": "4.17.21",
@@ -57,7 +58,7 @@
   "scripts": {
     "build": "tsx scripts/build.ts",
     "lint": "ls-lint --config .ls-lint.yaml && knip && eslint",
-    "pack": "pnpm-pack package --pack-destination lib",
+    "pack": "rm -rf lib && pnpm run build && pnpm deploy --prod --filter . lib/action && mv lib/action/node_modules lib/node && rm -rf lib/action && echo '!*' > lib/node/.gitignore",
     "prepare": "lefthook install",
     "test": "vitest --no-watch --coverage",
     "typecheck": "tsc --noEmit"
