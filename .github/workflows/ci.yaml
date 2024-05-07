@@ -1,13 +1,13 @@
 name: ci
 
 on:
-  push:
+  pull_request:
     branches:
       - trunk
     paths-ignore:
       - README.md
       - LICENSE
-  pull_request:
+  push:
     branches:
       - trunk
     paths-ignore:

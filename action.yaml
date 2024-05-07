@@ -27,5 +27,5 @@ outputs:
   version:
     description: 'suggested version'
 runs:
-  main: 'lib/cjs/index.cjs'
+  main: 'lib/node/index.js'
   using: 'node20'

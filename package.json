@@ -9,33 +9,31 @@
   "bugs": "https://github.com/escapace/action-context/issues",
   "devDependencies": {
     "@actions/core": "1.10.1",
-    "@actions/exec": "1.1.1",
     "@actions/github": "6.0.0",
     "@commitlint/cli": "19.3.0",
     "@commitlint/config-conventional": "19.2.2",
+    "@escapace/pnpm-pack": "0.3.0",
     "@ls-lint/ls-lint": "2.2.3",
     "@types/lodash-es": "4.17.12",
-    "@types/node": "20.12.7",
+    "@types/node": "20.12.10",
     "@types/semver": "7.5.8",
+    "@vitest/coverage-v8": "1.6.0",
     "changelogen": "0.5.5",
     "changelogithub": "0.13.7",
-    "esbuild": "0.20.2",
-    "eslint": "9.1.1",
-    "eslint-config-escapace": "5.0.6",
+    "eslint": "9.2.0",
+    "eslint-config-escapace": "5.0.10",
+    "esroll": "0.1.1",
     "execa": "8.0.1",
-    "fast-glob": "3.3.2",
-    "fs-extra": "11.2.0",
-    "globals": "15.0.0",
-    "husky": "9.0.11",
-    "is-ci": "3.0.1",
-    "lint-staged": "15.2.2",
+    "knip": "5.12.3",
+    "lefthook": "1.6.10",
     "lodash-es": "4.17.21",
     "prettier": "3.2.5",
     "prettier-config-escapace": "1.2.0",
     "semver": "7.6.0",
     "syncpack": "12.3.2",
-    "tsx": "4.7.3",
-    "typescript": "5.4.5"
+    "tsx": "4.9.3",
+    "typescript": "5.4.5",
+    "vitest": "1.6.0"
   },
   "engines": {
     "node": ">=20.12.0",
@@ -43,25 +41,28 @@
   },
   "exports": {
     ".": {
-      "require": "./lib/cjs/index.cjs"
+      "types": "./lib/types/index.d.ts",
+      "import": "./lib/node/index.js"
     }
   },
   "files": [
-    "lib/cjs",
+    "lib/node",
     "lib/types"
   ],
-  "homepage": "https://github.com/escapace/action-context",
+  "homepage": "https://github.com/escapace/action-context#readme",
   "license": "MPL-2.0",
-  "main": "lib/cjs/index.cjs",
+  "module": "./lib/node/index.js",
   "private": true,
   "repository": "escapace/action-context",
   "scripts": {
-    "build": "node ./scripts/build.mjs",
-    "lint": "ls-lint --config .ls-lint.yaml && eslint 'src/**/*.ts?(x)'",
-    "prepare": "is-ci || husky",
+    "build": "tsx scripts/build.ts",
+    "lint": "ls-lint --config .ls-lint.yaml && knip && eslint",
+    "pack": "pnpm-pack package --pack-destination lib",
+    "prepare": "lefthook install",
+    "test": "vitest --no-watch --coverage",
     "typecheck": "tsc --noEmit"
   },
   "sideEffects": false,
-  "type": "commonjs",
-  "types": "lib/types/index.d.ts"
+  "type": "module",
+  "types": "./lib/types/index.d.ts"
 }
