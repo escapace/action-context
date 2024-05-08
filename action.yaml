@@ -27,5 +27,5 @@ outputs:
   version:
     description: 'suggested version'
 runs:
-  main: 'lib/node/index.js'
+  main: 'lib/action/index.js'
   using: 'node20'
