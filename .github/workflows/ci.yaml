@@ -24,5 +24,26 @@ env:
   NODE_OPTIONS: --max-old-space-size=6144
 
 jobs:
-  context:
-    uses: ./.github/workflows/workflow-call-context.yaml
+  main:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - id: ref
+        name: ref
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "value=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
+          else
+            echo "value=${GITHUB_REF}" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.ref.outputs.value }}
+      - id: action-context
+        uses: ./
+        with:
+          token: ${{ github.token }}
