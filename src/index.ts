@@ -10,6 +10,7 @@ import assert from 'node:assert'
 import { readFile, stat } from 'node:fs/promises'
 import { isNativeError } from 'node:util/types'
 import semver from 'semver'
+import { packageEnginesFromDirectory, packageEnginesMaximumVersions } from './versions'
 
 const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
   try {
@@ -293,7 +294,13 @@ const run = async () => {
         engines?: Record<string, string | undefined>
       }
 
-      for (const [key, value] of Object.entries({ node, ...engines })) {
+      for (const [key, value] of Object.entries(
+        packageEnginesMaximumVersions(
+          { node },
+          engines,
+          ...(await packageEnginesFromDirectory(process.cwd())),
+        ),
+      )) {
         if (typeof value !== 'string') {
           continue
         }
