@@ -4,13 +4,16 @@ import * as github from '@actions/github'
 import { getGitDiff } from 'changelogen'
 import type { ChangelogOptions } from 'changelogithub'
 import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
-import { execa } from 'execa'
 import { isError, isString, last } from 'lodash-es'
 import assert from 'node:assert'
+import { exec as _exec } from 'node:child_process'
 import { readFile, stat } from 'node:fs/promises'
+import { promisify } from 'node:util'
 import { isNativeError } from 'node:util/types'
 import semver from 'semver'
 import { packageEnginesFromDirectory, packageEnginesMaximumVersions } from './versions'
+
+const __exec = promisify(_exec)
 
 const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
   try {
@@ -46,8 +49,8 @@ const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 't
   }
 }
 
-const exec = async (cmd: string, arguments_: string[]) => {
-  const process = await execa(cmd, arguments_)
+const exec = async (arguments_: string[]) => {
+  const process = await __exec(arguments_.join(' '))
   return process.stdout.trim()
 }
 
@@ -97,11 +100,11 @@ export const getBranch = () => {
 }
 
 export const assertRepoNotShallow = async () =>
-  assert.notEqual(await exec('git', ['rev-parse', '--is-shallow-repository']), 'true')
+  assert.notEqual(await exec(['git', 'rev-parse', '--is-shallow-repository']), 'true')
 
 const assertBranchLatestCommit = async (branch: string) => {
   if (REF_TYPE === 'branch' && EVENT_NAME !== 'pull_request') {
-    assert.equal(await exec('git', ['rev-parse', '--verify', branch]), github.context.sha)
+    assert.equal(await exec(['git', 'rev-parse', '--verify', branch]), github.context.sha)
   }
 }
 
@@ -109,7 +112,8 @@ const preReleaseCase = (value: string) => value.replace(/[^\dA-Z-]/gi, '-')
 
 export async function getLastGitTag(branch?: string): Promise<string | undefined> {
   const list = (
-    await exec('git', [
+    await exec([
+      'git',
       '--no-pager',
       'tag',
       '--list',
@@ -286,7 +290,7 @@ const run = async () => {
     const nodeVersionFromInput = parseInput(core.getInput('node-version'))
     const node =
       typeof nodeVersionFromInput === 'string'
-        ? semver.clean(nodeVersionFromInput) ?? undefined
+        ? (semver.clean(nodeVersionFromInput) ?? undefined)
         : undefined
 
     if ((await stat('package.json')).isFile()) {

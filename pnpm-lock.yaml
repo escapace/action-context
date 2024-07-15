@@ -20,9 +20,6 @@ importers:
       '@pnpm/workspace.read-manifest':
         specifier: 2.2.0
         version: 2.2.0
-      execa:
-        specifier: 9.3.0
-        version: 9.3.0
     devDependencies:
       '@commitlint/cli':
         specifier: 19.3.0
@@ -566,7 +563,6 @@ packages:
 
   '@ls-lint/ls-lint@2.2.3':
     resolution: {integrity: sha512-ekM12jNm/7O2I/hsRv9HvYkRdfrHpiV1epVuI2NP+eTIcEgdIdKkKCs9KgQydu/8R5YXTov9aHdOgplmCHLupw==}
-    cpu: [x64, arm64, s390x]
     os: [darwin, linux, win32]
     hasBin: true
 

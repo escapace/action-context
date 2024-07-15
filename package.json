@@ -11,8 +11,7 @@
     "@actions/core": "1.10.1",
     "@actions/github": "6.0.0",
     "@pnpm/workspace.find-packages": "4.0.1",
-    "@pnpm/workspace.read-manifest": "2.2.0",
-    "execa": "9.3.0"
+    "@pnpm/workspace.read-manifest": "2.2.0"
   },
   "devDependencies": {
     "@commitlint/cli": "19.3.0",
