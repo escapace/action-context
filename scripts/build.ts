@@ -22,9 +22,6 @@ const constants = JSON.parse(
 for (const value of Object.values(constants.builds)) {
   await build({
     absWorkingDir: dirname,
-    banner: {
-      js: `import { createRequire as __createRequire } from 'module'; const require = __createRequire(import.meta.url);`,
-    },
     external: Object.keys(packageJSON.dependencies ?? []),
     sourcemap: true,
     sourcesContent: false,
