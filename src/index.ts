@@ -16,6 +16,7 @@ const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 't
   try {
     const { commits, config, md } = await generate({
       capitalize: false,
+      contributors: false,
       emoji: false,
       ...options,
     })
@@ -83,13 +84,11 @@ export const getBranch = () => {
 
   const reference = process.env.GITHUB_REF!
 
-  const match = reference.match(/refs\/heads\/(?<value>[^/]+)/)
+  const match = /refs\/heads\/(?<value>[^/]+)/.exec(reference)
   const groups = match?.groups ?? {}
   const value = groups?.value
 
-  if (!isString(value)) {
-    assert.ok(`Expected ${reference} to match '/refs\\/heads\\/(?<value>[^/]+)/'`)
-  }
+  assert.ok(isString(value), `Expected ${reference} to match '/refs\\/heads\\/(?<value>[^/]+)/'`)
 
   core.info(`Current branch: ${value}`)
 
@@ -160,7 +159,7 @@ const ConventionalCommitRegex =
 const bump = async (lastGitTag: string, value: { major: number; minor: number; patch: number }) => {
   const commits = (await getGitDiff(lastGitTag, 'HEAD'))
     .map((value) => {
-      const match = value.message.match(ConventionalCommitRegex)
+      const match = ConventionalCommitRegex.exec(value.message)
 
       if (match === null) {
         return
@@ -286,7 +285,7 @@ const run = async () => {
     const nodeVersionFromInput = parseInput(core.getInput('node-version'))
     const node =
       typeof nodeVersionFromInput === 'string'
-        ? semver.clean(nodeVersionFromInput) ?? undefined
+        ? (semver.clean(nodeVersionFromInput) ?? undefined)
         : undefined
 
     if ((await stat('package.json')).isFile()) {
