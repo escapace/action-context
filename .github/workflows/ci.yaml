@@ -16,7 +16,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 env:
   # 7 GiB by default on GitHub, setting to 6 GiB
@@ -25,19 +24,19 @@ env:
 
 jobs:
   main:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    runs-on: ubuntu-latest
     steps:
-      - id: ref
-        name: ref
+      - name: ref
+        id: ref
+        shell: bash
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "value=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
           else
             echo "value=${GITHUB_REF}" >> $GITHUB_OUTPUT
           fi
-        shell: bash
       - name: checkout
         uses: actions/checkout@v4
         with:
