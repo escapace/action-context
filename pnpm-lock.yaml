@@ -30,8 +30,8 @@ importers:
         specifier: 900.0.1
         version: 900.0.1(@pnpm/logger@5.0.0)
       '@pnpm/workspace.read-manifest':
-        specifier: 900.0.1
-        version: 900.0.1
+        specifier: 1000.0.2
+        version: 1000.0.2
       '@types/lodash-es':
         specifier: 4.17.12
         version: 4.17.12
@@ -861,6 +861,10 @@ packages:
     resolution: {integrity: sha512-PUepPQXKR+CPIK7RwQCcM3YYTvGoylGPvJDQgT9MuLosknS9kVXxsTj4si73V/tA8jHEjXI1+wQYaiFjVVRTSg==}
     engines: {node: '>=18.12'}
 
+  '@pnpm/constants@1001.1.0':
+    resolution: {integrity: sha512-xb9dfSGi1qfUKY3r4Zy9JdC9+ZeaDxwfE7HrrGIEsBVY1hvIn6ntbR7A97z3nk44yX7vwbINNf9sizTp0WEtEw==}
+    engines: {node: '>=18.12'}
+
   '@pnpm/constants@8.0.0':
     resolution: {integrity: sha512-yQosGUvYPpAjb1jOFcdbwekRjZRVxN6C0hHzfRCZrMKbxGjt/E0g0RcFlEDNVZ95tm4oMMcr7nEPa7H7LX3emw==}
     engines: {node: '>=18.12'}
@@ -917,6 +921,10 @@ packages:
 
   '@pnpm/env.system-node-version@900.0.0':
     resolution: {integrity: sha512-4H23LkQphUO5YI4YeaDFdmMsgt5OIF0P7lQJ5rNiFFKNb4kyWvGjn6FWoksz1TcJZf5tHgihOy3zgsGObbWimg==}
+    engines: {node: '>=18.12'}
+
+  '@pnpm/error@1000.0.2':
+    resolution: {integrity: sha512-2SfE4FFL73rE1WVIoESbqlj4sLy5nWW4M/RVdHvCRJPjlQHa9MH7m7CVJM204lz6I+eHoB+E7rL3zmpJR5wYnQ==}
     engines: {node: '>=18.12'}
 
   '@pnpm/error@6.0.1':
@@ -1108,6 +1116,10 @@ packages:
     engines: {node: '>=18.12'}
     peerDependencies:
       '@pnpm/logger': '>=5.1.0 <901.0.0'
+
+  '@pnpm/workspace.read-manifest@1000.0.2':
+    resolution: {integrity: sha512-MKWL07/ZHmvOZG8UzbIBMib4EiYi8+rXpk49a8ditR2E/RsIj3p0ICKG9S2nFfIjeJCEOtxO6HDXXQIn4iYyiw==}
+    engines: {node: '>=18.12'}
 
   '@pnpm/workspace.read-manifest@900.0.1':
     resolution: {integrity: sha512-JZZmOQS94fXui+stIC/c2zHUnnwoVjaJ3xVKa+pc9PoRMo2e0aA/lS/csN0Pb2oI/kX1bZcKXanHLphpPpfN7Q==}
@@ -4353,6 +4365,8 @@ snapshots:
     transitivePeerDependencies:
       - '@pnpm/logger'
 
+  '@pnpm/constants@1001.1.0': {}
+
   '@pnpm/constants@8.0.0': {}
 
   '@pnpm/constants@9.0.0': {}
@@ -4423,6 +4437,10 @@ snapshots:
       '@pnpm/cli-meta': 900.0.0
       execa: safe-execa@0.1.2
       mem: 8.1.1
+
+  '@pnpm/error@1000.0.2':
+    dependencies:
+      '@pnpm/constants': 1001.1.0
 
   '@pnpm/error@6.0.1':
     dependencies:
@@ -4719,6 +4737,12 @@ snapshots:
       '@pnpm/logger': 5.0.0
       '@pnpm/types': 900.0.0
       '@pnpm/util.lex-comparator': 3.0.0
+
+  '@pnpm/workspace.read-manifest@1000.0.2':
+    dependencies:
+      '@pnpm/constants': 1001.1.0
+      '@pnpm/error': 1000.0.2
+      read-yaml-file: 2.1.0
 
   '@pnpm/workspace.read-manifest@900.0.1':
     dependencies:
