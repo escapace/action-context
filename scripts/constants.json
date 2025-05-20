@@ -11,11 +11,14 @@
       "entryPoints": ["src/index.ts"],
       "external": ["@reflink/reflink"],
       "mainFields": ["module", "main"],
+      "minifyIdentifiers": true,
+      "minifySyntax": true,
+      "minifyWhitespace": true,
       "outdir": "lib/node",
       "platform": "node",
       "sourcemap": false,
       "splitting": false,
-      "target": ["node20.18.0"]
+      "target": ["node20.19.1"]
     }
   }
 }
