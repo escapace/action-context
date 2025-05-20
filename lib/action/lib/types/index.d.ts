@@ -1,3 +1,4 @@
+export declare const isFile: (path: string) => Promise<boolean>;
 export declare const getBranch: () => string;
 export declare const assertRepoNotShallow: () => Promise<void>;
 export declare function getLastGitTag(branch?: string): Promise<string | undefined>;

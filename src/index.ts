@@ -12,6 +12,11 @@ import { isNativeError } from 'node:util/types'
 import semver from 'semver'
 import { packageEnginesFromDirectory, packageEnginesMaximumVersions } from './versions'
 
+export const isFile = async (path: string) =>
+  await stat(path)
+    .then((stats) => stats.isFile())
+    .catch(() => false)
+
 const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
   try {
     const { commits, config, md } = await generate({
@@ -290,7 +295,7 @@ const run = async () => {
 
     const versions: Array<Record<string, string | undefined>> = [{ node }]
 
-    if ((await stat('package.json')).isFile()) {
+    if (await isFile('package.json')) {
       const { engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
         engines?: Record<string, string | undefined>
       }
@@ -302,8 +307,8 @@ const run = async () => {
       versions.push(...(await packageEnginesFromDirectory(process.cwd())))
     }
 
-    if ((await stat('versions.json')).isFile()) {
-      const values = JSON.parse(await readFile('package.json', 'utf8')) as unknown
+    if (await isFile('versions.json')) {
+      const values = JSON.parse(await readFile('versions.json', 'utf8')) as unknown
 
       if (isObject(values)) {
         Object.entries(values).forEach(([key, value]) => {

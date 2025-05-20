@@ -13,6 +13,7 @@
       "mainFields": ["module", "main"],
       "outdir": "lib/node",
       "platform": "node",
+      "sourcemap": false,
       "splitting": false,
       "target": ["node20.18.0"]
     }
