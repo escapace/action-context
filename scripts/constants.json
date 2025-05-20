@@ -9,6 +9,7 @@
         "__PLATFORM__": "\"node\""
       },
       "entryPoints": ["src/index.ts"],
+      "external": ["@reflink/reflink"],
       "mainFields": ["module", "main"],
       "outdir": "lib/node",
       "platform": "node",

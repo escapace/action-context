@@ -5,7 +5,7 @@ import { getGitDiff } from 'changelogen'
 import type { ChangelogOptions } from 'changelogithub'
 import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
 import { execa } from 'execa'
-import { isError, isString, last } from 'lodash-es'
+import { isError, isObject, isString, last } from 'lodash-es'
 import assert from 'node:assert'
 import { readFile, stat } from 'node:fs/promises'
 import { isNativeError } from 'node:util/types'
@@ -288,33 +288,41 @@ const run = async () => {
         ? (semver.clean(nodeVersionFromInput) ?? undefined)
         : undefined
 
+    const versions: Array<Record<string, string | undefined>> = [{ node }]
+
     if ((await stat('package.json')).isFile()) {
       const { engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
         engines?: Record<string, string | undefined>
       }
 
-      for (const [key, value] of Object.entries(
-        packageEnginesMaximumVersions(
-          { node },
-          engines,
-          ...(await packageEnginesFromDirectory(process.cwd())),
-        ),
-      )) {
-        if (typeof value !== 'string') {
-          continue
-        }
-
-        const version = semver.minVersion(value)?.toString()
-
-        if (typeof version !== 'string') {
-          continue
-        }
-
-        const name = `${key}-version`
-
-        core.info(`${name}: ${version}`)
-        core.setOutput(name, version)
+      if (engines !== undefined) {
+        versions.push(engines)
       }
+
+      versions.push(...(await packageEnginesFromDirectory(process.cwd())))
+    }
+
+    if ((await stat('versions.json')).isFile()) {
+      const values = JSON.parse(await readFile('package.json', 'utf8')) as unknown
+
+      if (isObject(values)) {
+        Object.entries(values).forEach(([key, value]) => {
+          if (
+            typeof key === 'string' &&
+            (typeof value === 'string' ||
+              (isObject(value) && typeof (value as { version?: string }).version === 'string'))
+          ) {
+            const version = value as string | { version: string }
+
+            versions.push({ [key]: typeof version === 'string' ? version : version.version })
+          }
+        })
+      }
+    }
+
+    for (const [name, version] of packageEnginesMaximumVersions(versions)) {
+      core.info(`${name}: ${version}`)
+      core.setOutput(name, version)
     }
   } catch (error) {
     core.error(isNativeError(error) ? error : 'Unknown Error')
