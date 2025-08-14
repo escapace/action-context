@@ -1,6 +1,5 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import { RequestError } from '@octokit/request-error'
 import { isError, isString } from 'es-toolkit'
 import assert from 'node:assert'
 import { REF_TYPE, SHORT_COMMIT } from './constants'
@@ -44,8 +43,7 @@ const run = async () => {
   const githubPages =
     (
       await octokit.rest.repos.getPages({ ...github.context.repo }).catch((error) => {
-        console.log(error)
-        if (error instanceof RequestError && error.status === 404) {
+        if (isError(error) && Reflect.get(error, 'status') === 404) {
           return undefined
         }
 
