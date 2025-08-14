@@ -44,6 +44,7 @@ const run = async () => {
   const githubPages =
     (
       await octokit.rest.repos.getPages({ ...github.context.repo }).catch((error) => {
+        console.log(error)
         if (error instanceof RequestError && error.status === 404) {
           return undefined
         }
