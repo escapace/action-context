@@ -1,6 +1,6 @@
 import { findWorkspacePackagesNoCheck, type Project } from '@pnpm/workspace.find-packages'
 import { readWorkspaceManifest } from '@pnpm/workspace.read-manifest'
-import { groupBy, kebabCase, mapValues, uniq } from 'lodash-es'
+import { groupBy, kebabCase, mapValues, uniq } from 'es-toolkit'
 import { compare, minVersion, validRange } from 'semver'
 
 interface DevelopmentEngineDependency {

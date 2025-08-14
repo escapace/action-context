@@ -18,7 +18,7 @@
       "platform": "node",
       "sourcemap": false,
       "splitting": false,
-      "target": ["node20.19.1"]
+      "target": ["node20.19.2"]
     }
   }
 }

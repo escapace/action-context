@@ -4,8 +4,8 @@ import * as github from '@actions/github'
 import { getGitDiff } from 'changelogen'
 import type { ChangelogOptions } from 'changelogithub'
 import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
+import { isError, isPlainObject, isString, last } from 'es-toolkit'
 import { execa } from 'execa'
-import { isError, isObject, isString, last } from 'lodash-es'
 import assert from 'node:assert'
 import { readFile, stat } from 'node:fs/promises'
 import { isNativeError } from 'node:util/types'
@@ -310,12 +310,12 @@ const run = async () => {
     if (await isFile('versions.json')) {
       const values = JSON.parse(await readFile('versions.json', 'utf8')) as unknown
 
-      if (isObject(values)) {
+      if (isPlainObject(values)) {
         Object.entries(values).forEach(([key, value]) => {
           if (
             typeof key === 'string' &&
             (typeof value === 'string' ||
-              (isObject(value) && typeof (value as { version?: string }).version === 'string'))
+              (isPlainObject(value) && typeof (value as { version?: string }).version === 'string'))
           ) {
             const version = value as string | { version: string }
 
