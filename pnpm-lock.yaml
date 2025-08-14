@@ -68,6 +68,9 @@ importers:
       lefthook:
         specifier: 1.12.3
         version: 1.12.3
+      p-memoize:
+        specifier: 8.0.0
+        version: 8.0.0
       prettier:
         specifier: 3.6.2
         version: 3.6.2
@@ -3338,6 +3341,10 @@ packages:
     resolution: {integrity: sha512-km0sP12uE0dOZ5qP+s7kGVf07QngxyG0gS8sYFvFWhqlgzOsSy+m71aUejf/0akxj5W7gE//2G74qTv6b4iMog==}
     engines: {node: '>=10'}
 
+  p-memoize@8.0.0:
+    resolution: {integrity: sha512-jdZ10MCxavHoIHwJ5oweOtYy6ElPixEHaMkz0AuaEMovR1MRpVvYFzIEHRxgMEpXYzNpRVByFAniAzwmd1/uug==}
+    engines: {node: '>=20'}
+
   p-queue@6.6.2:
     resolution: {integrity: sha512-RwFpb72c/BhQLEXIZ5K2e+AhgNVmIejGlTgiB9MzZ0e93GRvqZ7uSi0dvRF7/XIXDeNkra2fNHBxTyPDGySpjQ==}
     engines: {node: '>=8'}
@@ -4029,6 +4036,10 @@ packages:
   type-fest@0.6.0:
     resolution: {integrity: sha512-q+MB8nYR1KDLrgr4G5yemftpMC7/QLqVndBmEEdqzmNj5dcFOO4Oo8qlwZE3ULT3+Zim1F8Kq4cBnikNhlCMlg==}
     engines: {node: '>=8'}
+
+  type-fest@4.41.0:
+    resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
+    engines: {node: '>=16'}
 
   typescript-eslint@8.39.1:
     resolution: {integrity: sha512-GDUv6/NDYngUlNvwaHM1RamYftxf782IyEDbdj3SeaIHHv8fNQVRC++fITT7kUJV/5rIA/tkoRSSskt6osEfqg==}
@@ -8168,6 +8179,11 @@ snapshots:
       mem: 6.1.1
       mimic-fn: 3.1.0
 
+  p-memoize@8.0.0:
+    dependencies:
+      mimic-function: 5.0.1
+      type-fest: 4.41.0
+
   p-queue@6.6.2:
     dependencies:
       eventemitter3: 4.0.7
@@ -8808,6 +8824,8 @@ snapshots:
   type-fest@0.20.2: {}
 
   type-fest@0.6.0: {}
+
+  type-fest@4.41.0: {}
 
   typescript-eslint@8.39.1(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2):
     dependencies:

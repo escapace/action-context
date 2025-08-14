@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { packageEnginesMaximumVersions } from './versions'
+import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
 
 describe('versions', () => {
   it('', () => {
     expect(
       Array.from(
-        packageEnginesMaximumVersions([
+        workspaceEnginesMaximumVersions([
           { node: '>=22.15.2 || >=22.15.1' },
           { node: '>=22.15.0', npm: '>=24.5.0' },
         ]).entries(),
@@ -15,7 +15,7 @@ describe('versions', () => {
 
   it('', () => {
     expect(() =>
-      packageEnginesMaximumVersions([{ 'no-de': '>=22.15.2' }, { 'no/de': '>=22.15.0' }]),
+      workspaceEnginesMaximumVersions([{ 'no-de': '>=22.15.2' }, { 'no/de': '>=22.15.0' }]),
     ).toThrow(/inconsistent/i)
   })
 })

@@ -16,14 +16,16 @@ outputs:
     description: 'short commit sha'
   environment:
     description: 'suggested environment: "testing", "staging" or "production"'
+  github-pages:
+    description: 'whether GitHub Pages is enabled'
   latest:
     description: 'whether this is the latest release'
   node-version:
     description: 'default Node.js version'
-  preid:
-    description: 'the "prerelease identifier", like the rc in 1.2.0-rc.8'
   prerelease:
     description: 'whether this is a prerelease'
+  prerelease-identifier:
+    description: 'the "prerelease identifier", like the rc in 1.2.0-rc.8'
   version:
     description: 'suggested version'
 runs:
