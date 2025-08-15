@@ -8,6 +8,7 @@ import { getVersion } from './utilities/get-current-version'
 import { getInput } from './utilities/get-input'
 import { isLatestVersion } from './utilities/is-latest-version'
 import { setOutputVersions } from './utilities/set-output-versions'
+import { setOutputGithubPages } from './utilities/set-output-github-pages'
 
 const run = async () => {
   const currentVersion = await getVersion()
@@ -15,6 +16,8 @@ const run = async () => {
 
   assert(currentVersion !== null, 'Failed to derive a semantic version.')
   assert(typeof token === 'string', 'Empty github token.')
+
+  const octokit = github.getOctokit(token)
 
   const { prerelease, version } = currentVersion
 
@@ -27,33 +30,19 @@ const run = async () => {
 
   core.info(`version: ${version}`)
   core.info(`environment: ${environment}`)
-  core.info(`commitish: ${SHORT_COMMIT}`)
+  core.info(`short-commit: ${SHORT_COMMIT}`)
   core.info(`latest: ${latest}`)
 
   core.setOutput('changelog', changelog)
-  core.setOutput('commitish', SHORT_COMMIT)
+  core.setOutput('short-commit', SHORT_COMMIT)
   core.setOutput('environment', environment)
   core.setOutput('latest', latest)
   core.setOutput('prerelease-identifier', prereleaseIdentifier)
   core.setOutput('prerelease', isPrerelease)
   core.setOutput('version', version)
 
-  const octokit = github.getOctokit(token)
-
-  const githubPages =
-    (
-      await octokit.rest.repos.getPages({ ...github.context.repo }).catch((error) => {
-        if (isError(error) && Reflect.get(error, 'status') === 404) {
-          return undefined
-        }
-
-        throw error
-      })
-    )?.data?.build_type === 'workflow'
-
-  core.setOutput('github-pages', githubPages)
-
   await setOutputVersions()
+  await setOutputGithubPages(octokit)
 }
 
 const onError = (error: unknown): void =>

@@ -12,12 +12,12 @@ name: 'action context'
 outputs:
   changelog:
     description: 'changelog'
-  commitish:
-    description: 'short commit sha'
   environment:
     description: 'suggested environment: "testing", "staging" or "production"'
   github-pages:
     description: 'whether GitHub Pages is enabled'
+  github-pages-path:
+    description: 'path of the directory containing the static assets'
   latest:
     description: 'whether this is the latest release'
   node-version:
@@ -26,6 +26,8 @@ outputs:
     description: 'whether this is a prerelease'
   prerelease-identifier:
     description: 'the "prerelease identifier", like the rc in 1.2.0-rc.8'
+  short-commit:
+    description: 'short commit sha'
   version:
     description: 'suggested version'
 runs:

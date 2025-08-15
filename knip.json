@@ -15,7 +15,6 @@
   "ignore": ["**/*.d.+([a-zA-Z0-9]).ts", "**/*.d.ts", "lib/**"],
   "ignoreBinaries": ["ncu", "taze"],
   "ignoreDependencies": [
-    "@octokit/request-error",
     "@commitlint/cli",
     "@microsoft/api-extractor",
     "eslint-config-escapace",
