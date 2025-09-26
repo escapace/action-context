@@ -726,6 +726,10 @@ packages:
     resolution: {integrity: sha512-ZFRekNHbDlu//67Byg+mG8zmtmCsfBhNsg1wKBLRtF7VjH+Q5TDGMX0+8aJYSikQDuzM2FOhvQcDwyjILKshJQ==}
     engines: {node: '>=18.12'}
 
+  '@pnpm/constants@1001.3.1':
+    resolution: {integrity: sha512-2hf0s4pVrVEH8RvdJJ7YRKjQdiG8m0iAT26TTqXnCbK30kKwJW69VLmP5tED5zstmDRXcOeH5eRcrpkdwczQ9g==}
+    engines: {node: '>=18.12'}
+
   '@pnpm/constants@8.0.0':
     resolution: {integrity: sha512-yQosGUvYPpAjb1jOFcdbwekRjZRVxN6C0hHzfRCZrMKbxGjt/E0g0RcFlEDNVZ95tm4oMMcr7nEPa7H7LX3emw==}
     engines: {node: '>=18.12'}
@@ -802,6 +806,10 @@ packages:
 
   '@pnpm/error@1000.0.4':
     resolution: {integrity: sha512-22mG/Mq4u2r7gr2+XY5j4GlN7J4Mg4WiCfT9flvsUc1uZecShocv6WkyoA20qs14M64f6I+aaWB6b6xsDiITlg==}
+    engines: {node: '>=18.12'}
+
+  '@pnpm/error@1000.0.5':
+    resolution: {integrity: sha512-GjH0TPjbVNrPnl/BAGoFuBLJ2sFfXNKbS33lll/Ehe9yw0fyc8Kdw7kO9if37yQqn6vaa4dAHKkPllum7f/IPQ==}
     engines: {node: '>=18.12'}
 
   '@pnpm/error@6.0.1':
@@ -5000,6 +5008,8 @@ snapshots:
 
   '@pnpm/constants@1001.3.0': {}
 
+  '@pnpm/constants@1001.3.1': {}
+
   '@pnpm/constants@8.0.0': {}
 
   '@pnpm/core-loggers@10.0.4(@pnpm/logger@1001.0.0)':
@@ -5127,6 +5137,10 @@ snapshots:
   '@pnpm/error@1000.0.4':
     dependencies:
       '@pnpm/constants': 1001.3.0
+
+  '@pnpm/error@1000.0.5':
+    dependencies:
+      '@pnpm/constants': 1001.3.1
 
   '@pnpm/error@6.0.1':
     dependencies:
@@ -5436,7 +5450,7 @@ snapshots:
 
   '@pnpm/network.proxy-agent@2.0.3':
     dependencies:
-      '@pnpm/error': 1000.0.4
+      '@pnpm/error': 1000.0.5
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       lru-cache: 7.18.3
@@ -5492,7 +5506,7 @@ snapshots:
   '@pnpm/npm-lifecycle@1000.0.4(typanion@3.14.0)':
     dependencies:
       '@pnpm/byline': 1.0.0
-      '@pnpm/error': 1000.0.4
+      '@pnpm/error': 1000.0.5
       '@yarnpkg/fslib': 3.1.2
       '@yarnpkg/shell': 4.0.0(typanion@3.14.0)
       node-gyp: 11.3.0
