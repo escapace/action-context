@@ -1,0 +1,246 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { CheckRun, Octokit, StatusContext } from './types'
+import { isCheckRunPassing, isStatusContextPassing } from './get-checks-clear'
+
+describe('isCheckRunPassing', () => {
+  it.each<{ check: CheckRun; expected: boolean; label: string }>([
+    { check: { conclusion: 'success', status: 'completed' }, expected: true, label: 'SUCCESS' },
+    { check: { conclusion: 'neutral', status: 'completed' }, expected: true, label: 'NEUTRAL' },
+    { check: { conclusion: 'skipped', status: 'completed' }, expected: true, label: 'SKIPPED' },
+    { check: { conclusion: 'failure', status: 'completed' }, expected: false, label: 'FAILURE' },
+    {
+      check: { conclusion: 'cancelled', status: 'completed' },
+      expected: false,
+      label: 'CANCELLED',
+    },
+    {
+      check: { conclusion: 'timed_out', status: 'completed' },
+      expected: false,
+      label: 'TIMED_OUT',
+    },
+    {
+      check: { conclusion: 'action_required', status: 'completed' },
+      expected: false,
+      label: 'ACTION_REQUIRED',
+    },
+    {
+      check: { conclusion: 'startup_failure', status: 'completed' },
+      expected: false,
+      label: 'STARTUP_FAILURE',
+    },
+    { check: { conclusion: 'stale', status: 'completed' }, expected: false, label: 'STALE' },
+    { check: { conclusion: null, status: 'in_progress' }, expected: false, label: 'IN_PROGRESS' },
+    { check: { conclusion: null, status: 'queued' }, expected: false, label: 'QUEUED' },
+    { check: { conclusion: null, status: 'requested' }, expected: false, label: 'REQUESTED' },
+    { check: { conclusion: null, status: 'waiting' }, expected: false, label: 'WAITING' },
+    { check: { conclusion: null, status: 'pending' }, expected: false, label: 'PENDING' },
+  ])('$label → $expected', ({ check, expected }) => {
+    expect(isCheckRunPassing(check)).toBe(expected)
+  })
+})
+
+describe('isStatusContextPassing', () => {
+  it.each<{ expected: boolean; label: string; status: StatusContext }>([
+    { expected: true, label: 'SUCCESS', status: { state: 'success' } },
+    { expected: false, label: 'PENDING', status: { state: 'pending' } },
+    { expected: false, label: 'FAILURE', status: { state: 'failure' } },
+    { expected: false, label: 'ERROR', status: { state: 'error' } },
+    { expected: false, label: 'EXPECTED', status: { state: 'expected' } },
+  ])('$label → $expected', ({ expected, status }) => {
+    expect(isStatusContextPassing(status)).toBe(expected)
+  })
+})
+
+const createMockOctokit = (
+  checkRuns: ReturnType<typeof vi.fn>,
+  combinedStatus: ReturnType<typeof vi.fn>,
+): Octokit => {
+  const octokit = {
+    rest: {
+      checks: { listForRef: checkRuns },
+      repos: { getCombinedStatusForRef: combinedStatus },
+    },
+  }
+
+  return octokit as never
+}
+
+describe('getChecksClear', () => {
+  const originalEnvironment = process.env.GITHUB_REPOSITORY
+
+  beforeEach(() => {
+    vi.resetModules()
+    process.env.GITHUB_REPOSITORY = 'escapace/action-context'
+  })
+
+  afterEach(() => {
+    if (originalEnvironment === undefined) {
+      delete process.env.GITHUB_REPOSITORY
+    } else {
+      process.env.GITHUB_REPOSITORY = originalEnvironment
+    }
+  })
+
+  it('returns true when no checks exist', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({ data: { check_runs: [], total_count: 0 } }),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(true)
+  })
+
+  it('returns true when all checks pass', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({
+        data: {
+          check_runs: [
+            { conclusion: 'success', status: 'completed' },
+            { conclusion: 'neutral', status: 'completed' },
+            { conclusion: 'skipped', status: 'completed' },
+          ],
+          total_count: 3,
+        },
+      }),
+      vi.fn().mockResolvedValue({ data: { statuses: [{ state: 'success' }] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(true)
+  })
+
+  it('returns false when a check run fails', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({
+        data: {
+          check_runs: [
+            { conclusion: 'success', status: 'completed' },
+            { conclusion: 'failure', status: 'completed' },
+          ],
+          total_count: 2,
+        },
+      }),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(false)
+  })
+
+  it('returns false when a status context is pending', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({
+        data: {
+          check_runs: [{ conclusion: 'success', status: 'completed' }],
+          total_count: 1,
+        },
+      }),
+      vi.fn().mockResolvedValue({
+        data: { statuses: [{ state: 'success' }, { state: 'pending' }] },
+      }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(false)
+  })
+
+  it('returns false when a check is still in progress', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({
+        data: {
+          check_runs: [
+            { conclusion: 'success', status: 'completed' },
+            { conclusion: null, status: 'in_progress' },
+          ],
+          total_count: 2,
+        },
+      }),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(false)
+  })
+
+  it('throws descriptive error on 403 from checks.listForRef', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const error = new Error('Resource not accessible by integration')
+    Reflect.set(error, 'status', 403)
+
+    const octokit = createMockOctokit(
+      vi.fn().mockRejectedValue(error),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    await expect(getChecksClear(octokit, 'abc1234')).rejects.toThrow(
+      'Missing `checks: read` permission',
+    )
+  })
+
+  it('throws descriptive error on 403 from getCombinedStatusForRef', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const error = new Error('Resource not accessible by integration')
+    Reflect.set(error, 'status', 403)
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({ data: { check_runs: [], total_count: 0 } }),
+      vi.fn().mockRejectedValue(error),
+    )
+
+    await expect(getChecksClear(octokit, 'abc1234')).rejects.toThrow(
+      'Missing `statuses: read` permission',
+    )
+  })
+
+  it('rethrows non-403 errors from checks.listForRef', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const error = new Error('Internal Server Error')
+    Reflect.set(error, 'status', 500)
+
+    const octokit = createMockOctokit(
+      vi.fn().mockRejectedValue(error),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    await expect(getChecksClear(octokit, 'abc1234')).rejects.toThrow('Internal Server Error')
+  })
+
+  it('paginates check runs', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    const page1Runs = Array.from({ length: 100 }, () => ({
+      conclusion: 'success',
+      status: 'completed',
+    }))
+
+    const listForReference = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: { check_runs: page1Runs, total_count: 101 },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          check_runs: [{ conclusion: 'success', status: 'completed' }],
+          total_count: 101,
+        },
+      })
+
+    const octokit = createMockOctokit(
+      listForReference,
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(true)
+    expect(listForReference).toHaveBeenCalledTimes(2)
+    expect(listForReference.mock.calls[1][0]).toMatchObject({ page: 2 })
+  })
+})

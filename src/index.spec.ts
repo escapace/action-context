@@ -49,6 +49,10 @@ const runModule = async () => {
     setOutputGithubPages: vi.fn(),
   }))
 
+  vi.doMock('./utilities/pull-request/set-output-pull-request', () => ({
+    setOutputPullRequest: vi.fn(),
+  }))
+
   // Configure mocks via the fresh modules
   const coreModule = await import('@actions/core')
   const githubModule = await import('@actions/github')
@@ -58,6 +62,8 @@ const runModule = async () => {
   const getChangelogModule = await import('./utilities/get-changelog')
   const setOutputVersionsModule = await import('./utilities/set-output-versions')
   const setOutputGithubPagesModule = await import('./utilities/set-output-github-pages')
+  const setOutputPullRequestModule =
+    await import('./utilities/pull-request/set-output-pull-request')
 
   return {
     core: coreModule,
@@ -67,6 +73,7 @@ const runModule = async () => {
     github: githubModule,
     isLatestVersion: isLatestVersionModule.isLatestVersion,
     setOutputGithubPages: setOutputGithubPagesModule.setOutputGithubPages,
+    setOutputPullRequest: setOutputPullRequestModule.setOutputPullRequest,
     setOutputVersions: setOutputVersionsModule.setOutputVersions,
   }
 }
@@ -108,6 +115,7 @@ describe('run', () => {
 
     expect(mods.setOutputVersions).toHaveBeenCalled()
     expect(mods.setOutputGithubPages).toHaveBeenCalled()
+    expect(mods.setOutputPullRequest).toHaveBeenCalled()
   })
 
   it('sets production environment for tag without prerelease', async () => {

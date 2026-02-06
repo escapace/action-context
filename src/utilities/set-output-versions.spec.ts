@@ -149,12 +149,37 @@ describe('setOutputVersions', () => {
     expect(readFile).not.toHaveBeenCalled()
   })
 
-  it('catches errors and calls core.error without throwing', async () => {
+  it('silently ignores source discovery failures', async () => {
     vi.mocked(getInput).mockReturnValue(undefined)
     vi.mocked(isFile).mockRejectedValue(new Error('fs failure'))
 
+    await expect(setOutputVersions()).resolves.toBeUndefined()
+
+    expect(core.error).not.toHaveBeenCalled()
+  })
+
+  it('falls back to per-source aggregation when global aggregation fails', async () => {
+    vi.mocked(getInput).mockReturnValue('24.12.0')
+    vi.mocked(isFile).mockResolvedValue(false)
+
+    vi.mocked(workspaceEnginesMaximumVersions).mockImplementation((values) => {
+      if (values.length > 1) {
+        throw new Error('inconsistent')
+      }
+
+      const [single] = values
+      const map = new Map<string, string>()
+
+      if (single?.node === '24.12.0') {
+        map.set('node-version', '24.12.0')
+      }
+
+      return map
+    })
+
     await setOutputVersions()
 
-    expect(core.error).toHaveBeenCalled()
+    expect(core.setOutput).toHaveBeenCalledWith('node-version', '24.12.0')
+    expect(core.error).not.toHaveBeenCalled()
   })
 })

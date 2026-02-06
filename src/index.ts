@@ -7,8 +7,9 @@ import { getChangelog } from './utilities/get-changelog'
 import { getVersion } from './utilities/get-current-version'
 import { getInput } from './utilities/get-input'
 import { isLatestVersion } from './utilities/is-latest-version'
-import { setOutputVersions } from './utilities/set-output-versions'
 import { setOutputGithubPages } from './utilities/set-output-github-pages'
+import { setOutputPullRequest } from './utilities/pull-request/set-output-pull-request'
+import { setOutputVersions } from './utilities/set-output-versions'
 
 const run = async () => {
   const currentVersion = await getVersion()
@@ -43,6 +44,7 @@ const run = async () => {
 
   await setOutputVersions()
   await setOutputGithubPages(octokit)
+  await setOutputPullRequest(octokit)
 }
 
 const onError = (error: unknown): void =>

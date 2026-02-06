@@ -6,7 +6,11 @@ inputs:
     required: false
   token:
     default: ${{ github.token }}
-    description: 'GitHub API token for changelog generation and GitHub Pages detection.'
+    description: 'GitHub API token for changelog generation, GitHub Pages detection, and pull request data.'
+    required: false
+  trusted-bots:
+    default: ''
+    description: 'Newline-separated list of bot logins trusted as commit authors (e.g., renovate[bot]). Matching is case-insensitive. Empty means no bots are trusted.'
     required: false
 name: 'action-context'
 outputs:
@@ -22,6 +26,24 @@ outputs:
     description: 'Whether the current version is greater than or equal to the highest existing semver tag.'
   node-version:
     description: 'Resolved Node.js version from the action input, package.json engines, or workspace packages.'
+  pr-author-bot:
+    description: 'Whether the PR author is a bot account. False on non-PR events.'
+  pr-base-ref:
+    description: 'PR base branch name. Empty on non-PR events.'
+  pr-checks-clear:
+    description: 'Whether all status checks are passing. False on non-PR events.'
+  pr-commits-trusted:
+    description: 'Whether every commit author is trusted (bot in trusted-bots allowlist with verified signature, or human with verified signature and write permission). False on non-PR events.'
+  pr-head-ref:
+    description: 'PR head branch name. Empty on non-PR events.'
+  pr-mergeable:
+    description: 'Whether the PR has no merge conflicts (does not check if branch is behind base). False on non-PR events.'
+  pr-not-draft:
+    description: 'Whether the PR is not a draft. False on non-PR events.'
+  pr-number:
+    description: 'PR number. 0 on non-PR events.'
+  pr-review-clear:
+    description: 'Whether reviews do not block merging (no changes requested, no unsatisfied review requirements, no pending review requests). False on non-PR events.'
   prerelease:
     description: 'Whether the version contains prerelease identifiers.'
   prerelease-identifier:

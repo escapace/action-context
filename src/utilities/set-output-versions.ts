@@ -1,42 +1,93 @@
 import * as core from '@actions/core'
 import { isPlainObject } from 'es-toolkit'
 import { readFile } from 'node:fs/promises'
-import { isNativeError } from 'node:util/types'
 import semver from 'semver'
 import { getInput } from './get-input'
 import { isFile } from './is-files'
 import { parseDevEngines as parseDevelopmentEngines, workspaceEngines } from './workspace-engines'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
 
-export const setOutputVersions = async () => {
+const mergeVersionMaps = (sources: Iterable<Map<string, string>>): Map<string, string> => {
+  const merged = new Map<string, string>()
+
+  for (const source of sources) {
+    for (const [name, version] of source) {
+      const previous = merged.get(name)
+
+      if (previous === undefined || semver.gt(version, previous)) {
+        merged.set(name, version)
+      }
+    }
+  }
+
+  return merged
+}
+
+const getMaximumVersionsBestEffort = (
+  versions: Array<Record<string, string | undefined>>,
+): Map<string, string> => {
   try {
-    const nodeVersionFromInput = getInput('node-version')
-    const node =
-      typeof nodeVersionFromInput === 'string'
-        ? (semver.clean(nodeVersionFromInput) ?? undefined)
-        : undefined
+    return workspaceEnginesMaximumVersions(versions)
+  } catch {
+    const sources: Array<Map<string, string>> = []
 
-    const versions: Array<Record<string, string | undefined>> = [{ node }]
+    for (const record of versions) {
+      try {
+        sources.push(workspaceEnginesMaximumVersions([record]))
+      } catch {
+        // Best-effort: skip invalid source fragments silently.
+      }
+    }
 
-    if (await isFile('package.json')) {
-      const { devEngines, engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
+    return mergeVersionMaps(sources)
+  }
+}
+
+export const setOutputVersions = async () => {
+  const nodeVersionFromInput = getInput('node-version')
+  const node =
+    typeof nodeVersionFromInput === 'string'
+      ? (semver.clean(nodeVersionFromInput) ?? undefined)
+      : undefined
+
+  const versions: Array<Record<string, string | undefined>> = [{ node }]
+
+  let hasPackageJson = false
+
+  try {
+    hasPackageJson = await isFile('package.json')
+  } catch {
+    hasPackageJson = false
+  }
+
+  if (hasPackageJson) {
+    try {
+      const packageManifest = JSON.parse(await readFile('package.json', 'utf8')) as {
         devEngines?: Parameters<typeof parseDevelopmentEngines>[0]
         engines?: Record<string, string | undefined>
       }
 
-      if (engines !== undefined) {
-        versions.push(engines)
+      if (packageManifest.engines !== undefined) {
+        versions.push(packageManifest.engines)
       }
 
       versions.push(
-        ...parseDevelopmentEngines(devEngines).filter(
+        ...parseDevelopmentEngines(packageManifest.devEngines).filter(
           (value): value is Record<string, string> => value !== undefined,
         ),
       )
-
-      versions.push(...(await workspaceEngines(process.cwd())))
+    } catch {
+      // Best-effort: ignore package.json parsing/read failures.
     }
 
+    try {
+      versions.push(...(await workspaceEngines(process.cwd())))
+    } catch {
+      // Best-effort: ignore workspace discovery failures.
+    }
+  }
+
+  try {
     if (await isFile('versions.json')) {
       const values = JSON.parse(await readFile('versions.json', 'utf8')) as unknown
 
@@ -54,12 +105,12 @@ export const setOutputVersions = async () => {
         })
       }
     }
+  } catch {
+    // Best-effort: ignore versions.json failures.
+  }
 
-    for (const [name, version] of workspaceEnginesMaximumVersions(versions)) {
-      core.info(`${name}: ${version}`)
-      core.setOutput(name, version)
-    }
-  } catch (error) {
-    core.error(isNativeError(error) ? error : 'Unknown Error')
+  for (const [name, version] of getMaximumVersionsBestEffort(versions)) {
+    core.info(`${name}: ${version}`)
+    core.setOutput(name, version)
   }
 }
