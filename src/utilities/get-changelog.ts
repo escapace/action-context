@@ -4,10 +4,11 @@ import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
 
 export const getChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
   try {
-    const { commits, config, md } = await generate({
+    const { commits, config, output } = await generate({
       capitalize: false,
       contributors: false,
       emoji: false,
+      style: 'markdown',
       ...options,
     })
 
@@ -27,7 +28,7 @@ export const getChangelog = async (options: Pick<ChangelogOptions, 'prerelease' 
       )
     }
 
-    return md
+    return output
   } catch (error) {
     if (error instanceof Error) {
       core.warning(error.message)

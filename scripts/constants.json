@@ -18,7 +18,13 @@
       "platform": "node",
       "sourcemap": false,
       "splitting": false,
-      "target": ["node20.19.2"]
+      "target": ["node24.12.0"]
     }
+  },
+  "declaration": {
+    "declarationRollup": true,
+    "documentation": false,
+    "entryPoints": ["src/index.ts"],
+    "tsconfig": "tsconfig-build.json"
   }
 }

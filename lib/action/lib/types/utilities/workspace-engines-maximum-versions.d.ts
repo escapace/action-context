@@ -1,2 +1,0 @@
-export declare const workspaceEnginesMaximumVersions: (engines: Array<Record<string, string | undefined> | undefined>) => Map<string, string>;
-//# sourceMappingURL=workspace-engines-maximum-versions.d.ts.map
