@@ -1,27 +1,69 @@
 author: 'escapace'
-description: 'Derive semantic versioning, environment classification, and build metadata from git history and repository configuration.'
+description: 'Emit semantic version, environment, and pull request context outputs from git history and repository metadata.'
 inputs:
+  context-source:
+    default: 'event'
+    description: 'Select context source: event (workflow event context) or pr (explicit pull request inputs).'
+    required: false
   node-version:
-    description: 'Node.js version constraint. Pooled with package.json engines and workspace constraints; the highest minimum version wins.'
+    description: 'Optional Node.js version constraint. Combined with package.json and workspace engine constraints; highest minimum version wins.'
+    required: false
+  pr-head-ref:
+    default: ''
+    description: 'Optional PR head ref guard for context-source=pr. When provided and mismatched, action fails with INPUT_INVALID. Rejected in event mode.'
+    required: false
+  pr-head-sha:
+    default: ''
+    description: 'Optional PR head SHA guard for context-source=pr. When provided and mismatched, action fails with INPUT_INVALID. Rejected in event mode.'
+    required: false
+  pr-number:
+    default: ''
+    description: 'Explicit PR number used when context-source=pr. Must be a positive integer. Rejected in event mode.'
     required: false
   token:
     default: ${{ github.token }}
-    description: 'GitHub API token for changelog generation and GitHub Pages detection.'
+    description: 'GitHub API token for changelog generation, GitHub Pages detection, and pull request data.'
+    required: false
+  trusted-bots:
+    default: ''
+    description: 'Newline-separated list of bot logins trusted as commit authors (e.g., renovate[bot]). Matching is case-insensitive. Empty means no bots are trusted.'
     required: false
 name: 'action-context'
 outputs:
   changelog:
     description: 'Markdown changelog generated from conventional commits between the previous tag and the current ref. Non-empty on tag events only.'
   environment:
-    description: 'Deployment environment: "production" for release tags, "staging" for prerelease tags, "testing" for branch events.'
+    description: 'Deployment environment: production for release tags, staging for prerelease tags, testing for non-tag events.'
   github-pages:
     description: 'Whether GitHub Pages is enabled with workflow-based builds.'
   github-pages-path:
     description: 'Relative path to static assets directory. Set when exactly one workspace package defines a build:github-pages script.'
   latest:
-    description: 'Whether the current version is greater than or equal to the highest existing semver tag.'
+    description: 'Whether the current version is greater than or equal to the highest existing stable semver tag (prerelease tags excluded).'
   node-version:
     description: 'Resolved Node.js version from the action input, package.json engines, or workspace packages.'
+  pr-author-bot:
+    description: 'Whether the PR author is a bot account. False when pull request context is unavailable.'
+  pr-base-ref:
+    description: 'Pull request base branch name. Empty when pull request context is unavailable.'
+  pr-checks-clear:
+    description: 'Whether all status checks are passing. False when pull request context is unavailable.'
+  pr-commits-trusted:
+    description: 'Whether every pull request commit author is trusted (allowlisted bot with verified signature, or human with verified signature and write/admin permission). False when pull request context is unavailable.'
+  pr-head-ref:
+    description: 'Pull request head branch name. Empty when pull request context is unavailable.'
+  pr-last-commit-age-minute:
+    description: 'Elapsed full minutes since the latest pull request head commit. `0` when pull request context is unavailable.'
+  pr-merge-state-clear:
+    description: 'Whether pull request merge state is clear (`CLEAN` or `HAS_HOOKS`). False when pull request context is unavailable.'
+  pr-mergeable:
+    description: 'Whether the pull request has no merge conflicts (does not check if branch is behind base). False when pull request context is unavailable.'
+  pr-not-draft:
+    description: 'Whether the pull request is not a draft. False when pull request context is unavailable.'
+  pr-number:
+    description: 'Pull request number. `0` when pull request context is unavailable.'
+  pr-review-clear:
+    description: 'Whether reviews do not block merging (no changes requested, no unsatisfied review requirements, and no pending review requests). False when pull request context is unavailable.'
   prerelease:
     description: 'Whether the version contains prerelease identifiers.'
   prerelease-identifier:

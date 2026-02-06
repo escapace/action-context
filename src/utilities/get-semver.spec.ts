@@ -4,10 +4,6 @@ vi.mock('@actions/core', () => ({
   debug: vi.fn(),
 }))
 
-vi.mock('../constants', () => ({
-  SEMVER_OPTIONS: { includePrerelease: true, loose: false },
-}))
-
 import { getSemver } from './get-semver'
 
 describe('getSemver', () => {
@@ -46,14 +42,14 @@ describe('getSemver', () => {
     expect(result?.version).toBe('1.0.0-rc.1')
   })
 
-  it('returns null for invalid version components', () => {
-    const result = getSemver({
-      major: -1,
-      minor: 0,
-      patch: 0,
-      prerelease: [],
-    })
-
-    expect(result).toBeNull()
+  it('throws for invalid version components', () => {
+    expect(() =>
+      getSemver({
+        major: -1,
+        minor: 0,
+        patch: 0,
+        prerelease: [],
+      }),
+    ).toThrow('Invalid semver generated from version parts')
   })
 })

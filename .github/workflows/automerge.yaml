@@ -1,0 +1,167 @@
+name: automerge
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: 'Optional PR number. When set, only this PR is evaluated.'
+        required: false
+        type: string
+
+permissions:
+  checks: read
+  contents: write
+  pull-requests: write
+  statuses: read
+
+concurrency:
+  cancel-in-progress: true
+  group: automerge-dispatch
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.discover.outputs.count }}
+      matrix: ${{ steps.discover.outputs.matrix }}
+    steps:
+      - name: discover candidate pull requests
+        id: discover
+        env:
+          INPUT_PR_NUMBER: ${{ inputs.pr-number }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const input = (process.env.INPUT_PR_NUMBER ?? '').trim()
+            const discovered = []
+
+            if (input.length > 0) {
+              if (!/^\d+$/.test(input) || Number(input) <= 0) {
+                core.setFailed('workflow_dispatch input pr-number must be a positive integer')
+                return
+              }
+
+              discovered.push(Number(input))
+            } else {
+              const pulls = await github.paginate(github.rest.pulls.list, {
+                ...context.repo,
+                state: 'open',
+                per_page: 100,
+              })
+
+              for (const pull of pulls) {
+                if (Number.isInteger(pull.number) && pull.number > 0) {
+                  discovered.push(pull.number)
+                } else {
+                  core.warning(`Skipping invalid PR identifier from discovery output: ${String(pull.number)}`)
+                }
+              }
+            }
+
+            const matrix = { include: discovered.map((prNumber) => ({ pr_number: prNumber })) }
+
+            core.info(`Discovered ${discovered.length} PR(s)`)
+            core.setOutput('count', String(discovered.length))
+            core.setOutput('matrix', JSON.stringify(matrix))
+
+  automerge:
+    if: needs.discover.outputs.count != '0'
+    needs:
+      - discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    steps:
+      - name: fetch pull request head metadata
+        id: pr
+        env:
+          PR_NUMBER: ${{ matrix.pr_number }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pullNumber = Number(process.env.PR_NUMBER)
+            if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+              core.setFailed(`Invalid matrix PR number: ${process.env.PR_NUMBER}`)
+              return
+            }
+
+            const { data: pull } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: pullNumber,
+            })
+
+            core.setOutput('head_ref', pull.head.ref)
+            core.setOutput('head_sha', pull.head.sha)
+            core.setOutput('auto_merge_enabled', String(pull.auto_merge !== null))
+            core.setOutput('node_id', pull.node_id)
+
+      - name: checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.pr.outputs.head_ref }}
+
+      - name: evaluate pull request context
+        id: context
+        uses: ./
+        with:
+          context-source: pr
+          pr-head-ref: ${{ steps.pr.outputs.head_ref }}
+          pr-head-sha: ${{ steps.pr.outputs.head_sha }}
+          pr-number: ${{ matrix.pr_number }}
+          token: ${{ github.token }}
+          trusted-bots: |
+            renovate[bot]
+            dependabot[bot]
+
+      - name: enable auto-merge (queue and non-queue)
+        if: |
+          steps.pr.outputs.auto_merge_enabled != 'true' &&
+          steps.context.outputs.pr-number != '0' &&
+          steps.context.outputs.pr-author-bot == 'true' &&
+          steps.context.outputs.pr-not-draft == 'true' &&
+          steps.context.outputs.pr-mergeable == 'true' &&
+          steps.context.outputs.pr-commits-trusted == 'true' &&
+          steps.context.outputs.pr-checks-clear == 'true' &&
+          steps.context.outputs.pr-merge-state-clear == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.context.outputs.pr-number }}" \
+            --auto \
+            --squash \
+            --match-head-commit "${{ steps.pr.outputs.head_sha }}"
+
+      - name: summary
+        env:
+          AUTO_MERGE_ENABLED_BEFORE: ${{ steps.pr.outputs.auto_merge_enabled }}
+          PR_AUTHOR_BOT: ${{ steps.context.outputs.pr-author-bot }}
+          PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
+          PR_COMMITS_TRUSTED: ${{ steps.context.outputs.pr-commits-trusted }}
+          PR_LAST_COMMIT_AGE_MINUTE: ${{ steps.context.outputs.pr-last-commit-age-minute }}
+          PR_MERGEABLE: ${{ steps.context.outputs.pr-mergeable }}
+          PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
+          PR_NOT_DRAFT: ${{ steps.context.outputs.pr-not-draft }}
+          PR_NUMBER: ${{ matrix.pr_number }}
+          PR_REVIEW_CLEAR: ${{ steps.context.outputs.pr-review-clear }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await core.summary
+              .addHeading(`automerge evaluation for PR #${process.env.PR_NUMBER}`, 2)
+              .addTable([
+                [{ data: 'Output', header: true }, { data: 'Value', header: true }],
+                ['pr-author-bot', process.env.PR_AUTHOR_BOT ?? ''],
+                ['pr-not-draft', process.env.PR_NOT_DRAFT ?? ''],
+                ['pr-mergeable', process.env.PR_MERGEABLE ?? ''],
+                ['pr-commits-trusted', process.env.PR_COMMITS_TRUSTED ?? ''],
+                ['pr-last-commit-age-minute', process.env.PR_LAST_COMMIT_AGE_MINUTE ?? ''],
+                ['pr-checks-clear', process.env.PR_CHECKS_CLEAR ?? ''],
+                ['pr-merge-state-clear', process.env.PR_MERGE_STATE_CLEAR ?? ''],
+                ['pr-review-clear', process.env.PR_REVIEW_CLEAR ?? ''],
+                ['auto_merge_enabled_before', process.env.AUTO_MERGE_ENABLED_BEFORE ?? ''],
+              ])
+              .write()

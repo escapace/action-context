@@ -1,15 +1,21 @@
 import semver from 'semver'
-import { SEMVER_OPTIONS } from '../constants'
+import { assertRepoNotShallow } from './assert-repo-not-shallow'
 import { getTag } from './get-tag'
 
 export const isLatestVersion = async (currentVersion: semver.SemVer) => {
-  const tag = await getTag()
+  await assertRepoNotShallow()
+
+  const tag = await getTag(undefined, { includePrerelease: false })
 
   if (tag === undefined) {
     return true
   }
 
-  const latestVersion = semver.clean(tag, SEMVER_OPTIONS)!
+  const latestVersion = semver.clean(tag)
 
-  return semver.gte(currentVersion, latestVersion, SEMVER_OPTIONS)
+  if (latestVersion === null) {
+    throw new Error(`Invalid semantic version tag: ${tag}`)
+  }
+
+  return semver.gte(currentVersion, latestVersion)
 }

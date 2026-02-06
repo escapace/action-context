@@ -12,7 +12,7 @@ export const workspaceEnginesMaximumVersions = (
         .map((value) => Object.entries(value ?? {}))
         .flat()
         .map(([key, value]) =>
-          value === undefined || validRange(value, true) === null
+          value === undefined || validRange(value, { loose: true }) === null
             ? undefined
             : ([key, value] as const),
         )
@@ -22,7 +22,9 @@ export const workspaceEnginesMaximumVersions = (
     (entries) => {
       const versions = uniq(entries.map(([_, value]) => value))
 
-      return versions.sort((a, b) => compare(minVersion(b)!, minVersion(a)!, true))[0]
+      return versions.sort((a, b) =>
+        compare(minVersion(b, { loose: true })!, minVersion(a, { loose: true })!, { loose: true }),
+      )[0]
     },
   )
 
@@ -31,7 +33,7 @@ export const workspaceEnginesMaximumVersions = (
       continue
     }
 
-    const version = minVersion(value)?.toString()
+    const version = minVersion(value, { loose: true })?.toString()
 
     if (typeof version !== 'string') {
       continue

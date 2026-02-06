@@ -1,8 +1,7 @@
 name: dependency-review
 
 on:
-  - pull_request
-
+  pull_request:
 permissions: {}
 
 jobs:

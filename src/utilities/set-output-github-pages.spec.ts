@@ -6,12 +6,6 @@ vi.mock('@actions/core', () => ({
   setOutput: vi.fn(),
 }))
 
-vi.mock('@actions/github', () => ({
-  context: {
-    repo: { owner: 'escapace', repo: 'action-context' },
-  },
-}))
-
 vi.mock('./workspace-projects', () => ({
   workspaceProjects: vi.fn(),
 }))
@@ -19,8 +13,10 @@ vi.mock('./workspace-projects', () => ({
 import * as core from '@actions/core'
 import { workspaceProjects } from './workspace-projects'
 import { setOutputGithubPages } from './set-output-github-pages'
+import type { Context } from '../context/create-context'
+import type { Octokit } from './pull-request/types'
 
-const createMockOctokit = (getPagesResult: unknown) => {
+const createMockOctokit = (getPagesResult: unknown): Octokit => {
   const octokit = {
     rest: {
       repos: {
@@ -32,7 +28,7 @@ const createMockOctokit = (getPagesResult: unknown) => {
   return octokit as never
 }
 
-const createRejectingOctokit = (error: Error) => {
+const createRejectingOctokit = (error: Error): Octokit => {
   const octokit = {
     rest: {
       repos: {
@@ -43,6 +39,23 @@ const createRejectingOctokit = (error: Error) => {
 
   return octokit as never
 }
+
+const createContext = (octokit: Octokit): Context => ({
+  contextSource: 'event',
+  eventName: 'push',
+  hasPullRequestContext: false,
+  inputs: { contextSource: 'event', token: 'ghp_test_token', trustedBots: new Set() },
+  octokit,
+  pullRequestNumber: 0,
+  referenceName: 'trunk',
+  referenceType: 'branch',
+  repositoryName: 'action-context',
+  repositoryOwner: 'escapace',
+  versionBranch: '',
+  versionCommitSha: 'abc1234567890abcdef1234567890abcdef123456',
+  versionCommitShaShort: 'abc1234',
+  workflowRunId: '123456',
+})
 
 describe('setOutputGithubPages', () => {
   beforeEach(() => {
@@ -59,7 +72,7 @@ describe('setOutputGithubPages', () => {
       },
     ] as never)
 
-    await setOutputGithubPages(octokit)
+    await setOutputGithubPages(createContext(octokit))
 
     expect(core.setOutput).toHaveBeenCalledWith('github-pages', true)
     expect(core.setOutput).toHaveBeenCalledWith(
@@ -78,7 +91,7 @@ describe('setOutputGithubPages', () => {
       },
     ] as never)
 
-    await setOutputGithubPages(octokit)
+    await setOutputGithubPages(createContext(octokit))
 
     expect(core.setOutput).toHaveBeenCalledWith('github-pages', true)
     expect(core.setOutput).not.toHaveBeenCalledWith('github-pages-path', expect.anything())
@@ -98,7 +111,7 @@ describe('setOutputGithubPages', () => {
       },
     ] as never)
 
-    await setOutputGithubPages(octokit)
+    await setOutputGithubPages(createContext(octokit))
 
     expect(core.setOutput).toHaveBeenCalledWith('github-pages', true)
     expect(core.setOutput).not.toHaveBeenCalledWith('github-pages-path', expect.anything())
@@ -109,16 +122,15 @@ describe('setOutputGithubPages', () => {
     Reflect.set(error, 'status', 404)
     const octokit = createRejectingOctokit(error)
 
-    await setOutputGithubPages(octokit)
+    await setOutputGithubPages(createContext(octokit))
 
-    // 404 catch returns undefined, so `?.data?.build_type === 'workflow'` evaluates to false
     expect(core.setOutput).toHaveBeenCalledWith('github-pages', false)
   })
 
   it('outputs false when pages build_type is not workflow', async () => {
     const octokit = createMockOctokit({ data: { build_type: 'legacy' } })
 
-    await setOutputGithubPages(octokit)
+    await setOutputGithubPages(createContext(octokit))
 
     expect(core.setOutput).toHaveBeenCalledWith('github-pages', false)
   })
@@ -128,7 +140,7 @@ describe('setOutputGithubPages', () => {
     Reflect.set(error, 'status', 500)
     const octokit = createRejectingOctokit(error)
 
-    await setOutputGithubPages(octokit)
+    await setOutputGithubPages(createContext(octokit))
 
     expect(core.setOutput).toHaveBeenCalledWith('github-pages', false)
     expect(core.error).toHaveBeenCalled()

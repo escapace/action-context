@@ -1,6 +1,5 @@
 import * as core from '@actions/core'
 import semver from 'semver'
-import { SEMVER_OPTIONS } from '../constants'
 
 export const getSemver = (properties: {
   major: number
@@ -12,7 +11,7 @@ export const getSemver = (properties: {
 
   const string = `${major}.${minor}.${patch}${prerelease.length === 0 ? '' : `-${prerelease.join('.')}`}`
 
-  const version = semver.parse(string, { ...SEMVER_OPTIONS, loose: true })
+  const version = semver.parse(string)
 
   core.debug(
     `toSemver()\n ${JSON.stringify([
@@ -20,6 +19,10 @@ export const getSemver = (properties: {
       { string, version },
     ])}`,
   )
+
+  if (version === null) {
+    throw new Error(`Invalid semver generated from version parts: ${string}`)
+  }
 
   return version
 }

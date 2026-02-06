@@ -13,7 +13,7 @@ vi.mock('./exec', () => ({
 }))
 
 import { exec } from './exec'
-import { getTag } from './get-tag'
+import { getTag, selectHighestTagFromOutput } from './get-tag'
 
 describe('getTag', () => {
   beforeEach(() => {
@@ -75,11 +75,51 @@ describe('getTag', () => {
     expect(exec).toHaveBeenCalledWith('git', ['--no-pager', 'tag', '--list', '--sort=authordate'])
   })
 
-  it('handles prerelease tags with includePrerelease', async () => {
-    vi.mocked(exec).mockResolvedValue('v1.0.0\nv1.1.0-rc.1\nv1.1.0')
+  it('returns prerelease tags by default', async () => {
+    vi.mocked(exec).mockResolvedValue('v1.0.0\nv1.1.0-rc.1')
 
     const result = await getTag()
 
-    expect(result).toBe('v1.1.0')
+    expect(result).toBe('v1.1.0-rc.1')
+  })
+
+  it('can exclude prerelease tags', async () => {
+    vi.mocked(exec).mockResolvedValue('v1.0.0\nv1.1.0-rc.1')
+
+    const result = await getTag(undefined, { includePrerelease: false })
+
+    expect(result).toBe('v1.0.0')
+  })
+
+  it('returns undefined when only prerelease tags exist and includePrerelease is false', async () => {
+    vi.mocked(exec).mockResolvedValue('v1.1.0-rc.1\nv1.1.0-beta.1')
+
+    const result = await getTag(undefined, { includePrerelease: false })
+
+    expect(result).toBeUndefined()
+  })
+
+  it('throws actionable guidance when branch ref is not locally resolvable', async () => {
+    vi.mocked(exec).mockRejectedValue(
+      new Error(
+        'Command failed with exit code 128: fatal: malformed object name renovate/all-minor-patch',
+      ),
+    )
+
+    await expect(getTag('renovate/all-minor-patch')).rejects.toThrow(
+      'Ensure checkout uses a branch ref',
+    )
+  })
+})
+
+describe('selectHighestTagFromOutput', () => {
+  it('selects highest stable tag when prereleases are excluded', () => {
+    expect(selectHighestTagFromOutput('v1.0.0\nv1.1.0-rc.1', { includePrerelease: false })).toBe(
+      'v1.0.0',
+    )
+  })
+
+  it('returns undefined for empty or non-semver output', () => {
+    expect(selectHighestTagFromOutput('latest\nnightly')).toBeUndefined()
   })
 })
