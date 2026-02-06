@@ -28,20 +28,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: ref
-        id: ref
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "value=${GITHUB_HEAD_REF}" >> $GITHUB_OUTPUT
-          else
-            echo "value=${GITHUB_REF}" >> $GITHUB_OUTPUT
-          fi
       - name: checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          ref: ${{ steps.ref.outputs.value }}
+          ref: ${{ github.head_ref || github.ref }}
       - id: action-context
         uses: ./
         with:

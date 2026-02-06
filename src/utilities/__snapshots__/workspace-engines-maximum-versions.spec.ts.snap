@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`versions >  1`] = `
+exports[`workspaceEnginesMaximumVersions > selects the range with the highest minVersion across sources 1`] = `
 [
   [
     "node-version",

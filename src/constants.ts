@@ -1,4 +1,3 @@
-/* eslint-disable typescript/no-non-null-assertion */
 import * as github from '@actions/github'
 import { createShortCommit } from './utilities/create-short-commit'
 

@@ -1,4 +1,3 @@
-/* eslint-disable typescript/no-non-null-assertion */
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { getGitDiff } from 'changelogen'

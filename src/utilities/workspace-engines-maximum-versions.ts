@@ -22,7 +22,6 @@ export const workspaceEnginesMaximumVersions = (
     (entries) => {
       const versions = uniq(entries.map(([_, value]) => value))
 
-      // eslint-disable-next-line typescript/no-non-null-assertion
       return versions.sort((a, b) => compare(minVersion(b)!, minVersion(a)!, true))[0]
     },
   )

@@ -1,4 +1,3 @@
-/* eslint-disable typescript/no-non-null-assertion */
 import * as core from '@actions/core'
 import { isString } from 'es-toolkit'
 import assert from 'node:assert'

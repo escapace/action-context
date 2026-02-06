@@ -1,4 +1,3 @@
-/* eslint-disable typescript/no-non-null-assertion */
 import semver from 'semver'
 import { SEMVER_OPTIONS } from '../constants'
 import { getTag } from './get-tag'

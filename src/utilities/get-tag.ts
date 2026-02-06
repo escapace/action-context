@@ -1,4 +1,3 @@
-/* eslint-disable typescript/no-non-null-assertion */
 import * as core from '@actions/core'
 import { last } from 'es-toolkit'
 import semver from 'semver'

@@ -1,35 +1,35 @@
 author: 'escapace'
-description: 'enrich action context'
+description: 'Derive semantic versioning, environment classification, and build metadata from git history and repository configuration.'
 inputs:
   node-version:
-    description: 'Node.js semantic version'
+    description: 'Node.js version constraint. Pooled with package.json engines and workspace constraints; the highest minimum version wins.'
     required: false
   token:
     default: ${{ github.token }}
-    description: 'the GitHub token'
+    description: 'GitHub API token for changelog generation and GitHub Pages detection.'
     required: false
-name: 'action context'
+name: 'action-context'
 outputs:
   changelog:
-    description: 'changelog'
+    description: 'Markdown changelog generated from conventional commits between the previous tag and the current ref. Non-empty on tag events only.'
   environment:
-    description: 'suggested environment: "testing", "staging" or "production"'
+    description: 'Deployment environment: "production" for release tags, "staging" for prerelease tags, "testing" for branch events.'
   github-pages:
-    description: 'whether GitHub Pages is enabled'
+    description: 'Whether GitHub Pages is enabled with workflow-based builds.'
   github-pages-path:
-    description: 'path of the directory containing the static assets'
+    description: 'Relative path to static assets directory. Set when exactly one workspace package defines a build:github-pages script.'
   latest:
-    description: 'whether this is the latest release'
+    description: 'Whether the current version is greater than or equal to the highest existing semver tag.'
   node-version:
-    description: 'default Node.js version'
+    description: 'Resolved Node.js version from the action input, package.json engines, or workspace packages.'
   prerelease:
-    description: 'whether this is a prerelease'
+    description: 'Whether the version contains prerelease identifiers.'
   prerelease-identifier:
-    description: 'the "prerelease identifier", like the rc in 1.2.0-rc.8'
+    description: 'First prerelease identifier from the version string (for example, "rc" from 1.2.0-rc.1). Empty for release versions.'
   short-commit:
-    description: 'short commit sha'
+    description: 'Abbreviated commit SHA (7 characters, extended past leading zeros).'
   version:
-    description: 'suggested version'
+    description: 'Computed semantic version derived from git tags and conventional commits.'
 runs:
   main: 'lib/action/lib/node/index.js'
-  using: 'node20'
+  using: 'node24'
