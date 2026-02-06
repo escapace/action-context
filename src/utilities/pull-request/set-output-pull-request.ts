@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import { EVENT_NAME } from '../../constants'
 import { getInput } from '../get-input'
+import { setOutputs } from '../output'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
 import { getPullRequest } from './get-pull-request'
@@ -19,12 +20,6 @@ const DEFAULT_OUTPUTS: PullRequestOutputs = {
   'pr-not-draft': false,
   'pr-number': 0,
   'pr-review-clear': false,
-}
-
-const setOutputs = (outputs: PullRequestOutputs): void => {
-  for (const [key, value] of Object.entries(outputs)) {
-    core.setOutput(key, value)
-  }
 }
 
 interface PullRequestDegradation {
@@ -115,13 +110,6 @@ export const setOutputPullRequest = async (octokit: Octokit): Promise<void> => {
     // Fetch basic PR data (with mergeable retry logic)
     const prData = await getPullRequest(octokit, prNumber)
 
-    core.info(`pr-number: ${prData.number}`)
-    core.info(`pr-not-draft: ${prData.notDraft}`)
-    core.info(`pr-base-ref: ${prData.baseRef}`)
-    core.info(`pr-head-ref: ${prData.headRef}`)
-    core.info(`pr-author-bot: ${prData.authorBot}`)
-    core.info(`pr-mergeable: ${prData.mergeable}`)
-
     // Fetch review data, check status, and commit trust in parallel
     const [reviewData, checksClear, commitsTrusted] = await Promise.all([
       fetchReviewData(octokit, prNumber),
@@ -130,10 +118,6 @@ export const setOutputPullRequest = async (octokit: Octokit): Promise<void> => {
     ])
 
     const reviewClear = isReviewClear(reviewData)
-
-    core.info(`pr-review-clear: ${reviewClear}`)
-    core.info(`pr-checks-clear: ${checksClear}`)
-    core.info(`pr-commits-trusted: ${commitsTrusted}`)
 
     setOutputs({
       'pr-author-bot': prData.authorBot,

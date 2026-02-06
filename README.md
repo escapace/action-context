@@ -48,12 +48,23 @@ steps:
 
 Outputs are available as `${{ steps.context.outputs.<name> }}`.
 
+## Permission behavior: public vs private repositories
+
+GitHub documentation for multiple read endpoints used by `pr-*` outputs (pull request commits, check runs, and combined commit status) states that public resources can be accessed without authentication.
+
+| Repository visibility | Access pattern                                                                      | `pr-*` impact                                                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| public                | Public read endpoints may still return data even with minimal workflow permissions. | Pull request outputs may be populated instead of degraded.                                                       |
+| private               | Pull request, checks, and status data require explicit token permissions.           | Missing `pull-requests: read`, `checks: read`, or `statuses: read` can trigger degraded defaults with a warning. |
+
+For consistent behavior, declare explicit pull request permissions in workflows that depend on `pr-*` outputs, regardless of repository visibility.
+
 ## Checkout requirements
 
-| Setting       | Value                | Reason                                                                       |
-| ------------- | -------------------- | ---------------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `fetch-depth` | `0`                  | Full history is required to resolve semantic version tags and commit ranges. |
-| `ref`         | `${{ github.head_ref |                                                                              | github.ref }}` | Pull request events otherwise default to synthetic merge refs, which can alter tag reachability and commit analysis. |
+| Setting       | Value                                    | Reason                                                                                                               |
+| ------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `fetch-depth` | `0`                                      | Full history is required to resolve semantic version tags and commit ranges.                                         |
+| `ref`         | `${{ github.head_ref \|\| github.ref }}` | Pull request events otherwise default to synthetic merge refs, which can alter tag reachability and commit analysis. |
 
 ## Inputs
 

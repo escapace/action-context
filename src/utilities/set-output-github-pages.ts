@@ -4,6 +4,7 @@ import { isError, isString } from 'es-toolkit'
 import path from 'node:path'
 import { workspaceProjects } from './workspace-projects'
 import { isNativeError } from 'node:util/types'
+import { setOutputs } from './output'
 
 export const setOutputGithubPages = async (octokit: ReturnType<typeof github.getOctokit>) => {
   try {
@@ -19,7 +20,7 @@ export const setOutputGithubPages = async (octokit: ReturnType<typeof github.get
       )?.data?.build_type === 'workflow'
 
     if (!githubPages) {
-      return core.setOutput('github-pages', githubPages)
+      return setOutputs({ 'github-pages': githubPages })
     }
 
     const directory = process.cwd()
@@ -29,7 +30,7 @@ export const setOutputGithubPages = async (octokit: ReturnType<typeof github.get
     )
 
     if (projects.length !== 1) {
-      return core.setOutput('github-pages', githubPages)
+      return setOutputs({ 'github-pages': githubPages })
     }
 
     const githubPagesPath = path.relative(
@@ -37,12 +38,14 @@ export const setOutputGithubPages = async (octokit: ReturnType<typeof github.get
       path.join(path.resolve(directory, projects[0].rootDir), 'lib/github-pages'),
     )
 
-    core.info(`github-pages ${githubPages}`)
-    core.info(`github-pages-path ${githubPagesPath}`)
-    core.setOutput('github-pages', githubPages)
-    core.setOutput('github-pages-path', githubPagesPath)
+    const outputs = {
+      'github-pages': githubPages,
+      'github-pages-path': githubPagesPath,
+    }
+
+    setOutputs(outputs)
   } catch (error) {
-    core.setOutput('github-pages', false)
+    setOutputs({ 'github-pages': false })
     core.error(isNativeError(error) ? error : 'Unknown Error')
   }
 }

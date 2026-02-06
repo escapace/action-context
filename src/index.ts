@@ -8,6 +8,7 @@ import { getVersion } from './utilities/get-current-version'
 import { getInput } from './utilities/get-input'
 import { isLatestVersion } from './utilities/is-latest-version'
 import { setOutputGithubPages } from './utilities/set-output-github-pages'
+import { setOutputs } from './utilities/output'
 import { setOutputPullRequest } from './utilities/pull-request/set-output-pull-request'
 import { setOutputVersions } from './utilities/set-output-versions'
 
@@ -29,18 +30,15 @@ const run = async () => {
   const latest = await isLatestVersion(currentVersion)
   const prereleaseIdentifier = isPrerelease ? `${prerelease[0]}` : ''
 
-  core.info(`version: ${version}`)
-  core.info(`environment: ${environment}`)
-  core.info(`short-commit: ${SHORT_COMMIT}`)
-  core.info(`latest: ${latest}`)
-
-  core.setOutput('changelog', changelog)
-  core.setOutput('short-commit', SHORT_COMMIT)
-  core.setOutput('environment', environment)
-  core.setOutput('latest', latest)
-  core.setOutput('prerelease-identifier', prereleaseIdentifier)
-  core.setOutput('prerelease', isPrerelease)
-  core.setOutput('version', version)
+  setOutputs({
+    changelog,
+    environment,
+    latest,
+    'prerelease': isPrerelease,
+    'prerelease-identifier': prereleaseIdentifier,
+    'short-commit': SHORT_COMMIT,
+    version,
+  })
 
   await setOutputVersions()
   await setOutputGithubPages(octokit)

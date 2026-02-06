@@ -120,10 +120,10 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - id: context
-        name: run action with restricted permissions
+        name: run action with invalid token
         uses: ./
         with:
-          token: ${{ github.token }}
+          token: invalid-token
           trusted-bots: |
             renovate[bot]
             dependabot[bot]
@@ -142,7 +142,7 @@ jobs:
 
       - name: summary
         run: |
-          echo "## PR Outputs (Degraded Permissions)" >> $GITHUB_STEP_SUMMARY
+          echo "## PR Outputs (Degraded: Invalid Token)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Output | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY

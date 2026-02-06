@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import { isPlainObject } from 'es-toolkit'
 import { readFile } from 'node:fs/promises'
 import semver from 'semver'
@@ -6,6 +5,7 @@ import { getInput } from './get-input'
 import { isFile } from './is-files'
 import { parseDevEngines as parseDevelopmentEngines, workspaceEngines } from './workspace-engines'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
+import { setOutputs } from './output'
 
 const mergeVersionMaps = (sources: Iterable<Map<string, string>>): Map<string, string> => {
   const merged = new Map<string, string>()
@@ -109,8 +109,7 @@ export const setOutputVersions = async () => {
     // Best-effort: ignore versions.json failures.
   }
 
-  for (const [name, version] of getMaximumVersionsBestEffort(versions)) {
-    core.info(`${name}: ${version}`)
-    core.setOutput(name, version)
-  }
+  const outputs = Object.fromEntries(getMaximumVersionsBestEffort(versions))
+
+  setOutputs(outputs)
 }
