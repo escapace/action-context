@@ -52,11 +52,11 @@ describe('workspaceEngines', () => {
 
     const result = await workspaceEngines('/workspace')
 
-    // developmentEngines is returned as a single array element within the result
-    expect(result).toContainEqual([{ node: '>=22.0.0' }, { pnpm: '>=9.0.0' }])
+    expect(result).toContainEqual({ node: '>=22.0.0' })
+    expect(result).toContainEqual({ pnpm: '>=9.0.0' })
   })
 
-  it('includes developmentEngines array even when entries are undefined', async () => {
+  it('excludes undefined devEngines entries', async () => {
     vi.mocked(workspaceProjects).mockResolvedValue([
       {
         manifest: { name: 'a' },
@@ -66,10 +66,7 @@ describe('workspaceEngines', () => {
 
     const result = await workspaceEngines('/workspace')
 
-    // When no devEngines exist, the mapped array [undefined, undefined] still
-    // passes the filter (it is not undefined itself), so it appears in the result.
-    expect(result).toHaveLength(1)
-    expect(result[0]).toEqual([undefined, undefined])
+    expect(result).toHaveLength(0)
   })
 
   it('handles projects with engines but no devEngines', async () => {

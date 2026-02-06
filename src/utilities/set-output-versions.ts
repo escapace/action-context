@@ -5,7 +5,7 @@ import { isNativeError } from 'node:util/types'
 import semver from 'semver'
 import { getInput } from './get-input'
 import { isFile } from './is-files'
-import { workspaceEngines } from './workspace-engines'
+import { parseDevEngines as parseDevelopmentEngines, workspaceEngines } from './workspace-engines'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
 
 export const setOutputVersions = async () => {
@@ -19,13 +19,20 @@ export const setOutputVersions = async () => {
     const versions: Array<Record<string, string | undefined>> = [{ node }]
 
     if (await isFile('package.json')) {
-      const { engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
+      const { devEngines, engines } = JSON.parse(await readFile('package.json', 'utf8')) as {
+        devEngines?: Parameters<typeof parseDevelopmentEngines>[0]
         engines?: Record<string, string | undefined>
       }
 
       if (engines !== undefined) {
         versions.push(engines)
       }
+
+      versions.push(
+        ...parseDevelopmentEngines(devEngines).filter(
+          (value): value is Record<string, string> => value !== undefined,
+        ),
+      )
 
       versions.push(...(await workspaceEngines(process.cwd())))
     }

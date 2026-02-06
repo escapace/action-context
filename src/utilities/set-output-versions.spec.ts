@@ -14,9 +14,14 @@ vi.mock('./is-files', () => ({
   isFile: vi.fn(),
 }))
 
-vi.mock('./workspace-engines', () => ({
-  workspaceEngines: vi.fn(),
-}))
+vi.mock('./workspace-engines', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./workspace-engines')>()
+
+  return {
+    ...actual,
+    workspaceEngines: vi.fn(),
+  }
+})
 
 vi.mock('./workspace-engines-maximum-versions', () => ({
   workspaceEnginesMaximumVersions: vi.fn(),
@@ -102,6 +107,34 @@ describe('setOutputVersions', () => {
 
     expect(core.setOutput).toHaveBeenCalledWith('terraform-version', '1.5.0')
     expect(core.setOutput).toHaveBeenCalledWith('kubectl-version', '1.28.0')
+  })
+
+  it('includes devEngines from root package.json', async () => {
+    vi.mocked(getInput).mockReturnValue(undefined)
+    vi.mocked(isFile).mockImplementation(
+      async (path) => await Promise.resolve(path === 'package.json'),
+    )
+    vi.mocked(readFile).mockResolvedValue(
+      JSON.stringify({
+        devEngines: {
+          packageManager: { name: 'pnpm', version: '>=10.0.0' },
+          runtime: { name: 'node', version: '>=22.0.0' },
+        },
+      }),
+    )
+    vi.mocked(workspaceEngines).mockResolvedValue([])
+
+    const versionMap = new Map([
+      ['node-version', '22.0.0'],
+      ['pnpm-version', '10.0.0'],
+    ])
+    vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
+
+    await setOutputVersions()
+
+    expect(workspaceEnginesMaximumVersions).toHaveBeenCalledWith(
+      expect.arrayContaining([{ node: '>=22.0.0' }, { pnpm: '>=10.0.0' }]),
+    )
   })
 
   it('handles missing package.json gracefully', async () => {

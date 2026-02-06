@@ -78,7 +78,7 @@ The action collects semver range constraints from four sources, pools them by en
 ### Sources
 
 - **Action input** — the `node-version` input, normalized with `semver.clean()`. Participates in the same selection as other sources; it does not unconditionally override them.
-- **Root `package.json`** — the `engines` field, when the file exists.
+- **Root `package.json`** — the `engines` and `devEngines` fields, when the file exists. The `devEngines.runtime` and `devEngines.packageManager` entries are mapped to their canonical engine names.
 - **PNPM workspace packages** — `engines` and `devEngines` fields from each package manifest. Scanned only when a root `package.json` is present. The `devEngines.runtime` and `devEngines.packageManager` entries are mapped to their canonical engine names.
 - **`versions.json`** — a file at the repository root. Supports two entry formats: `{ "tool": "1.5.0" }` and `{ "tool": { "version": "1.5.0" } }`. Checked independently of `package.json`.
 
