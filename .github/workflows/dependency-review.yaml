@@ -1,8 +1,11 @@
 name: dependency-review
 
 on:
-  - pull_request
+  merge_group:
+    types:
+      - checks_requested
 
+  pull_request:
 permissions: {}
 
 jobs:

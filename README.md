@@ -111,12 +111,11 @@ Additional outputs use `<engine>-version` keys (for example, `pnpm-version`) whe
 
 ## Event behavior matrix
 
-| Event type            | Version/environment outputs                          | `pr-*` outputs                                                                | Notes                                                 |
-| --------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `push`                | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                       | No pull request context lookup.                       |
-| `pull_request`        | populated                                            | populated when API access succeeds; defaults on pull request data degradation | Degradation emits warning and keeps action non-fatal. |
-| `pull_request_target` | populated                                            | same behavior as `pull_request`                                               | Uses event pull request payload.                      |
-| `tag`                 | populated (`environment`: `staging` or `production`) | defaults                                                                      | Changelog attempted on tag events.                    |
+| Event type     | Version/environment outputs                          | `pr-*` outputs                                                                | Notes                                                 |
+| -------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `push`         | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                       | No pull request context lookup.                       |
+| `pull_request` | populated                                            | populated when API access succeeds; defaults on pull request data degradation | Degradation emits warning and keeps action non-fatal. |
+| `tag`          | populated (`environment`: `staging` or `production`) | defaults                                                                      | Changelog attempted on tag events.                    |
 
 ## Reliability behavior
 
@@ -140,11 +139,13 @@ Reference workflow: [`.github/workflows/automerge.yaml`](.github/workflows/autom
 
 For use outside this repository, change `uses: ./` to `uses: escapace/action-context@v0.2.0` in the `evaluate pull request context` step.
 
-This repository includes a ready-to-use automerge workflow that evaluates `action-context` pull request outputs and enables auto-merge only when all safety gates are satisfied.
+This repository includes a ready-to-use automerge workflow that evaluates `action-context` pull request outputs and enables auto-merge once trust and merge-shape gates pass.
 
 Core behavior:
 
-- policy is evaluated from `pr-*` outputs (`pr-number`, `pr-review-clear`, `pr-checks-clear`, `pr-commits-trusted`, and related fields),
+- workflow trigger is `pull_request` only,
+- policy gate uses `pr-*` outputs (`pr-number`, `pr-author-bot`, `pr-not-draft`, `pr-mergeable`, `pr-commits-trusted`),
+- the workflow intentionally does not gate the `gh pr merge --auto` step on `pr-review-clear` or `pr-checks-clear`, because review/check transitions can occur without a new `pull_request` event,
 - merge execution is guarded with `--match-head-commit` to prevent stale-head merges,
 - one command path is used for both queue-required and non-queue branches.
 
@@ -159,6 +160,8 @@ Rationale:
 - `--auto` enables deferred merge behavior when requirements are not yet satisfied,
 - `--squash` keeps non-interactive, non-queue execution deterministic,
 - queue-required branches remain controlled by merge queue settings; queue merge method is configured at branch protection/ruleset level.
+
+Important: with `pull_request`-only triggers, approval/dismissal events do not start a new automerge workflow run. This is expected in this model. Auto-merge is enabled earlier, and GitHub completes the merge only after required reviews and required checks pass under branch protection/ruleset policy.
 
 GitHub-hosted runners already include GitHub CLI. Steps that call `gh` require `GH_TOKEN`.
 

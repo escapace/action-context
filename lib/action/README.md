@@ -111,11 +111,11 @@ Additional outputs use `<engine>-version` keys (for example, `pnpm-version`) whe
 
 ## Event behavior matrix
 
-| Event type            | Version/environment outputs                          | `pr-*` outputs                                                                | Notes                                                 |
-| --------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `push`                | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                       | No pull request context lookup.                       |
-| `pull_request`        | populated                                            | populated when API access succeeds; defaults on pull request data degradation | Degradation emits warning and keeps action non-fatal. |
-| `tag`                 | populated (`environment`: `staging` or `production`) | defaults                                                                      | Changelog attempted on tag events.                    |
+| Event type     | Version/environment outputs                          | `pr-*` outputs                                                                | Notes                                                 |
+| -------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `push`         | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                       | No pull request context lookup.                       |
+| `pull_request` | populated                                            | populated when API access succeeds; defaults on pull request data degradation | Degradation emits warning and keeps action non-fatal. |
+| `tag`          | populated (`environment`: `staging` or `production`) | defaults                                                                      | Changelog attempted on tag events.                    |
 
 ## Reliability behavior
 
