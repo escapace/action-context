@@ -209,36 +209,13 @@ describe('setOutputPullRequest', () => {
     expect(getPullRequest).not.toHaveBeenCalled()
   })
 
-  it('works with pull_request_target events', async () => {
-    mockConstants.EVENT_NAME = 'pull_request_target'
-
-    vi.mocked(getInput).mockReturnValue(undefined)
-
-    vi.mocked(getPullRequest).mockResolvedValue({
-      authorBot: false,
-      baseRef: 'main',
-      headRef: 'feature',
-      headSha: 'abc1234',
-      mergeable: true,
-      notDraft: true,
-      number: 42,
-    })
-
-    vi.mocked(fetchReviewData).mockResolvedValue({
-      latestReviews: [],
-      reviewDecision: null,
-      reviewRequests: [],
-    })
-
-    vi.mocked(isReviewClear).mockReturnValue(true)
-    vi.mocked(getChecksClear).mockResolvedValue(true)
-    vi.mocked(getCommitsTrusted).mockResolvedValue(false)
+  it('emits default values on non-pull_request events', async () => {
+    mockConstants.EVENT_NAME = 'pull_request_review'
 
     await setOutputPullRequest(mockOctokit)
 
-    expect(getPullRequest).toHaveBeenCalled()
-    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 42)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', false)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
+    expect(getPullRequest).not.toHaveBeenCalled()
   })
 
   it('degrades to defaults with warning on pull-requests permission failure', async () => {

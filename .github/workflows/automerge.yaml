@@ -1,7 +1,7 @@
 name: automerge
 
 on:
-  pull_request_target:
+  pull_request:
     branches:
       - trunk
     types:
@@ -46,12 +46,14 @@ jobs:
           steps.context.outputs.pr-author-bot == 'true' &&
           steps.context.outputs.pr-not-draft == 'true' &&
           steps.context.outputs.pr-mergeable == 'true' &&
-          steps.context.outputs.pr-review-clear == 'true' &&
-          steps.context.outputs.pr-checks-clear == 'true' &&
           steps.context.outputs.pr-commits-trusted == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # This workflow intentionally runs only on pull_request events.
+          # Do not gate this step on pr-review-clear/pr-checks-clear: approvals
+          # and check transitions may happen without a new pull_request event.
+          # Branch protection and required checks/reviews remain authoritative.
           # --squash keeps non-queue, non-interactive execution deterministic.
           # Queue-required branches still use the merge method configured on the queue.
           gh pr merge "${{ steps.context.outputs.pr-number }}" \

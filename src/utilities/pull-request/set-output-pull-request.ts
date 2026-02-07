@@ -89,7 +89,7 @@ const warnAndDegrade = (error: unknown): void => {
  * serves as the implicit gate for consumers.
  */
 export const setOutputPullRequest = async (octokit: Octokit): Promise<void> => {
-  if (EVENT_NAME !== 'pull_request' && EVENT_NAME !== 'pull_request_target') {
+  if (EVENT_NAME !== 'pull_request') {
     setOutputs(DEFAULT_OUTPUTS)
 
     return
