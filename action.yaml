@@ -1,8 +1,24 @@
 author: 'escapace'
 description: 'Derive semantic versioning, environment classification, and build metadata from git history and repository configuration.'
 inputs:
+  context-source:
+    default: 'event'
+    description: 'Context source mode: event (derive from workflow event) or pr (derive from explicit PR inputs).'
+    required: false
   node-version:
     description: 'Node.js version constraint. Pooled with package.json engines and workspace constraints; the highest minimum version wins.'
+    required: false
+  pr-head-ref:
+    default: ''
+    description: 'Optional PR head ref guard for context-source=pr. When provided and mismatched, action degrades to event context.'
+    required: false
+  pr-head-sha:
+    default: ''
+    description: 'Optional PR head SHA guard for context-source=pr. When provided and mismatched, action degrades to event context.'
+    required: false
+  pr-number:
+    default: ''
+    description: 'Explicit PR number used when context-source=pr.'
     required: false
   token:
     default: ${{ github.token }}
@@ -36,6 +52,8 @@ outputs:
     description: 'Whether every commit author is trusted (bot in trusted-bots allowlist with verified signature, or human with verified signature and write permission). False on non-PR events.'
   pr-head-ref:
     description: 'PR head branch name. Empty on non-PR events.'
+  pr-merge-state-clear:
+    description: 'Whether pull request merge state is green (`CLEAN` or `HAS_HOOKS`). False on non-PR events.'
   pr-mergeable:
     description: 'Whether the PR has no merge conflicts (does not check if branch is behind base). False on non-PR events.'
   pr-not-draft:

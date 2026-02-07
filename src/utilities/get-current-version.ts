@@ -5,18 +5,24 @@ import { isString } from 'es-toolkit'
 import assert from 'node:assert'
 import semver from 'semver'
 import { EVENT_NAME, REF_NAME, REF_TYPE, SEMVER_OPTIONS, SHORT_COMMIT } from '../constants'
+import { createShortCommit } from './create-short-commit'
 import { CONVENTIONAL_COMMIT_REGEX, DEFAULT_INCREMENT } from '../constants'
 import { exec } from './exec'
 import { getBranch } from './get-branch'
 import { getSemver } from './get-semver'
 import { getTag } from './get-tag'
+import type { ResolvedContext } from './resolve-context'
 
 const assertRepoNotShallow = async () =>
   assert.notEqual(await exec('git', ['rev-parse', '--is-shallow-repository']), 'true')
 
-const assertBranchLatestCommit = async (branch: string) => {
-  if (REF_TYPE === 'branch' && EVENT_NAME !== 'pull_request') {
-    assert.equal(await exec('git', ['rev-parse', '--verify', branch]), github.context.sha)
+const assertBranchLatestCommit = async (
+  branch: string,
+  expectedSha: string,
+  shouldAssertBranchHead: boolean,
+) => {
+  if (REF_TYPE === 'branch' && shouldAssertBranchHead) {
+    assert.equal(await exec('git', ['rev-parse', '--verify', branch]), expectedSha)
   }
 }
 
@@ -65,7 +71,7 @@ const bump = async (lastGitTag: string, value: { major: number; minor: number; p
   }
 }
 
-export const getVersion = async () => {
+export const getVersion = async (context?: ResolvedContext) => {
   if (REF_TYPE === 'tag') {
     const version = semver.parse(semver.clean(REF_NAME, SEMVER_OPTIONS), SEMVER_OPTIONS)
 
@@ -74,31 +80,40 @@ export const getVersion = async () => {
     }
 
     return version
-  } else {
-    await assertRepoNotShallow()
-    const branch = getBranch()
-    await assertBranchLatestCommit(branch)
-
-    const lastGitTag = await getTag(branch)
-
-    if (lastGitTag === undefined) {
-      return semver.parse(`0.1.0-${preReleaseCase(branch)}+${SHORT_COMMIT}`, SEMVER_OPTIONS)
-    } else {
-      core.info(`Last tag: ${lastGitTag}`)
-
-      const { major, minor, patch } = semver.parse(
-        semver.clean(lastGitTag, SEMVER_OPTIONS),
-        SEMVER_OPTIONS,
-      )!
-
-      return getSemver({
-        ...(await bump(lastGitTag, {
-          major,
-          minor,
-          patch,
-        })),
-        prerelease: [preReleaseCase(branch), SHORT_COMMIT],
-      })
-    }
   }
+
+  await assertRepoNotShallow()
+
+  const branch = context?.branchForVersion ?? getBranch()
+  const expectedSha = context?.shaForVersion ?? github.context.sha
+  const shouldAssertBranchHead = context?.hasPrContext !== true && EVENT_NAME !== 'pull_request'
+
+  await assertBranchLatestCommit(branch, expectedSha, shouldAssertBranchHead)
+
+  const shortCommit =
+    typeof context?.shaForVersion === 'string'
+      ? createShortCommit(context.shaForVersion)
+      : SHORT_COMMIT
+
+  const lastGitTag = await getTag(branch)
+
+  if (lastGitTag === undefined) {
+    return semver.parse(`0.1.0-${preReleaseCase(branch)}+${shortCommit}`, SEMVER_OPTIONS)
+  }
+
+  core.info(`Last tag: ${lastGitTag}`)
+
+  const { major, minor, patch } = semver.parse(
+    semver.clean(lastGitTag, SEMVER_OPTIONS),
+    SEMVER_OPTIONS,
+  )!
+
+  return getSemver({
+    ...(await bump(lastGitTag, {
+      major,
+      minor,
+      patch,
+    })),
+    prerelease: [preReleaseCase(branch), shortCommit],
+  })
 }

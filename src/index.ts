@@ -11,15 +11,18 @@ import { setOutputGithubPages } from './utilities/set-output-github-pages'
 import { setOutputs } from './utilities/output'
 import { setOutputPullRequest } from './utilities/pull-request/set-output-pull-request'
 import { setOutputVersions } from './utilities/set-output-versions'
+import { resolveContext } from './utilities/resolve-context'
 
 const run = async () => {
-  const currentVersion = await getVersion()
   const token = getInput('token')
 
-  assert(currentVersion !== null, 'Failed to derive a semantic version.')
   assert(typeof token === 'string', 'Empty github token.')
 
   const octokit = github.getOctokit(token)
+  const resolvedContext = await resolveContext(octokit)
+  const currentVersion = await getVersion(resolvedContext)
+
+  assert(currentVersion !== null, 'Failed to derive a semantic version.')
 
   const { prerelease, version } = currentVersion
 
@@ -42,7 +45,7 @@ const run = async () => {
 
   await setOutputVersions()
   await setOutputGithubPages(octokit)
-  await setOutputPullRequest(octokit)
+  await setOutputPullRequest(octokit, resolvedContext)
 }
 
 const onError = (error: unknown): void =>

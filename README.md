@@ -68,11 +68,15 @@ For consistent behavior, declare explicit pull request permissions in workflows 
 
 ## Inputs
 
-| Name           | Required | Default        | Description                                                                                  |
-| -------------- | -------- | -------------- | -------------------------------------------------------------------------------------------- |
-| `token`        | no       | `github.token` | Token used for changelog, GitHub Pages, and pull request API calls.                          |
-| `node-version` | no       | _(empty)_      | Optional Node.js version constraint included in engine resolution.                           |
-| `trusted-bots` | no       | `""`           | Newline-separated bot logins trusted for `pr-commits-trusted`. Matching is case-insensitive. |
+| Name             | Required | Default        | Description                                                                                  |
+| ---------------- | -------- | -------------- | -------------------------------------------------------------------------------------------- |
+| `context-source` | no       | `event`        | Context mode: `event` (derive from workflow event) or `pr` (derive from explicit PR inputs). |
+| `node-version`   | no       | _(empty)_      | Optional Node.js version constraint included in engine resolution.                           |
+| `pr-head-ref`    | no       | _(empty)_      | Optional guard for `context-source=pr`; mismatch degrades to event-derived context.          |
+| `pr-head-sha`    | no       | _(empty)_      | Optional guard for `context-source=pr`; mismatch degrades to event-derived context.          |
+| `pr-number`      | no       | _(empty)_      | PR number used when `context-source=pr`.                                                     |
+| `token`          | no       | `github.token` | Token used for changelog, GitHub Pages, and pull request API calls.                          |
+| `trusted-bots`   | no       | `""`           | Newline-separated bot logins trusted for `pr-commits-trusted`. Matching is case-insensitive. |
 
 ## Outputs
 
@@ -93,17 +97,18 @@ For consistent behavior, declare explicit pull request permissions in workflows 
 
 ### Pull request outputs
 
-| Name                 | Example        | Description                                                                                               |
-| -------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
-| `pr-number`          | `95`           | Pull request number. `0` when pull request context is unavailable.                                        |
-| `pr-not-draft`       | `true`         | `true` when pull request is not draft.                                                                    |
-| `pr-base-ref`        | `trunk`        | Pull request base branch. Empty when unavailable.                                                         |
-| `pr-head-ref`        | `renovate/foo` | Pull request head branch. Empty when unavailable.                                                         |
-| `pr-author-bot`      | `true`         | `true` when pull request author account type is `Bot`.                                                    |
-| `pr-mergeable`       | `true`         | `true` when no merge conflicts are reported.                                                              |
-| `pr-review-clear`    | `true`         | `true` when review state does not block merge.                                                            |
-| `pr-checks-clear`    | `true`         | `true` when check runs and status contexts pass.                                                          |
-| `pr-commits-trusted` | `true`         | `true` when every commit is signed and authored by an allowlisted bot or a human with write/admin access. |
+| Name                   | Example        | Description                                                                                               |
+| ---------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
+| `pr-number`            | `95`           | Pull request number. `0` when pull request context is unavailable.                                        |
+| `pr-not-draft`         | `true`         | `true` when pull request is not draft.                                                                    |
+| `pr-base-ref`          | `trunk`        | Pull request base branch. Empty when unavailable.                                                         |
+| `pr-head-ref`          | `renovate/foo` | Pull request head branch. Empty when unavailable.                                                         |
+| `pr-author-bot`        | `true`         | `true` when pull request author account type is `Bot`.                                                    |
+| `pr-mergeable`         | `true`         | `true` when no merge conflicts are reported.                                                              |
+| `pr-review-clear`      | `true`         | `true` when review state does not block merge.                                                            |
+| `pr-checks-clear`      | `true`         | `true` when check runs and status contexts pass.                                                          |
+| `pr-merge-state-clear` | `true`         | `true` when GitHub reports merge-ready state (`CLEAN` or `HAS_HOOKS`).                                    |
+| `pr-commits-trusted`   | `true`         | `true` when every commit is signed and authored by an allowlisted bot or a human with write/admin access. |
 
 ### Dynamic engine outputs
 
@@ -139,13 +144,15 @@ Reference workflow: [`.github/workflows/automerge.yaml`](.github/workflows/autom
 
 For use outside this repository, change `uses: ./` to `uses: escapace/action-context@v0.2.0` in the `evaluate pull request context` step.
 
-This repository includes a ready-to-use automerge workflow that evaluates `action-context` pull request outputs and enables auto-merge once trust and merge-shape gates pass.
+This repository includes a canonical automerge workflow that discovers open pull requests on a schedule (and optional manual dispatch), evaluates `action-context` in explicit PR mode, and enables auto-merge when policy gates pass.
 
 Core behavior:
 
-- workflow trigger is `pull_request` only,
-- policy gate uses `pr-*` outputs (`pr-number`, `pr-author-bot`, `pr-not-draft`, `pr-mergeable`, `pr-commits-trusted`),
-- the workflow intentionally does not gate the `gh pr merge --auto` step on `pr-review-clear` or `pr-checks-clear`, because review/check transitions can occur without a new `pull_request` event,
+- workflow triggers are `schedule` and `workflow_dispatch`,
+- pull request evaluation uses `context-source: pr` with explicit `pr-number`, `pr-head-ref`, and `pr-head-sha`,
+- policy gate uses `pr-*` outputs (`pr-number`, `pr-author-bot`, `pr-not-draft`, `pr-mergeable`, `pr-commits-trusted`, `pr-merge-state-clear`),
+- `pr-merge-state-clear` is the canonical merge-readiness gate because it aligns with GitHub mergeability semantics (`CLEAN`/`HAS_HOOKS`) and branch protection/ruleset enforcement,
+- `pr-checks-clear` remains available as an optional strict gate when policy requires all reported checks/status contexts to pass (including non-required checks),
 - merge execution is guarded with `--match-head-commit` to prevent stale-head merges,
 - one command path is used for both queue-required and non-queue branches.
 
@@ -161,7 +168,7 @@ Rationale:
 - `--squash` keeps non-interactive, non-queue execution deterministic,
 - queue-required branches remain controlled by merge queue settings; queue merge method is configured at branch protection/ruleset level.
 
-Important: with `pull_request`-only triggers, approval/dismissal events do not start a new automerge workflow run. This is expected in this model. Auto-merge is enabled earlier, and GitHub completes the merge only after required reviews and required checks pass under branch protection/ruleset policy.
+Important: schedule/dispatch execution avoids `pull_request` event liveness gaps. Review and check state changes are re-evaluated on each run, and GitHub remains authoritative for final merge completion under branch protection and rulesets.
 
 GitHub-hosted runners already include GitHub CLI. Steps that call `gh` require `GH_TOKEN`.
 

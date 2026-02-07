@@ -1,9 +1,6 @@
 name: ci
 
 on:
-  merge_group:
-    types:
-      - checks_requested
   pull_request:
     branches:
       - trunk

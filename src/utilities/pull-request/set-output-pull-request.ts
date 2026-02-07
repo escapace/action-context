@@ -5,9 +5,11 @@ import { getInput } from '../get-input'
 import { setOutputs } from '../output'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
+import { getMergeStateClear } from './get-merge-state-clear'
 import { getPullRequest } from './get-pull-request'
 import { fetchReviewData, isReviewClear } from './get-review-clear'
 import { parseTrustedBots } from './parse-trusted-bots'
+import type { ResolvedContext } from '../resolve-context'
 import type { Octokit, PullRequestOutputs } from './types'
 
 const DEFAULT_OUTPUTS: PullRequestOutputs = {
@@ -16,6 +18,7 @@ const DEFAULT_OUTPUTS: PullRequestOutputs = {
   'pr-checks-clear': false,
   'pr-commits-trusted': false,
   'pr-head-ref': '',
+  'pr-merge-state-clear': false,
   'pr-mergeable': false,
   'pr-not-draft': false,
   'pr-number': 0,
@@ -88,17 +91,22 @@ const warnAndDegrade = (error: unknown): void => {
  * On non-PR events, emits zero/default values. `pr-number === 0`
  * serves as the implicit gate for consumers.
  */
-export const setOutputPullRequest = async (octokit: Octokit): Promise<void> => {
-  if (EVENT_NAME !== 'pull_request') {
+export const setOutputPullRequest = async (
+  octokit: Octokit,
+  context?: ResolvedContext,
+): Promise<void> => {
+  const contextPrNumber = context?.hasPrContext === true ? context.prNumber : undefined
+
+  if (contextPrNumber === undefined && EVENT_NAME !== 'pull_request') {
     setOutputs(DEFAULT_OUTPUTS)
 
     return
   }
 
-  const prNumber = github.context.payload.pull_request?.number
+  const prNumber = contextPrNumber ?? github.context.payload.pull_request?.number
 
-  if (prNumber === undefined) {
-    core.warning('pull_request event but no PR number in payload; emitting defaults')
+  if (typeof prNumber !== 'number' || prNumber <= 0) {
+    core.warning('PR context was expected but no valid PR number is available; emitting defaults')
     setOutputs(DEFAULT_OUTPUTS)
 
     return
@@ -110,10 +118,11 @@ export const setOutputPullRequest = async (octokit: Octokit): Promise<void> => {
     // Fetch basic PR data (with mergeable retry logic)
     const prData = await getPullRequest(octokit, prNumber)
 
-    // Fetch review data, check status, and commit trust in parallel
-    const [reviewData, checksClear, commitsTrusted] = await Promise.all([
+    // Fetch review data, check status, merge state, and commit trust in parallel
+    const [reviewData, checksClear, mergeStateClear, commitsTrusted] = await Promise.all([
       fetchReviewData(octokit, prNumber),
       getChecksClear(octokit, prData.headSha),
+      getMergeStateClear(octokit, prNumber),
       getCommitsTrusted(octokit, prNumber, trustedBots),
     ])
 
@@ -125,6 +134,7 @@ export const setOutputPullRequest = async (octokit: Octokit): Promise<void> => {
       'pr-checks-clear': checksClear,
       'pr-commits-trusted': commitsTrusted,
       'pr-head-ref': prData.headRef,
+      'pr-merge-state-clear': mergeStateClear,
       'pr-mergeable': prData.mergeable,
       'pr-not-draft': prData.notDraft,
       'pr-number': prData.number,

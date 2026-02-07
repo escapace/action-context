@@ -49,6 +49,10 @@ const runModule = async () => {
     setOutputGithubPages: vi.fn(),
   }))
 
+  vi.doMock('./utilities/resolve-context', () => ({
+    resolveContext: vi.fn(),
+  }))
+
   vi.doMock('./utilities/pull-request/set-output-pull-request', () => ({
     setOutputPullRequest: vi.fn(),
   }))
@@ -62,6 +66,7 @@ const runModule = async () => {
   const getChangelogModule = await import('./utilities/get-changelog')
   const setOutputVersionsModule = await import('./utilities/set-output-versions')
   const setOutputGithubPagesModule = await import('./utilities/set-output-github-pages')
+  const resolveContextModule = await import('./utilities/resolve-context')
   const setOutputPullRequestModule =
     await import('./utilities/pull-request/set-output-pull-request')
 
@@ -72,6 +77,7 @@ const runModule = async () => {
     getVersion: getVersionModule.getVersion,
     github: githubModule,
     isLatestVersion: isLatestVersionModule.isLatestVersion,
+    resolveContext: resolveContextModule.resolveContext,
     setOutputGithubPages: setOutputGithubPagesModule.setOutputGithubPages,
     setOutputPullRequest: setOutputPullRequestModule.setOutputPullRequest,
     setOutputVersions: setOutputVersionsModule.setOutputVersions,
@@ -90,6 +96,14 @@ describe('run', () => {
     mockConstants.SHORT_COMMIT = 'f2e1fe5'
 
     const mods = await runModule()
+
+    vi.mocked(mods.resolveContext).mockResolvedValue({
+      branchForVersion: 'trunk',
+      hasPrContext: false,
+      prNumber: 0,
+      shaForVersion: 'abc1234567890abcdef1234567890abcdef123456',
+      source: 'event',
+    })
 
     const version = semver.parse('0.11.2-trunk.f2e1fe5')!
     vi.mocked(mods.getVersion).mockResolvedValue(version)
@@ -123,6 +137,14 @@ describe('run', () => {
 
     const mods = await runModule()
 
+    vi.mocked(mods.resolveContext).mockResolvedValue({
+      branchForVersion: '',
+      hasPrContext: false,
+      prNumber: 0,
+      shaForVersion: 'abc1234567890abcdef1234567890abcdef123456',
+      source: 'event',
+    })
+
     const version = semver.parse('1.0.0')!
     vi.mocked(mods.getVersion).mockResolvedValue(version)
     vi.mocked(mods.getInput).mockReturnValue('ghp_test_token')
@@ -145,6 +167,14 @@ describe('run', () => {
 
     const mods = await runModule()
 
+    vi.mocked(mods.resolveContext).mockResolvedValue({
+      branchForVersion: '',
+      hasPrContext: false,
+      prNumber: 0,
+      shaForVersion: 'abc1234567890abcdef1234567890abcdef123456',
+      source: 'event',
+    })
+
     const version = semver.parse('1.0.0-rc.1')!
     vi.mocked(mods.getVersion).mockResolvedValue(version)
     vi.mocked(mods.getInput).mockReturnValue('ghp_test_token')
@@ -163,6 +193,14 @@ describe('run', () => {
   it('calls core.setFailed when getVersion returns null', async () => {
     const mods = await runModule()
 
+    vi.mocked(mods.resolveContext).mockResolvedValue({
+      branchForVersion: 'trunk',
+      hasPrContext: false,
+      prNumber: 0,
+      shaForVersion: 'abc1234567890abcdef1234567890abcdef123456',
+      source: 'event',
+    })
+
     vi.mocked(mods.getVersion).mockResolvedValue(null)
 
     await import('./index')
@@ -173,6 +211,14 @@ describe('run', () => {
 
   it('calls core.setFailed when token is missing', async () => {
     const mods = await runModule()
+
+    vi.mocked(mods.resolveContext).mockResolvedValue({
+      branchForVersion: 'trunk',
+      hasPrContext: false,
+      prNumber: 0,
+      shaForVersion: 'abc1234567890abcdef1234567890abcdef123456',
+      source: 'event',
+    })
 
     const version = semver.parse('1.0.0')!
     vi.mocked(mods.getVersion).mockResolvedValue(version)

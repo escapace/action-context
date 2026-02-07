@@ -1,15 +1,14 @@
 name: automerge
 
 on:
-  pull_request:
-    branches:
-      - trunk
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
-      - auto_merge_disabled
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: 'Optional PR number. When set, only this PR is evaluated.'
+        required: false
+        type: string
 
 permissions:
   checks: read
@@ -19,22 +18,94 @@ permissions:
 
 concurrency:
   cancel-in-progress: true
-  group: automerge-${{ github.event.pull_request.number }}
+  group: automerge-dispatch
 
 jobs:
-  automerge:
+  discover:
     runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.discover.outputs.count }}
+      matrix: ${{ steps.discover.outputs.matrix }}
     steps:
+      - name: discover candidate pull requests
+        id: discover
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_PR_NUMBER: ${{ inputs.pr-number }}
+        run: |
+          set -euo pipefail
+
+          declare -a prs
+
+          if [[ -n "${INPUT_PR_NUMBER}" ]]; then
+            if [[ "${INPUT_PR_NUMBER}" =~ ^[0-9]+$ ]] && [[ "${INPUT_PR_NUMBER}" -gt 0 ]]; then
+              prs=("${INPUT_PR_NUMBER}")
+            else
+              echo "::error::workflow_dispatch input pr-number must be a positive integer"
+              exit 1
+            fi
+          else
+            mapfile -t prs < <(gh api \
+              "repos/${GITHUB_REPOSITORY}/pulls" \
+              --paginate \
+              -f state=open \
+              -f per_page=100 \
+              --jq '.[].number')
+          fi
+
+          count="${#prs[@]}"
+          printf 'Discovered %s PR(s)\n' "${count}"
+
+          if [[ "${count}" -eq 0 ]]; then
+            echo 'matrix={"include":[]}' >> "${GITHUB_OUTPUT}"
+            echo 'count=0' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          json_array="$(printf '%s\n' "${prs[@]}" | jq -R . | jq -s .)"
+          matrix="$(jq -cn --argjson numbers "${json_array}" '{include: [$numbers[] | {pr_number: .}]}' )"
+
+          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
+          echo "count=${count}" >> "${GITHUB_OUTPUT}"
+
+  automerge:
+    if: needs.discover.outputs.count != '0'
+    needs:
+      - discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+    steps:
+      - name: fetch pull request head metadata
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          head_ref="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ matrix.pr_number }}" --jq '.head.ref')"
+          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ matrix.pr_number }}" --jq '.head.sha')"
+          auto_merge_enabled="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ matrix.pr_number }}" --jq '.auto_merge != null')"
+
+          echo "head_ref=${head_ref}" >> "${GITHUB_OUTPUT}"
+          echo "head_sha=${head_sha}" >> "${GITHUB_OUTPUT}"
+          echo "auto_merge_enabled=${auto_merge_enabled}" >> "${GITHUB_OUTPUT}"
+
       - name: checkout
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ steps.pr.outputs.head_ref }}
 
       - name: evaluate pull request context
         id: context
         uses: ./
         with:
+          context-source: pr
+          pr-head-ref: ${{ steps.pr.outputs.head_ref }}
+          pr-head-sha: ${{ steps.pr.outputs.head_sha }}
+          pr-number: ${{ matrix.pr_number }}
           token: ${{ github.token }}
           trusted-bots: |
             renovate[bot]
@@ -42,21 +113,33 @@ jobs:
 
       - name: enable auto-merge (queue and non-queue)
         if: |
+          steps.pr.outputs.auto_merge_enabled != 'true' &&
           steps.context.outputs.pr-number != '0' &&
           steps.context.outputs.pr-author-bot == 'true' &&
           steps.context.outputs.pr-not-draft == 'true' &&
           steps.context.outputs.pr-mergeable == 'true' &&
-          steps.context.outputs.pr-commits-trusted == 'true'
+          steps.context.outputs.pr-commits-trusted == 'true' &&
+          steps.context.outputs.pr-checks-clear == 'true' &&
+          steps.context.outputs.pr-merge-state-clear == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # This workflow intentionally runs only on pull_request events.
-          # Do not gate this step on pr-review-clear/pr-checks-clear: approvals
-          # and check transitions may happen without a new pull_request event.
-          # Branch protection and required checks/reviews remain authoritative.
-          # --squash keeps non-queue, non-interactive execution deterministic.
-          # Queue-required branches still use the merge method configured on the queue.
           gh pr merge "${{ steps.context.outputs.pr-number }}" \
             --auto \
             --squash \
-            --match-head-commit "${{ github.event.pull_request.head.sha }}"
+            --match-head-commit "${{ steps.pr.outputs.head_sha }}"
+
+      - name: summary
+        run: |
+          echo "## automerge evaluation for PR #${{ matrix.pr_number }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Output | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| pr-author-bot | ${{ steps.context.outputs.pr-author-bot }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| pr-not-draft | ${{ steps.context.outputs.pr-not-draft }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| pr-mergeable | ${{ steps.context.outputs.pr-mergeable }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| pr-commits-trusted | ${{ steps.context.outputs.pr-commits-trusted }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| pr-checks-clear | ${{ steps.context.outputs.pr-checks-clear }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| pr-merge-state-clear | ${{ steps.context.outputs.pr-merge-state-clear }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| pr-review-clear | ${{ steps.context.outputs.pr-review-clear }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| auto_merge_enabled_before | ${{ steps.pr.outputs.auto_merge_enabled }} |" >> "$GITHUB_STEP_SUMMARY"

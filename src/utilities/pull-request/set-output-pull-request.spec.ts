@@ -48,6 +48,10 @@ vi.mock('./get-checks-clear', () => ({
   getChecksClear: vi.fn(),
 }))
 
+vi.mock('./get-merge-state-clear', () => ({
+  getMergeStateClear: vi.fn(),
+}))
+
 vi.mock('./get-commits-trusted', () => ({
   getCommitsTrusted: vi.fn(),
 }))
@@ -56,6 +60,7 @@ import * as core from '@actions/core'
 import { getInput } from '../get-input'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
+import { getMergeStateClear } from './get-merge-state-clear'
 import { getPullRequest } from './get-pull-request'
 import { fetchReviewData, isReviewClear } from './get-review-clear'
 import { setOutputPullRequest } from './set-output-pull-request'
@@ -89,6 +94,7 @@ describe('setOutputPullRequest', () => {
     expect(core.setOutput).toHaveBeenCalledWith('pr-mergeable', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-review-clear', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', false)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', false)
 
     expect(getPullRequest).not.toHaveBeenCalled()
@@ -124,6 +130,7 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isReviewClear).mockReturnValue(true)
     vi.mocked(getChecksClear).mockResolvedValue(true)
+    vi.mocked(getMergeStateClear).mockResolvedValue(true)
     vi.mocked(getCommitsTrusted).mockResolvedValue(true)
 
     await setOutputPullRequest(mockOctokit)
@@ -136,6 +143,7 @@ describe('setOutputPullRequest', () => {
     expect(core.setOutput).toHaveBeenCalledWith('pr-mergeable', true)
     expect(core.setOutput).toHaveBeenCalledWith('pr-review-clear', true)
     expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', true)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', true)
     expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', true)
   })
 
@@ -160,6 +168,7 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isReviewClear).mockReturnValue(true)
     vi.mocked(getChecksClear).mockResolvedValue(true)
+    vi.mocked(getMergeStateClear).mockResolvedValue(true)
     vi.mocked(getCommitsTrusted).mockResolvedValue(true)
 
     await setOutputPullRequest(mockOctokit)
@@ -171,7 +180,7 @@ describe('setOutputPullRequest', () => {
     )
   })
 
-  it('fetches checks using head SHA from PR data', async () => {
+  it('fetches checks using head sha and merge state using PR number', async () => {
     vi.mocked(getInput).mockReturnValue(undefined)
 
     vi.mocked(getPullRequest).mockResolvedValue({
@@ -192,11 +201,13 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isReviewClear).mockReturnValue(true)
     vi.mocked(getChecksClear).mockResolvedValue(true)
+    vi.mocked(getMergeStateClear).mockResolvedValue(true)
     vi.mocked(getCommitsTrusted).mockResolvedValue(true)
 
     await setOutputPullRequest(mockOctokit)
 
     expect(getChecksClear).toHaveBeenCalledWith(mockOctokit, 'deadbeef1234')
+    expect(getMergeStateClear).toHaveBeenCalledWith(mockOctokit, 95)
   })
 
   it('emits defaults with warning when PR number is missing from payload', async () => {
@@ -234,6 +245,7 @@ describe('setOutputPullRequest', () => {
     )
     expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
     expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', false)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', false)
   })
 
@@ -258,6 +270,7 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isReviewClear).mockReturnValue(true)
     vi.mocked(getChecksClear).mockRejectedValue(new Error('Boom'))
+    vi.mocked(getMergeStateClear).mockResolvedValue(true)
     vi.mocked(getCommitsTrusted).mockResolvedValue(true)
 
     await expect(setOutputPullRequest(mockOctokit)).resolves.toBeUndefined()

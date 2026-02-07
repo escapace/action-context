@@ -47,6 +47,13 @@ describe('getBranch', () => {
     expect(getBranch()).toBe('trunk')
   })
 
+  it('preserves slash-separated branch names on push events', () => {
+    mockConstants.EVENT_NAME = 'push'
+    process.env.GITHUB_REF = 'refs/heads/releases/v4'
+
+    expect(getBranch()).toBe('releases/v4')
+  })
+
   it('throws when GITHUB_REF does not match expected pattern', () => {
     mockConstants.EVENT_NAME = 'push'
     process.env.GITHUB_REF = 'refs/tags/v1.0.0'

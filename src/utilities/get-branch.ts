@@ -14,7 +14,7 @@ export const getBranch = () => {
 
   const reference = process.env.GITHUB_REF!
 
-  const match = /refs\/heads\/(?<value>[^/]+)/.exec(reference)
+  const match = /refs\/heads\/(?<value>.+)/.exec(reference)
   const groups = match?.groups ?? {}
   const value = groups?.value
 
