@@ -142,23 +142,39 @@ describe('resolveContext', () => {
     expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('PR_INPUT_INVALID'))
   })
 
-  it('warns and falls back to event context on invalid pr-number in pr mode', async () => {
+  it('fails on invalid pr-number in explicit pr mode', async () => {
     vi.mocked(getInput).mockImplementation((name: string) => {
       if (name === 'context-source') return 'pr'
       if (name === 'pr-number') return 'abc'
       return undefined
     })
 
-    await expect(resolveContext(mockOctokit)).resolves.toMatchObject({
-      branchForVersion: 'trunk',
-      hasPrContext: false,
-      source: 'event',
-    })
-
-    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('PR_INPUT_INVALID'))
+    await expect(resolveContext(mockOctokit)).rejects.toThrow('PR_INPUT_INVALID')
+    expect(getPullRequest).not.toHaveBeenCalled()
   })
 
-  it('warns and falls back when provided pr-head-sha mismatches fetched PR head', async () => {
+  it('fails when provided pr-head-ref mismatches fetched PR head', async () => {
+    vi.mocked(getInput).mockImplementation((name: string) => {
+      if (name === 'context-source') return 'pr'
+      if (name === 'pr-number') return '95'
+      if (name === 'pr-head-ref') return 'mismatch/ref'
+      return undefined
+    })
+
+    vi.mocked(getPullRequest).mockResolvedValue({
+      authorBot: true,
+      baseRef: 'main',
+      headRef: 'renovate/eslint-9.x',
+      headSha: 'deadbeef1234',
+      mergeable: true,
+      notDraft: true,
+      number: 95,
+    })
+
+    await expect(resolveContext(mockOctokit)).rejects.toThrow('PR_INPUT_INVALID')
+  })
+
+  it('fails when provided pr-head-sha mismatches fetched PR head', async () => {
     vi.mocked(getInput).mockImplementation((name: string) => {
       if (name === 'context-source') return 'pr'
       if (name === 'pr-number') return '95'
@@ -176,12 +192,6 @@ describe('resolveContext', () => {
       number: 95,
     })
 
-    await expect(resolveContext(mockOctokit)).resolves.toMatchObject({
-      branchForVersion: 'trunk',
-      hasPrContext: false,
-      source: 'event',
-    })
-
-    expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('PR_INPUT_INVALID'))
+    await expect(resolveContext(mockOctokit)).rejects.toThrow('PR_INPUT_INVALID')
   })
 })

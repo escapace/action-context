@@ -24,7 +24,11 @@ const throwHelpfulReferenceError = (branch: string, error: unknown): never => {
   throw error
 }
 
-export async function getTag(branch?: string): Promise<string | undefined> {
+export async function getTag(
+  branch?: string,
+  options?: { includePrerelease?: boolean },
+): Promise<string | undefined> {
+  const includePrerelease = options?.includePrerelease ?? true
   let output: string
 
   try {
@@ -45,7 +49,21 @@ export async function getTag(branch?: string): Promise<string | undefined> {
 
   const list = output
     .split('\n')
-    .filter((value): value is string => semver.clean(value, SEMVER_OPTIONS) !== null)
+    .filter((value): value is string => {
+      const cleaned = semver.clean(value, SEMVER_OPTIONS)
+
+      if (cleaned === null) {
+        return false
+      }
+
+      if (includePrerelease) {
+        return true
+      }
+
+      const parsed = semver.parse(cleaned, SEMVER_OPTIONS)
+
+      return parsed !== null && parsed.prerelease.length === 0
+    })
     .sort((a, b) =>
       semver.compareBuild(
         semver.clean(a, SEMVER_OPTIONS)!,

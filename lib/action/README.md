@@ -12,12 +12,12 @@ Primary use cases:
 
 Select the mode by trigger type and whether merge policy consumes `pr-*` outputs.
 
-| Mode                       | Typical triggers                                 | `context-source`  | PR-specific inputs                                                | `pr-*` outputs                                                                                           |
-| -------------------------- | ------------------------------------------------ | ----------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Branch metadata mode       | `push` (branch)                                  | `event` (default) | none                                                              | defaults (`pr-number: 0`, booleans `false`, refs empty)                                                  |
-| Pull request event mode    | `pull_request`                                   | `event` (default) | none                                                              | populated from PR payload and API; degraded to defaults on API/permission failures                       |
-| Explicit pull request mode | `workflow_call`, `workflow_dispatch`, `schedule` | `pr`              | `pr-number` required; `pr-head-ref`/`pr-head-sha` optional guards | populated from explicit PR number and current API state; degraded to defaults on API/permission failures |
-| Tag release mode           | tag-triggered workflows                          | `event` (default) | none                                                              | defaults (`pr-number: 0`, booleans `false`, refs empty)                                                  |
+| Mode                       | Typical triggers                                 | `context-source`  | PR-specific inputs                                                | `pr-*` outputs                                                                                            |
+| -------------------------- | ------------------------------------------------ | ----------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Branch metadata mode       | `push` (branch)                                  | `event` (default) | none                                                              | defaults (`pr-number: 0`, booleans `false`, refs empty)                                                   |
+| Pull request event mode    | `pull_request`                                   | `event` (default) | none                                                              | populated from PR payload and API; degraded to defaults on API/permission failures                        |
+| Explicit pull request mode | `workflow_call`, `workflow_dispatch`, `schedule` | `pr`              | `pr-number` required; `pr-head-ref`/`pr-head-sha` optional guards | populated from explicit PR number and current API state; invalid PR inputs fail fast (`PR_INPUT_INVALID`) |
+| Tag release mode           | tag-triggered workflows                          | `event` (default) | none                                                              | defaults (`pr-number: 0`, booleans `false`, refs empty)                                                   |
 
 ### Shared checkout contract
 
@@ -91,7 +91,7 @@ steps:
         dependabot[bot]
 ```
 
-When `pr-head-ref` or `pr-head-sha` is provided and does not match current API data, the action warns and falls back to event-derived context.
+When `pr-head-ref` or `pr-head-sha` is provided and does not match current API data, the action fails with `PR_INPUT_INVALID`.
 
 ### Tag release mode
 
@@ -135,9 +135,9 @@ For consistent behavior, declare explicit pull request permissions in workflows 
 | ---------------- | -------- | -------------- | -------------------------------------------------------------------------------------------- |
 | `context-source` | no       | `event`        | Context mode: `event` (derive from workflow event) or `pr` (derive from explicit PR inputs). |
 | `node-version`   | no       | _(empty)_      | Optional Node.js version constraint included in engine resolution.                           |
-| `pr-head-ref`    | no       | _(empty)_      | Optional guard for `context-source=pr`; mismatch degrades to event-derived context.          |
-| `pr-head-sha`    | no       | _(empty)_      | Optional guard for `context-source=pr`; mismatch degrades to event-derived context.          |
-| `pr-number`      | no       | _(empty)_      | PR number used when `context-source=pr`.                                                     |
+| `pr-head-ref`    | no       | _(empty)_      | Optional guard for `context-source=pr`; mismatch fails with `PR_INPUT_INVALID`.              |
+| `pr-head-sha`    | no       | _(empty)_      | Optional guard for `context-source=pr`; mismatch fails with `PR_INPUT_INVALID`.              |
+| `pr-number`      | no       | _(empty)_      | PR number used when `context-source=pr`; must be a positive integer.                         |
 | `token`          | no       | `github.token` | Token used for changelog, GitHub Pages, and pull request API calls.                          |
 | `trusted-bots`   | no       | `""`           | Newline-separated bot logins trusted for `pr-commits-trusted`. Matching is case-insensitive. |
 
@@ -145,18 +145,33 @@ For consistent behavior, declare explicit pull request permissions in workflows 
 
 ### Core outputs
 
-| Name                    | Example                          | Description                                                                         |
-| ----------------------- | -------------------------------- | ----------------------------------------------------------------------------------- |
-| `version`               | `0.11.2-trunk.f2e1fe5`           | Computed semantic version.                                                          |
-| `environment`           | `testing`                        | `testing`, `staging`, or `production`.                                              |
-| `changelog`             | `## 1.2.0 ...`                   | Tag-event changelog markdown. Empty on non-tag events.                              |
-| `short-commit`          | `f2e1fe5`                        | Abbreviated commit SHA.                                                             |
-| `latest`                | `true`                           | `true` when `version` is greater than or equal to the highest semantic version tag. |
-| `prerelease`            | `true`                           | `true` when `version` contains prerelease identifiers.                              |
-| `prerelease-identifier` | `trunk`                          | First prerelease identifier; empty for release versions.                            |
-| `github-pages`          | `false`                          | `true` when GitHub Pages is enabled with workflow builds.                           |
-| `github-pages-path`     | `packages/docs/lib/github-pages` | Emitted only when exactly one workspace package defines `build:github-pages`.       |
-| `node-version`          | `24.12.0`                        | Resolved node version from discovered constraints.                                  |
+| Name                    | Example                          | Description                                                                                                       |
+| ----------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `version`               | `0.11.2-trunk.f2e1fe5`           | Computed semantic version.                                                                                        |
+| `environment`           | `testing`                        | `testing` for non-tag events, `staging` for prerelease tags, `production` for release tags.                       |
+| `changelog`             | `## 1.2.0 ...`                   | Tag-event changelog markdown. Empty on non-tag events.                                                            |
+| `short-commit`          | `f2e1fe5`                        | Abbreviated commit SHA.                                                                                           |
+| `latest`                | `true`                           | `true` when `version` is greater than or equal to the highest stable semantic version tag (prereleases excluded). |
+| `prerelease`            | `true`                           | `true` when `version` contains prerelease identifiers.                                                            |
+| `prerelease-identifier` | `trunk`                          | First prerelease identifier; empty for release versions.                                                          |
+| `github-pages`          | `false`                          | `true` when GitHub Pages is enabled with workflow builds.                                                         |
+| `github-pages-path`     | `packages/docs/lib/github-pages` | Emitted only when exactly one workspace package defines `build:github-pages`.                                     |
+| `node-version`          | `24.12.0`                        | Resolved node version from discovered constraints.                                                                |
+
+### `latest` interpretation in feature branches and pull requests
+
+`latest` compares the computed `version` against the highest stable semantic version tag in the repository. Prerelease tags are excluded from this comparison.
+
+| Existing tags           | Computed branch/PR `version` | Comparison target | `latest` |
+| ----------------------- | ---------------------------- | ----------------- | -------- |
+| `v0.11.1`               | `0.12.0-feature-a.abc1234`   | `0.11.1`          | `true`   |
+| `v1.2.0`, `v1.3.0-rc.1` | `1.2.1-feature-a.abc1234`    | `1.2.0`           | `true`   |
+| `v1.2.0`, `v1.3.0-rc.1` | `1.3.0-feature-a.abc1234`    | `1.2.0`           | `true`   |
+| `v1.2.0`, `v1.3.0`      | `1.3.0-feature-a.abc1234`    | `1.3.0`           | `false`  |
+| `v1.2.0`, `v1.3.0`      | `1.3.1-feature-a.abc1234`    | `1.3.0`           | `true`   |
+| _no stable tags_        | `0.1.0-feature-a.abc1234`    | none              | `true`   |
+
+A shallow checkout fails before `latest` evaluation. Use `fetch-depth: 0`.
 
 ### Pull request outputs
 
@@ -179,20 +194,20 @@ Additional outputs use `<engine>-version` keys (for example, `pnpm-version`) whe
 
 ## Event behavior matrix
 
-| Workflow context                                                          | Version/environment outputs                          | `pr-*` outputs                                                                   | Notes                                                                          |
-| ------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `push`                                                                    | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                          | No pull request lookup.                                                        |
-| `pull_request`                                                            | populated                                            | populated when API access succeeds; defaults on pull request data degradation    | Degradation emits warning and remains non-fatal.                               |
-| `tag`                                                                     | populated (`environment`: `staging` or `production`) | defaults                                                                         | Changelog attempted on tag events.                                             |
-| `workflow_call`, `workflow_dispatch`, `schedule` with `context-source=pr` | populated                                            | populated from explicit PR number and current API state; defaults on degradation | Supports deterministic pull request evaluation outside PR-triggered workflows. |
+| Workflow context                                                          | Version/environment outputs                          | `pr-*` outputs                                                                       | Notes                                                                          |
+| ------------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `push`                                                                    | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                              | No pull request lookup.                                                        |
+| `pull_request`                                                            | populated                                            | populated when API access succeeds; defaults on pull request data degradation        | Degradation emits warning and remains non-fatal.                               |
+| `tag`                                                                     | populated (`environment`: `staging` or `production`) | defaults                                                                             | Changelog attempted on tag events.                                             |
+| `workflow_call`, `workflow_dispatch`, `schedule` with `context-source=pr` | populated                                            | populated from explicit PR number and current API state; invalid PR inputs fail fast | Supports deterministic pull request evaluation outside PR-triggered workflows. |
 
 ## Reliability behavior
 
 ### Pull request data degradation
 
-When pull request API calls fail (including missing permissions), all `pr-*` outputs are reset to conservative defaults and a warning is emitted.
+When pull request output collection fails (including missing permissions for pull request, checks, or statuses endpoints), all `pr-*` outputs are reset to conservative defaults and a warning is emitted.
 
-Design intent: downstream merge policy receives no false-positive readiness signal.
+In explicit pull request mode, invalid PR input guards (`pr-number`, `pr-head-ref`, `pr-head-sha`) fail fast with `PR_INPUT_INVALID` before output collection.
 
 ### Version discovery degradation
 
@@ -291,7 +306,7 @@ Reference documents:
 | ----------------------------------- | ------------ |
 | release tag (no prerelease segment) | `production` |
 | prerelease tag                      | `staging`    |
-| branch or pull request event        | `testing`    |
+| non-tag event                       | `testing`    |
 
 ## Engine version resolution
 

@@ -7,14 +7,12 @@ import semver from 'semver'
 import { EVENT_NAME, REF_NAME, REF_TYPE, SEMVER_OPTIONS, SHORT_COMMIT } from '../constants'
 import { createShortCommit } from './create-short-commit'
 import { CONVENTIONAL_COMMIT_REGEX, DEFAULT_INCREMENT } from '../constants'
+import { assertRepoNotShallow } from './assert-repo-not-shallow'
 import { exec } from './exec'
 import { getBranch } from './get-branch'
 import { getSemver } from './get-semver'
 import { getTag } from './get-tag'
 import type { ResolvedContext } from './resolve-context'
-
-const assertRepoNotShallow = async () =>
-  assert.notEqual(await exec('git', ['rev-parse', '--is-shallow-repository']), 'true')
 
 const assertBranchLatestCommit = async (
   branch: string,

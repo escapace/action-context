@@ -75,12 +75,28 @@ describe('getTag', () => {
     expect(exec).toHaveBeenCalledWith('git', ['--no-pager', 'tag', '--list', '--sort=authordate'])
   })
 
-  it('handles prerelease tags with includePrerelease', async () => {
-    vi.mocked(exec).mockResolvedValue('v1.0.0\nv1.1.0-rc.1\nv1.1.0')
+  it('returns prerelease tags by default', async () => {
+    vi.mocked(exec).mockResolvedValue('v1.0.0\nv1.1.0-rc.1')
 
     const result = await getTag()
 
-    expect(result).toBe('v1.1.0')
+    expect(result).toBe('v1.1.0-rc.1')
+  })
+
+  it('can exclude prerelease tags', async () => {
+    vi.mocked(exec).mockResolvedValue('v1.0.0\nv1.1.0-rc.1')
+
+    const result = await getTag(undefined, { includePrerelease: false })
+
+    expect(result).toBe('v1.0.0')
+  })
+
+  it('returns undefined when only prerelease tags exist and includePrerelease is false', async () => {
+    vi.mocked(exec).mockResolvedValue('v1.1.0-rc.1\nv1.1.0-beta.1')
+
+    const result = await getTag(undefined, { includePrerelease: false })
+
+    expect(result).toBeUndefined()
   })
 
   it('throws actionable guidance when branch ref is not locally resolvable', async () => {

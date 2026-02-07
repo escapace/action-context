@@ -15,6 +15,15 @@ export interface ResolvedContext {
 }
 
 const warning = (detail: string) => core.warning(`[PR_INPUT_INVALID] ${detail}`)
+const failInput = (detail: string): never => {
+  throw new Error(`[PR_INPUT_INVALID] ${detail}`)
+}
+
+function assertValidPrNumber(value: number | undefined): asserts value is number {
+  if (value === undefined) {
+    failInput("context-source='pr' requires a positive integer in input 'pr-number'.")
+  }
+}
 
 const parsePositiveInteger = (value: string | undefined): number | undefined => {
   if (typeof value !== 'string') return undefined
@@ -104,12 +113,7 @@ export const resolveContext = async (octokit: Octokit): Promise<ResolvedContext>
   }
 
   const prNumber = parsePositiveInteger(getInput('pr-number'))
-
-  if (prNumber === undefined) {
-    warning("context-source='pr' requires a positive integer in input 'pr-number'.")
-
-    return resolveEventContext()
-  }
+  assertValidPrNumber(prNumber)
 
   const pr = await getPullRequest(octokit, prNumber)
 
@@ -119,11 +123,9 @@ export const resolveContext = async (octokit: Octokit): Promise<ResolvedContext>
     inputHeadReference.trim().length > 0 &&
     inputHeadReference !== pr.headRef
   ) {
-    warning(
+    failInput(
       `Provided pr-head-ref '${inputHeadReference}' does not match fetched PR head ref '${pr.headRef}'.`,
     )
-
-    return resolveEventContext()
   }
 
   const inputHeadSha = getInput('pr-head-sha')
@@ -132,11 +134,9 @@ export const resolveContext = async (octokit: Octokit): Promise<ResolvedContext>
     inputHeadSha.trim().length > 0 &&
     inputHeadSha !== pr.headSha
   ) {
-    warning(
+    failInput(
       `Provided pr-head-sha '${inputHeadSha}' does not match fetched PR head sha '${pr.headSha}'.`,
     )
-
-    return resolveEventContext()
   }
 
   return {
