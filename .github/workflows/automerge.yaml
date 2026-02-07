@@ -99,7 +99,7 @@ jobs:
             core.setOutput('node_id', pull.node_id)
 
       - name: checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ steps.pr.outputs.head_ref }}
