@@ -66,7 +66,8 @@ const createMockOctokit = (
 }
 
 describe('getChecksClear', () => {
-  const originalEnvironment = process.env.GITHUB_REPOSITORY
+  const originalRepositoryEnvironment = process.env.GITHUB_REPOSITORY
+  const originalRunIdEnvironment = process.env.GITHUB_RUN_ID
 
   beforeEach(() => {
     vi.resetModules()
@@ -74,10 +75,16 @@ describe('getChecksClear', () => {
   })
 
   afterEach(() => {
-    if (originalEnvironment === undefined) {
+    if (originalRepositoryEnvironment === undefined) {
       delete process.env.GITHUB_REPOSITORY
     } else {
-      process.env.GITHUB_REPOSITORY = originalEnvironment
+      process.env.GITHUB_REPOSITORY = originalRepositoryEnvironment
+    }
+
+    if (originalRunIdEnvironment === undefined) {
+      delete process.env.GITHUB_RUN_ID
+    } else {
+      process.env.GITHUB_RUN_ID = originalRunIdEnvironment
     }
   })
 
@@ -160,6 +167,91 @@ describe('getChecksClear', () => {
             { conclusion: null, status: 'in_progress' },
           ],
           total_count: 2,
+        },
+      }),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(false)
+  })
+
+  it('ignores in-progress check runs from the current workflow run', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    process.env.GITHUB_RUN_ID = '21770828514'
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({
+        data: {
+          check_runs: [
+            {
+              app: { slug: 'github-actions' },
+              conclusion: null,
+              details_url:
+                'https://github.com/escapace/action-context/actions/runs/21770828514/job/62817814487',
+              status: 'in_progress',
+            },
+            {
+              app: { slug: 'github-actions' },
+              conclusion: 'success',
+              details_url:
+                'https://github.com/escapace/action-context/actions/runs/21770205966/job/62815825595',
+              status: 'completed',
+            },
+          ],
+          total_count: 2,
+        },
+      }),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(true)
+  })
+
+  it('does not ignore in-progress check runs from other workflow runs', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    process.env.GITHUB_RUN_ID = '21770828514'
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({
+        data: {
+          check_runs: [
+            {
+              app: { slug: 'github-actions' },
+              conclusion: null,
+              details_url:
+                'https://github.com/escapace/action-context/actions/runs/21770205966/job/62815825595',
+              status: 'in_progress',
+            },
+          ],
+          total_count: 1,
+        },
+      }),
+      vi.fn().mockResolvedValue({ data: { statuses: [] } }),
+    )
+
+    expect(await getChecksClear(octokit, 'abc1234')).toBe(false)
+  })
+
+  it('does not ignore completed checks from the current workflow run', async () => {
+    const { getChecksClear } = await import('./get-checks-clear')
+
+    process.env.GITHUB_RUN_ID = '21770828514'
+
+    const octokit = createMockOctokit(
+      vi.fn().mockResolvedValue({
+        data: {
+          check_runs: [
+            {
+              app: { slug: 'github-actions' },
+              conclusion: 'failure',
+              details_url:
+                'https://github.com/escapace/action-context/actions/runs/21770828514/job/62817814487',
+              status: 'completed',
+            },
+          ],
+          total_count: 1,
         },
       }),
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),

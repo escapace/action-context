@@ -49,7 +49,9 @@ const fetchCheckRuns = async (octokit: Octokit, reference: string): Promise<Chec
 
       for (const run of response.data.check_runs) {
         checkRuns.push({
+          appSlug: run.app?.slug,
           conclusion: run.conclusion ?? null,
+          detailsUrl: run.details_url ?? undefined,
           status: run.status,
         })
       }
@@ -105,6 +107,27 @@ const fetchStatusContexts = async (
   }
 }
 
+const isCurrentWorkflowInProgressCheckRun = (checkRun: CheckRun): boolean => {
+  const runId = process.env.GITHUB_RUN_ID
+
+  if (typeof runId !== 'string' || runId.length === 0) {
+    return false
+  }
+
+  if (checkRun.status === 'completed') {
+    return false
+  }
+
+  if (checkRun.appSlug !== 'github-actions') {
+    return false
+  }
+
+  return (
+    typeof checkRun.detailsUrl === 'string' &&
+    checkRun.detailsUrl.includes(`/actions/runs/${runId}/`)
+  )
+}
+
 /**
  * Derive whether all status checks are passing for a PR's head SHA.
  *
@@ -119,7 +142,11 @@ export const getChecksClear = async (octokit: Octokit, headSha: string): Promise
     fetchStatusContexts(octokit, headSha),
   ])
 
-  const checkRunsClear = checkRuns.every(isCheckRunPassing)
+  const effectiveCheckRuns = checkRuns.filter(
+    (checkRun) => !isCurrentWorkflowInProgressCheckRun(checkRun),
+  )
+
+  const checkRunsClear = effectiveCheckRuns.every(isCheckRunPassing)
   const statusContextsClear = statusContexts.every(isStatusContextPassing)
 
   return checkRunsClear && statusContextsClear

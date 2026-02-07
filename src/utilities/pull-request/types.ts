@@ -34,6 +34,8 @@ export interface ReviewData {
 export interface CheckRun {
   conclusion: string | null
   status: string
+  appSlug?: string
+  detailsUrl?: string
 }
 
 /** StatusContext from REST repos.getCombinedStatusForRef. */
