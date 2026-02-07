@@ -30,57 +30,41 @@ jobs:
       - name: discover candidate pull requests
         id: discover
         env:
-          GH_TOKEN: ${{ github.token }}
           INPUT_PR_NUMBER: ${{ inputs.pr-number }}
-        run: |
-          set -euo pipefail
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const input = (process.env.INPUT_PR_NUMBER ?? '').trim()
+            const discovered = []
 
-          declare -a prs
+            if (input.length > 0) {
+              if (!/^\d+$/.test(input) || Number(input) <= 0) {
+                core.setFailed('workflow_dispatch input pr-number must be a positive integer')
+                return
+              }
 
-          if [[ -n "${INPUT_PR_NUMBER}" ]]; then
-            if [[ "${INPUT_PR_NUMBER}" =~ ^[0-9]+$ ]] && [[ "${INPUT_PR_NUMBER}" -gt 0 ]]; then
-              prs=("${INPUT_PR_NUMBER}")
-            else
-              echo "::error::workflow_dispatch input pr-number must be a positive integer"
-              exit 1
-            fi
-          else
-            prs_output="$(gh pr list \
-              --repo "${GITHUB_REPOSITORY}" \
-              --state open \
-              --limit 1000 \
-              --json number \
-              --jq '.[].number')"
+              discovered.push(Number(input))
+            } else {
+              const pulls = await github.paginate(github.rest.pulls.list, {
+                ...context.repo,
+                state: 'open',
+                per_page: 100,
+              })
 
-            if [[ -n "${prs_output}" ]]; then
-              mapfile -t prs <<< "${prs_output}"
-            fi
-          fi
+              for (const pull of pulls) {
+                if (Number.isInteger(pull.number) && pull.number > 0) {
+                  discovered.push(pull.number)
+                } else {
+                  core.warning(`Skipping invalid PR identifier from discovery output: ${String(pull.number)}`)
+                }
+              }
+            }
 
-          declare -a discovered_prs=()
+            const matrix = { include: discovered.map((prNumber) => ({ pr_number: prNumber })) }
 
-          for pr in "${prs[@]:-}"; do
-            if [[ "${pr}" =~ ^[0-9]+$ ]] && [[ "${pr}" -gt 0 ]]; then
-              discovered_prs+=("${pr}")
-            elif [[ -n "${pr}" ]]; then
-              echo "::warning::Skipping invalid PR identifier from discovery output: ${pr}"
-            fi
-          done
-
-          count="${#discovered_prs[@]}"
-          printf 'Discovered %s PR(s)\n' "${count}"
-
-          if [[ "${count}" -eq 0 ]]; then
-            echo 'matrix={"include":[]}' >> "${GITHUB_OUTPUT}"
-            echo 'count=0' >> "${GITHUB_OUTPUT}"
-            exit 0
-          fi
-
-          json_array="$(printf '%s\n' "${discovered_prs[@]}" | jq -R . | jq -s .)"
-          matrix="$(jq -cn --argjson numbers "${json_array}" '{include: [$numbers[] | {pr_number: .}]}' )"
-
-          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
-          echo "count=${count}" >> "${GITHUB_OUTPUT}"
+            core.info(`Discovered ${discovered.length} PR(s)`)
+            core.setOutput('count', String(discovered.length))
+            core.setOutput('matrix', JSON.stringify(matrix))
 
   automerge:
     if: needs.discover.outputs.count != '0'
@@ -94,17 +78,25 @@ jobs:
       - name: fetch pull request head metadata
         id: pr
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
+          PR_NUMBER: ${{ matrix.pr_number }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const pullNumber = Number(process.env.PR_NUMBER)
+            if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+              core.setFailed(`Invalid matrix PR number: ${process.env.PR_NUMBER}`)
+              return
+            }
 
-          head_ref="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ matrix.pr_number }}" --jq '.head.ref')"
-          head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ matrix.pr_number }}" --jq '.head.sha')"
-          auto_merge_enabled="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${{ matrix.pr_number }}" --jq '.auto_merge != null')"
+            const { data: pull } = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: pullNumber,
+            })
 
-          echo "head_ref=${head_ref}" >> "${GITHUB_OUTPUT}"
-          echo "head_sha=${head_sha}" >> "${GITHUB_OUTPUT}"
-          echo "auto_merge_enabled=${auto_merge_enabled}" >> "${GITHUB_OUTPUT}"
+            core.setOutput('head_ref', pull.head.ref)
+            core.setOutput('head_sha', pull.head.sha)
+            core.setOutput('auto_merge_enabled', String(pull.auto_merge !== null))
+            core.setOutput('node_id', pull.node_id)
 
       - name: checkout
         uses: actions/checkout@v5
@@ -144,16 +136,30 @@ jobs:
             --match-head-commit "${{ steps.pr.outputs.head_sha }}"
 
       - name: summary
-        run: |
-          echo "## automerge evaluation for PR #${{ matrix.pr_number }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Output | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| pr-author-bot | ${{ steps.context.outputs.pr-author-bot }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| pr-not-draft | ${{ steps.context.outputs.pr-not-draft }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| pr-mergeable | ${{ steps.context.outputs.pr-mergeable }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| pr-commits-trusted | ${{ steps.context.outputs.pr-commits-trusted }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| pr-checks-clear | ${{ steps.context.outputs.pr-checks-clear }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| pr-merge-state-clear | ${{ steps.context.outputs.pr-merge-state-clear }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| pr-review-clear | ${{ steps.context.outputs.pr-review-clear }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| auto_merge_enabled_before | ${{ steps.pr.outputs.auto_merge_enabled }} |" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          AUTO_MERGE_ENABLED_BEFORE: ${{ steps.pr.outputs.auto_merge_enabled }}
+          PR_AUTHOR_BOT: ${{ steps.context.outputs.pr-author-bot }}
+          PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
+          PR_COMMITS_TRUSTED: ${{ steps.context.outputs.pr-commits-trusted }}
+          PR_MERGEABLE: ${{ steps.context.outputs.pr-mergeable }}
+          PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
+          PR_NOT_DRAFT: ${{ steps.context.outputs.pr-not-draft }}
+          PR_NUMBER: ${{ matrix.pr_number }}
+          PR_REVIEW_CLEAR: ${{ steps.context.outputs.pr-review-clear }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            await core.summary
+              .addHeading(`automerge evaluation for PR #${process.env.PR_NUMBER}`, 2)
+              .addTable([
+                [{ data: 'Output', header: true }, { data: 'Value', header: true }],
+                ['pr-author-bot', process.env.PR_AUTHOR_BOT ?? ''],
+                ['pr-not-draft', process.env.PR_NOT_DRAFT ?? ''],
+                ['pr-mergeable', process.env.PR_MERGEABLE ?? ''],
+                ['pr-commits-trusted', process.env.PR_COMMITS_TRUSTED ?? ''],
+                ['pr-checks-clear', process.env.PR_CHECKS_CLEAR ?? ''],
+                ['pr-merge-state-clear', process.env.PR_MERGE_STATE_CLEAR ?? ''],
+                ['pr-review-clear', process.env.PR_REVIEW_CLEAR ?? ''],
+                ['auto_merge_enabled_before', process.env.AUTO_MERGE_ENABLED_BEFORE ?? ''],
+              ])
+              .write()
