@@ -128,33 +128,12 @@ jobs:
           steps.context.outputs.pr-checks-clear == 'true' &&
           steps.context.outputs.pr-merge-state-clear == 'true'
         env:
-          EXPECTED_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
-          PULL_REQUEST_ID: ${{ steps.pr.outputs.node_id }}
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const pullRequestId = process.env.PULL_REQUEST_ID
-            const expectedHeadOid = process.env.EXPECTED_HEAD_SHA
-
-            if (!pullRequestId || !expectedHeadOid) {
-              core.setFailed('Missing pull request node ID or head SHA required for enabling auto-merge')
-              return
-            }
-
-            await github.graphql(
-              `mutation EnableAutoMerge($pullRequestId: ID!, $expectedHeadOid: GitObjectID!) {
-                enablePullRequestAutoMerge(input: {
-                  pullRequestId: $pullRequestId,
-                  mergeMethod: SQUASH,
-                  expectedHeadOid: $expectedHeadOid
-                }) {
-                  clientMutationId
-                }
-              }`,
-              { pullRequestId, expectedHeadOid },
-            )
-
-            core.info('Auto-merge enabled')
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge "${{ steps.context.outputs.pr-number }}" \
+            --auto \
+            --squash \
+            --match-head-commit "${{ steps.pr.outputs.head_sha }}"
 
       - name: summary
         env:
