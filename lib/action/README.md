@@ -18,7 +18,7 @@ Primary use cases:
     fetch-depth: 0
     ref: ${{ github.head_ref || github.ref }}
 
-- uses: escapace/action-context@v0
+- uses: escapace/action-context@v0.2.0
   id: context
 ```
 
@@ -37,7 +37,7 @@ steps:
       fetch-depth: 0
       ref: ${{ github.head_ref || github.ref }}
 
-  - uses: escapace/action-context@v0
+  - uses: escapace/action-context@v0.2.0
     id: context
     with:
       token: ${{ secrets.GITHUB_TOKEN }}
@@ -137,6 +137,8 @@ Version discovery is best effort and source-isolated:
 ## Automerge
 
 Reference workflow: [`.github/workflows/automerge.yaml`](.github/workflows/automerge.yaml)
+
+For use outside this repository, change `uses: ./` to `uses: escapace/action-context@v0.2.0` in the `evaluate pull request context` step.
 
 This repository includes a ready-to-use automerge workflow that evaluates `action-context` pull request outputs and enables auto-merge only when all safety gates are satisfied.
 

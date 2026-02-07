@@ -33,7 +33,7 @@ jobs:
 
       - name: evaluate pull request context
         id: context
-        uses: escapace/action-context@v0
+        uses: ./
         with:
           token: ${{ github.token }}
           trusted-bots: |
