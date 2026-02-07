@@ -82,4 +82,16 @@ describe('getTag', () => {
 
     expect(result).toBe('v1.1.0')
   })
+
+  it('throws actionable guidance when branch ref is not locally resolvable', async () => {
+    vi.mocked(exec).mockRejectedValue(
+      new Error(
+        'Command failed with exit code 128: fatal: malformed object name renovate/all-minor-patch',
+      ),
+    )
+
+    await expect(getTag('renovate/all-minor-patch')).rejects.toThrow(
+      'Ensure checkout uses a branch ref',
+    )
+  })
 })

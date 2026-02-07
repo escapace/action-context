@@ -41,7 +41,22 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-          ref: ${{ inputs.pr-head-sha }}
+          ref: ${{ inputs.pr-head-ref }}
+
+      - name: validate checkout parity for branch-based versioning
+        run: |
+          set -euo pipefail
+          actual_ref="$(git rev-parse --abbrev-ref HEAD)"
+          [[ "${actual_ref}" == "${{ inputs.pr-head-ref }}" ]] || {
+            echo "::error::Expected checkout on '${{ inputs.pr-head-ref }}' but got '${actual_ref}'."
+            exit 1
+          }
+
+          actual_sha="$(git rev-parse HEAD)"
+          [[ "${actual_sha}" == "${{ inputs.pr-head-sha }}" ]] || {
+            echo "::error::Expected HEAD '${{ inputs.pr-head-sha }}' but got '${actual_sha}'."
+            exit 1
+          }
 
       - name: run action in explicit pr mode
         id: context
