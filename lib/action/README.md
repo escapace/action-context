@@ -8,9 +8,26 @@ Primary use cases:
 - pull request safety signals for merge policy steps,
 - resolved runtime and tool versions as `<engine>-version` outputs.
 
-## Adoption paths
+## Operating modes
 
-### Path A: version and environment only
+Select the mode by trigger type and whether merge policy consumes `pr-*` outputs.
+
+| Mode                       | Typical triggers                                 | `context-source`  | PR-specific inputs                                                | `pr-*` outputs                                                                                           |
+| -------------------------- | ------------------------------------------------ | ----------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Branch metadata mode       | `push` (branch)                                  | `event` (default) | none                                                              | defaults (`pr-number: 0`, booleans `false`, refs empty)                                                  |
+| Pull request event mode    | `pull_request`                                   | `event` (default) | none                                                              | populated from PR payload and API; degraded to defaults on API/permission failures                       |
+| Explicit pull request mode | `workflow_call`, `workflow_dispatch`, `schedule` | `pr`              | `pr-number` required; `pr-head-ref`/`pr-head-sha` optional guards | populated from explicit PR number and current API state; degraded to defaults on API/permission failures |
+| Tag release mode           | tag-triggered workflows                          | `event` (default) | none                                                              | defaults (`pr-number: 0`, booleans `false`, refs empty)                                                  |
+
+### Shared checkout contract
+
+| Setting                   | Required value                           | Reason                                                                                                    |
+| ------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `fetch-depth`             | `0`                                      | Full history is required for semantic tag reachability and commit range analysis.                         |
+| `ref` in event mode       | `${{ github.head_ref \|\| github.ref }}` | Pull request events otherwise use synthetic merge refs, which can change branch-based version derivation. |
+| `ref` in explicit PR mode | `${{ inputs.pr-head-ref }}`              | Branch-ref checkout is required for parity with event-mode branch/tag ancestry checks.                    |
+
+### Branch metadata mode
 
 ```yaml
 - uses: actions/checkout@v5
@@ -22,7 +39,7 @@ Primary use cases:
   id: context
 ```
 
-### Path B: pull request safety outputs enabled
+### Pull request event mode
 
 ```yaml
 permissions:
@@ -40,13 +57,66 @@ steps:
   - uses: escapace/action-context@v0.2.0
     id: context
     with:
-      token: ${{ secrets.GITHUB_TOKEN }}
       trusted-bots: |
         renovate[bot]
         dependabot[bot]
 ```
 
-Outputs are available as `${{ steps.context.outputs.<name> }}`.
+### Explicit pull request mode
+
+Reusable workflows typically define `pr-number`, `pr-head-ref`, and `pr-head-sha` as required `workflow_call` inputs.
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+  statuses: read
+
+steps:
+  - uses: actions/checkout@v5
+    with:
+      fetch-depth: 0
+      ref: ${{ inputs.pr-head-ref }}
+
+  - uses: escapace/action-context@v0.2.0
+    id: context
+    with:
+      context-source: pr
+      pr-number: ${{ inputs.pr-number }}
+      pr-head-ref: ${{ inputs.pr-head-ref }}
+      pr-head-sha: ${{ inputs.pr-head-sha }}
+      trusted-bots: |
+        renovate[bot]
+        dependabot[bot]
+```
+
+When `pr-head-ref` or `pr-head-sha` is provided and does not match current API data, the action warns and falls back to event-derived context.
+
+### Tag release mode
+
+```yaml
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - uses: escapace/action-context@v0.2.0
+        id: context
+```
+
+Tag mode parses `GITHUB_REF_NAME` as semantic version. Invalid semantic tags fail the action.
+
+Outputs are exposed as `${{ steps.context.outputs.<name> }}`.
 
 ## Permission behavior: public vs private repositories
 
@@ -58,13 +128,6 @@ GitHub documentation for multiple read endpoints used by `pr-*` outputs (pull re
 | private               | Pull request, checks, and status data require explicit token permissions.           | Missing `pull-requests: read`, `checks: read`, or `statuses: read` can trigger degraded defaults with a warning. |
 
 For consistent behavior, declare explicit pull request permissions in workflows that depend on `pr-*` outputs, regardless of repository visibility.
-
-## Checkout requirements
-
-| Setting       | Value                                    | Reason                                                                                                               |
-| ------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `fetch-depth` | `0`                                      | Full history is required to resolve semantic version tags and commit ranges.                                         |
-| `ref`         | `${{ github.head_ref \|\| github.ref }}` | Pull request events otherwise default to synthetic merge refs, which can alter tag reachability and commit analysis. |
 
 ## Inputs
 
@@ -116,11 +179,12 @@ Additional outputs use `<engine>-version` keys (for example, `pnpm-version`) whe
 
 ## Event behavior matrix
 
-| Event type     | Version/environment outputs                          | `pr-*` outputs                                                                | Notes                                                 |
-| -------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `push`         | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                       | No pull request context lookup.                       |
-| `pull_request` | populated                                            | populated when API access succeeds; defaults on pull request data degradation | Degradation emits warning and keeps action non-fatal. |
-| `tag`          | populated (`environment`: `staging` or `production`) | defaults                                                                      | Changelog attempted on tag events.                    |
+| Workflow context                                                          | Version/environment outputs                          | `pr-*` outputs                                                                   | Notes                                                                          |
+| ------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `push`                                                                    | populated                                            | defaults (`pr-number: 0`, booleans `false`, refs empty)                          | No pull request lookup.                                                        |
+| `pull_request`                                                            | populated                                            | populated when API access succeeds; defaults on pull request data degradation    | Degradation emits warning and remains non-fatal.                               |
+| `tag`                                                                     | populated (`environment`: `staging` or `production`) | defaults                                                                         | Changelog attempted on tag events.                                             |
+| `workflow_call`, `workflow_dispatch`, `schedule` with `context-source=pr` | populated                                            | populated from explicit PR number and current API state; defaults on degradation | Supports deterministic pull request evaluation outside PR-triggered workflows. |
 
 ## Reliability behavior
 
@@ -150,9 +214,7 @@ Core behavior:
 
 - workflow triggers are `schedule` and `workflow_dispatch`,
 - pull request evaluation uses `context-source: pr` with explicit `pr-number`, `pr-head-ref`, and `pr-head-sha`,
-- policy gate uses `pr-*` outputs (`pr-number`, `pr-author-bot`, `pr-not-draft`, `pr-mergeable`, `pr-commits-trusted`, `pr-merge-state-clear`),
-- `pr-merge-state-clear` is the canonical merge-readiness gate because it aligns with GitHub mergeability semantics (`CLEAN`/`HAS_HOOKS`) and branch protection/ruleset enforcement,
-- `pr-checks-clear` remains available as an optional strict gate when policy requires all reported checks/status contexts to pass (including non-required checks),
+- policy gate is strict and requires all of: `pr-number != 0`, `pr-author-bot`, `pr-not-draft`, `pr-mergeable`, `pr-commits-trusted`, `pr-checks-clear`, and `pr-merge-state-clear`,
 - merge execution is guarded with `--match-head-commit` to prevent stale-head merges,
 - one command path is used for both queue-required and non-queue branches.
 
