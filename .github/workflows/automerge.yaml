@@ -1,0 +1,60 @@
+name: automerge
+
+on:
+  pull_request_target:
+    branches:
+      - trunk
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+      - auto_merge_disabled
+
+permissions:
+  checks: read
+  contents: write
+  pull-requests: write
+  statuses: read
+
+concurrency:
+  cancel-in-progress: true
+  group: automerge-${{ github.event.pull_request.number }}
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: evaluate pull request context
+        id: context
+        uses: escapace/action-context@v0
+        with:
+          token: ${{ github.token }}
+          trusted-bots: |
+            renovate[bot]
+            dependabot[bot]
+
+      - name: enable auto-merge (queue and non-queue)
+        if: |
+          steps.context.outputs.pr-number != '0' &&
+          steps.context.outputs.pr-author-bot == 'true' &&
+          steps.context.outputs.pr-not-draft == 'true' &&
+          steps.context.outputs.pr-mergeable == 'true' &&
+          steps.context.outputs.pr-review-clear == 'true' &&
+          steps.context.outputs.pr-checks-clear == 'true' &&
+          steps.context.outputs.pr-commits-trusted == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # --squash keeps non-queue, non-interactive execution deterministic.
+          # Queue-required branches still use the merge method configured on the queue.
+          gh pr merge "${{ steps.context.outputs.pr-number }}" \
+            --auto \
+            --squash \
+            --match-head-commit "${{ github.event.pull_request.head.sha }}"

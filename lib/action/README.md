@@ -134,24 +134,68 @@ Version discovery is best effort and source-isolated:
 - successful sources still emit outputs,
 - partial source failures are intentionally silent.
 
-## Merge policy example
+## Automerge
 
-```yaml
-- name: Enable auto-merge
-  if: |
-    steps.context.outputs.pr-number != '0' &&
-    steps.context.outputs.pr-author-bot == 'true' &&
-    steps.context.outputs.pr-not-draft == 'true' &&
-    steps.context.outputs.pr-mergeable == 'true' &&
-    steps.context.outputs.pr-review-clear == 'true' &&
-    steps.context.outputs.pr-checks-clear == 'true' &&
-    steps.context.outputs.pr-commits-trusted == 'true'
-  run: gh pr merge ${{ steps.context.outputs.pr-number }} --auto --squash
-  env:
-    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+Reference workflow: [`.github/workflows/automerge.yaml`](.github/workflows/automerge.yaml)
+
+This repository includes a ready-to-use automerge workflow that evaluates `action-context` pull request outputs and enables auto-merge only when all safety gates are satisfied.
+
+Core behavior:
+
+- policy is evaluated from `pr-*` outputs (`pr-number`, `pr-review-clear`, `pr-checks-clear`, `pr-commits-trusted`, and related fields),
+- merge execution is guarded with `--match-head-commit` to prevent stale-head merges,
+- one command path is used for both queue-required and non-queue branches.
+
+Command model:
+
+```bash
+gh pr merge "$PR_NUMBER" --auto --squash --match-head-commit "$HEAD_SHA"
 ```
 
-For merge execution safety, use a head SHA guard (`expected_head_sha` or equivalent) where merge tooling supports it.
+Rationale:
+
+- `--auto` enables deferred merge behavior when requirements are not yet satisfied,
+- `--squash` keeps non-interactive, non-queue execution deterministic,
+- queue-required branches remain controlled by merge queue settings; queue merge method is configured at branch protection/ruleset level.
+
+GitHub-hosted runners already include GitHub CLI. Steps that call `gh` require `GH_TOKEN`.
+
+Permission baseline for a single evaluate-and-enable job:
+
+```yaml
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+```
+
+Repository prerequisites:
+
+- **Allow auto-merge** enabled,
+- caller has write access,
+- branch protection and merge queue settings configured according to repository policy.
+
+Merge queue note:
+
+- required checks for queue flow must be reported on `merge_group` events,
+- checks configured only for `pull_request` can block queue merges.
+
+```yaml
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+```
+
+Reference documents:
+
+- [`gh pr merge` command manual](https://cli.github.com/manual/gh_pr_merge)
+- [Using GitHub CLI in workflows](https://docs.github.com/en/actions/using-workflows/using-github-cli-in-workflows)
+- [Automatically merging a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request)
+- [Merging a pull request with a merge queue](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request-with-a-merge-queue)
+- [Managing a merge queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue)
+- [Events that trigger workflows: `merge_group`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#merge_group)
 
 ## Version derivation
 
