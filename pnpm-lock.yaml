@@ -16,7 +16,7 @@ importers:
         version: 9.0.0
       '@commitlint/cli':
         specifier: 19.8.1
-        version: 19.8.1(@types/node@24.3.0)(typescript@5.9.3)
+        version: 19.8.1(@types/node@24.10.9)(typescript@5.9.3)
       '@commitlint/config-conventional':
         specifier: 19.8.1
         version: 19.8.1
@@ -28,19 +28,19 @@ importers:
         version: 2.3.1
       '@pnpm/workspace.find-packages':
         specifier: 1000.0.56
-        version: 1000.0.56(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+        version: 1000.0.56(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/workspace.read-manifest':
         specifier: 1000.2.10
         version: 1000.2.10
       '@types/node':
-        specifier: 24.3.0
-        version: 24.3.0
+        specifier: 24.10.9
+        version: 24.10.9
       '@types/semver':
         specifier: 7.7.1
         version: 7.7.1
       '@vitest/coverage-v8':
         specifier: 4.0.18
-        version: 4.0.18(vitest@4.0.18(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.0.18(vitest@4.0.18(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       changelogen:
         specifier: 0.6.2
         version: 0.6.2
@@ -58,13 +58,13 @@ importers:
         version: 5.10.2(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       esroll:
         specifier: 1.1.1
-        version: 1.1.1(@types/node@24.3.0)
+        version: 1.1.1(@types/node@24.10.9)
       execa:
         specifier: 9.6.1
         version: 9.6.1
       knip:
-        specifier: 5.63.0
-        version: 5.63.0(@types/node@24.3.0)(typescript@5.9.3)
+        specifier: 5.82.1
+        version: 5.82.1(@types/node@24.10.9)(typescript@5.9.3)
       lefthook:
         specifier: 2.0.16
         version: 2.0.16
@@ -78,8 +78,8 @@ importers:
         specifier: 1.2.1
         version: 1.2.1
       semver:
-        specifier: 7.7.2
-        version: 7.7.2
+        specifier: 7.7.3
+        version: 7.7.3
       syncpack:
         specifier: 13.0.4
         version: 13.0.4(typescript@5.9.3)
@@ -91,7 +91,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.0.18
-        version: 4.0.18(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.18(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
 packages:
 
@@ -1526,8 +1526,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@24.3.0':
-    resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
+  '@types/node@24.10.9':
+    resolution: {integrity: sha512-ne4A0IpG3+2ETuREInjPNhUGis1SFjv1d5asp8MzEAGtOZeTeHVDOYqOgqfhvseqg/iXty2hjBf1zAOb7RNiNw==}
 
   '@types/semver@7.7.1':
     resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
@@ -3068,13 +3068,13 @@ packages:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
     engines: {node: '>=6'}
 
-  knip@5.63.0:
-    resolution: {integrity: sha512-xIFIi/uvLW0S/AQqwggN6UVRKBOQ1Ya7jBfQzllswZplr2si5C616/5wCcWc/eoi1PLJgPgJQLxqYq1aiYpqwg==}
+  knip@5.82.1:
+    resolution: {integrity: sha512-1nQk+5AcnkqL40kGQXfouzAEXkTR+eSrgo/8m1d0BMei4eAzFwghoXC4gOKbACgBiCof7hE8wkBVDsEvznf85w==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
       '@types/node': '>=18'
-      typescript: '>=5.0.4'
+      typescript: '>=5.0.4 <7'
 
   lefthook-darwin-arm64@2.0.16:
     resolution: {integrity: sha512-kjVHkD7rfPa7M0aKJSx/yatdV9uC6o3cJyzM9zk7cg5HD7alSwchFalgF/P0w6nt7C02rAUx8C05qiWCDWaKeA==}
@@ -4002,11 +4002,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.7.2:
-    resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.7.3:
     resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
     engines: {node: '>=10'}
@@ -4184,8 +4179,8 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  strip-json-comments@5.0.2:
-    resolution: {integrity: sha512-4X2FR3UwhNUE9G49aIsJW5hRRR3GXGTBTZRMfv568O60ojM8HcWjV/VxAxCDW3SUND33O6ZY66ZuRcdkj73q2g==}
+  strip-json-comments@5.0.3:
+    resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
     engines: {node: '>=14.16'}
 
   supports-color@7.2.0:
@@ -4346,8 +4341,8 @@ packages:
   umask@1.1.0:
     resolution: {integrity: sha512-lE/rxOhmiScJu9L6RTNVgB/zZbF+vGC0/p6D3xnkAePI2o0sMyFG966iR5Ki50OI/0mNi2yaRnxfLsPmEZF/JA==}
 
-  undici-types@7.10.0:
-    resolution: {integrity: sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==}
+  undici-types@7.16.0:
+    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
   undici@6.23.0:
     resolution: {integrity: sha512-VfQPToRA5FZs/qJxLIinmU59u0r7LXqoJkCzinq3ckNJp3vKEh7jTWN589YQ5+aoAC/TGRLyJLCPKcLQbM8r9g==}
@@ -4623,14 +4618,8 @@ packages:
     resolution: {integrity: sha512-CzhO+pFNo8ajLM2d2IW/R93ipy99LWjtwblvC1RsoSUMZgyLbYFr221TnSNT7GjGdYui6P459mw9JH/g/zW2ug==}
     engines: {node: '>=18'}
 
-  zod-validation-error@3.5.4:
-    resolution: {integrity: sha512-+hEiRIiPobgyuFlEojnqjJnhFvg4r/i3cqgcm67eehZf/WBaK3g6cD02YU9mtdVxZjv8CzCA9n/Rhrs3yAAvAw==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      zod: ^3.24.4
-
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -4694,11 +4683,11 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@commitlint/cli@19.8.1(@types/node@24.3.0)(typescript@5.9.3)':
+  '@commitlint/cli@19.8.1(@types/node@24.10.9)(typescript@5.9.3)':
     dependencies:
       '@commitlint/format': 19.8.1
       '@commitlint/lint': 19.8.1
-      '@commitlint/load': 19.8.1(@types/node@24.3.0)(typescript@5.9.3)
+      '@commitlint/load': 19.8.1(@types/node@24.10.9)(typescript@5.9.3)
       '@commitlint/read': 19.8.1
       '@commitlint/types': 19.8.1
       tinyexec: 1.0.2
@@ -4736,7 +4725,7 @@ snapshots:
   '@commitlint/is-ignored@19.8.1':
     dependencies:
       '@commitlint/types': 19.8.1
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@commitlint/lint@19.8.1':
     dependencies:
@@ -4745,7 +4734,7 @@ snapshots:
       '@commitlint/rules': 19.8.1
       '@commitlint/types': 19.8.1
 
-  '@commitlint/load@19.8.1(@types/node@24.3.0)(typescript@5.9.3)':
+  '@commitlint/load@19.8.1(@types/node@24.10.9)(typescript@5.9.3)':
     dependencies:
       '@commitlint/config-validator': 19.8.1
       '@commitlint/execute-rule': 19.8.1
@@ -4753,7 +4742,7 @@ snapshots:
       '@commitlint/types': 19.8.1
       chalk: 5.6.2
       cosmiconfig: 9.0.0(typescript@5.9.3)
-      cosmiconfig-typescript-loader: 6.2.0(@types/node@24.3.0)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3)
+      cosmiconfig-typescript-loader: 6.2.0(@types/node@24.10.9)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3)
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       lodash.uniq: 4.5.0
@@ -5017,23 +5006,23 @@ snapshots:
 
   '@ls-lint/ls-lint@2.3.1': {}
 
-  '@microsoft/api-extractor-model@7.32.2(@types/node@24.3.0)':
+  '@microsoft/api-extractor-model@7.32.2(@types/node@24.10.9)':
     dependencies:
       '@microsoft/tsdoc': 0.16.0
       '@microsoft/tsdoc-config': 0.18.0
-      '@rushstack/node-core-library': 5.19.1(@types/node@24.3.0)
+      '@rushstack/node-core-library': 5.19.1(@types/node@24.10.9)
     transitivePeerDependencies:
       - '@types/node'
 
-  '@microsoft/api-extractor@7.56.0(@types/node@24.3.0)':
+  '@microsoft/api-extractor@7.56.0(@types/node@24.10.9)':
     dependencies:
-      '@microsoft/api-extractor-model': 7.32.2(@types/node@24.3.0)
+      '@microsoft/api-extractor-model': 7.32.2(@types/node@24.10.9)
       '@microsoft/tsdoc': 0.16.0
       '@microsoft/tsdoc-config': 0.18.0
-      '@rushstack/node-core-library': 5.19.1(@types/node@24.3.0)
+      '@rushstack/node-core-library': 5.19.1(@types/node@24.10.9)
       '@rushstack/rig-package': 0.6.0
-      '@rushstack/terminal': 0.21.0(@types/node@24.3.0)
-      '@rushstack/ts-command-line': 5.1.7(@types/node@24.3.0)
+      '@rushstack/terminal': 0.21.0(@types/node@24.10.9)
+      '@rushstack/ts-command-line': 5.1.7(@types/node@24.10.9)
       diff: 8.0.3
       lodash: 4.17.23
       minimatch: 10.0.3
@@ -5084,7 +5073,7 @@ snapshots:
 
   '@npmcli/fs@4.0.0':
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@octokit/auth-token@6.0.0': {}
 
@@ -5219,11 +5208,11 @@ snapshots:
       '@pnpm/types': 1001.3.0
       load-json-file: 6.2.0
 
-  '@pnpm/cli-utils@1001.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/cli-utils@1001.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/cli-meta': 1000.0.16
       '@pnpm/config': 1004.9.2(@pnpm/logger@1001.0.1)
-      '@pnpm/config.deps-installer': 1000.1.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
+      '@pnpm/config.deps-installer': 1000.1.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
       '@pnpm/default-reporter': 1002.1.7(@pnpm/logger@1001.0.1)
       '@pnpm/error': 1000.0.5
       '@pnpm/logger': 1001.0.1
@@ -5231,7 +5220,7 @@ snapshots:
       '@pnpm/package-is-installable': 1000.0.20(@pnpm/logger@1001.0.1)
       '@pnpm/pnpmfile': 1002.1.11(@pnpm/logger@1001.0.1)
       '@pnpm/read-project-manifest': 1001.2.4(@pnpm/logger@1001.0.1)
-      '@pnpm/store-connection-manager': 1002.3.12(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/store-connection-manager': 1002.3.12(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/types': 1001.3.0
       '@pnpm/util.lex-comparator': 3.0.2
       chalk: 4.1.2
@@ -5242,18 +5231,18 @@ snapshots:
       - supports-color
       - typanion
 
-  '@pnpm/client@1001.1.17(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/client@1001.1.17(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
-      '@pnpm/default-resolver': 1002.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/default-resolver': 1002.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/directory-fetcher': 1000.1.22(@pnpm/logger@1001.0.1)
       '@pnpm/fetch': 1001.0.0(@pnpm/logger@1001.0.1)
       '@pnpm/fetching-types': 1000.2.1
-      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
-      '@pnpm/git-fetcher': 1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
+      '@pnpm/git-fetcher': 1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/network.auth-header': 1000.0.6
-      '@pnpm/node.fetcher': 1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/node.fetcher': 1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/resolver-base': 1005.4.1
-      '@pnpm/tarball-fetcher': 1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/tarball-fetcher': 1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/types': 1001.3.0
       ramda: '@pnpm/ramda@0.28.1'
     transitivePeerDependencies:
@@ -5272,7 +5261,7 @@ snapshots:
     transitivePeerDependencies:
       - '@pnpm/logger'
 
-  '@pnpm/config.deps-installer@1000.1.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))':
+  '@pnpm/config.deps-installer@1000.1.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))':
     dependencies:
       '@pnpm/config.config-writer': 1000.0.21(@pnpm/logger@1001.0.1)
       '@pnpm/core-loggers': 1001.0.9(@pnpm/logger@1001.0.1)
@@ -5281,7 +5270,7 @@ snapshots:
       '@pnpm/logger': 1001.0.1
       '@pnpm/network.auth-header': 1000.0.6
       '@pnpm/npm-resolver': 1005.1.2(@pnpm/logger@1001.0.1)
-      '@pnpm/package-store': 1007.1.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
+      '@pnpm/package-store': 1007.1.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
       '@pnpm/parse-wanted-dependency': 1001.0.0
       '@pnpm/pick-registry-for-package': 1000.0.16
       '@pnpm/read-modules-dir': 1000.0.0
@@ -5406,11 +5395,11 @@ snapshots:
       pretty-ms: 7.0.1
       ramda: '@pnpm/ramda@0.28.1'
       rxjs: 7.8.2
-      semver: 7.7.2
+      semver: 7.7.3
       stacktracey: 2.1.8
       string-length: 4.0.2
 
-  '@pnpm/default-resolver@1002.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/default-resolver@1002.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/error': 1000.0.5
       '@pnpm/fetching-types': 1000.2.1
@@ -5419,8 +5408,8 @@ snapshots:
       '@pnpm/node.resolver': 1001.0.17(@pnpm/logger@1001.0.1)
       '@pnpm/npm-resolver': 1005.1.2(@pnpm/logger@1001.0.1)
       '@pnpm/resolver-base': 1005.4.1
-      '@pnpm/resolving.bun-resolver': 1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
-      '@pnpm/resolving.deno-resolver': 1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/resolving.bun-resolver': 1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
+      '@pnpm/resolving.deno-resolver': 1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/tarball-resolver': 1002.2.1
     transitivePeerDependencies:
       - '@pnpm/logger'
@@ -5433,13 +5422,13 @@ snapshots:
     dependencies:
       '@pnpm/crypto.hash': 1000.2.1
       '@pnpm/types': 1001.3.0
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@pnpm/dependency-path@5.1.3':
     dependencies:
       '@pnpm/crypto.base32-hash': 3.0.0
       '@pnpm/types': 11.1.0
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@pnpm/directory-fetcher@1000.1.22(@pnpm/logger@1001.0.1)':
     dependencies:
@@ -5515,12 +5504,12 @@ snapshots:
     transitivePeerDependencies:
       - domexception
 
-  '@pnpm/fetching.binary-fetcher@1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))':
+  '@pnpm/fetching.binary-fetcher@1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))':
     dependencies:
       '@pnpm/error': 1000.0.5
       '@pnpm/fetcher-base': 1001.2.2
       '@pnpm/fetching-types': 1000.2.1
-      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)
+      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)
       adm-zip: 0.5.16
       is-subdir: 1.2.0
       rename-overwrite: 6.0.3
@@ -5565,14 +5554,14 @@ snapshots:
     dependencies:
       npm-packlist: 5.1.3
 
-  '@pnpm/git-fetcher@1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/git-fetcher@1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/error': 1000.0.5
       '@pnpm/fetcher-base': 1001.2.2
       '@pnpm/fs.packlist': 1000.0.0
       '@pnpm/logger': 1001.0.1
       '@pnpm/prepare-package': 1001.0.4(@pnpm/logger@1001.0.1)(typanion@3.14.0)
-      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)
+      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)
       '@zkochan/rimraf': 3.0.2
       execa: safe-execa@0.1.2
     transitivePeerDependencies:
@@ -5586,7 +5575,7 @@ snapshots:
       '@pnpm/resolver-base': 1005.4.1
       graceful-git: 4.0.0
       hosted-git-info: '@pnpm/hosted-git-info@1.0.0'
-      semver: 7.7.2
+      semver: 7.7.3
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
@@ -5598,7 +5587,7 @@ snapshots:
       '@pnpm/resolver-base': 13.0.1
       graceful-git: 4.0.0
       hosted-git-info: '@pnpm/hosted-git-info@1.0.0'
-      semver: 7.7.2
+      semver: 7.7.3
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
@@ -5662,7 +5651,7 @@ snapshots:
       is-windows: 1.0.2
       normalize-path: 3.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.7.2
+      semver: 7.7.3
       symlink-dir: 6.0.5
 
   '@pnpm/local-resolver@1002.1.11(@pnpm/logger@1001.0.1)':
@@ -5693,7 +5682,7 @@ snapshots:
       js-yaml: '@zkochan/js-yaml@0.0.7'
       normalize-path: 3.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.7.2
+      semver: 7.7.3
       sort-keys: 4.2.0
       strip-bom: 4.0.0
       write-file-atomic: 5.0.1
@@ -5733,7 +5722,7 @@ snapshots:
       '@pnpm/logger': 1001.0.1
       '@pnpm/semver.peer-range': 1000.0.0
       '@pnpm/types': 1001.3.0
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@pnpm/matcher@1000.1.0':
     dependencies:
@@ -5745,7 +5734,7 @@ snapshots:
       '@pnpm/types': 11.1.0
       comver-to-semver: 1.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@pnpm/network.agent@2.0.3':
     dependencies:
@@ -5786,15 +5775,15 @@ snapshots:
     transitivePeerDependencies:
       - domexception
 
-  '@pnpm/node.fetcher@1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/node.fetcher@1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/create-cafs-store': 1000.0.30(@pnpm/logger@1001.0.1)
       '@pnpm/crypto.shasums-file': 1001.0.3
       '@pnpm/error': 1000.0.5
       '@pnpm/fetching-types': 1000.2.1
-      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
+      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
       '@pnpm/node.resolver': 1001.0.17(@pnpm/logger@1001.0.1)
-      '@pnpm/tarball-fetcher': 1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/tarball-fetcher': 1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       detect-libc: 2.1.2
     transitivePeerDependencies:
       - '@pnpm/logger'
@@ -5812,7 +5801,7 @@ snapshots:
       '@pnpm/fetching-types': 1000.2.1
       '@pnpm/resolver-base': 1005.4.1
       '@pnpm/types': 1001.3.0
-      semver: 7.7.2
+      semver: 7.7.3
       version-selector-type: 3.0.0
     transitivePeerDependencies:
       - '@pnpm/logger'
@@ -5868,7 +5857,7 @@ snapshots:
       path-temp: 2.1.0
       ramda: '@pnpm/ramda@0.28.1'
       rename-overwrite: 6.0.3
-      semver: 7.7.2
+      semver: 7.7.3
       semver-utils: 1.1.4
       ssri: 10.0.5
       version-selector-type: 3.0.0
@@ -5897,9 +5886,9 @@ snapshots:
       detect-libc: 2.1.2
       execa: safe-execa@0.1.2
       mem: 8.1.1
-      semver: 7.7.2
+      semver: 7.7.3
 
-  '@pnpm/package-requester@1011.2.2(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))':
+  '@pnpm/package-requester@1011.2.2(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))':
     dependencies:
       '@pnpm/core-loggers': 1001.0.9(@pnpm/logger@1001.0.1)
       '@pnpm/dependency-path': 1001.1.9
@@ -5914,29 +5903,29 @@ snapshots:
       '@pnpm/store-controller-types': 1004.5.1
       '@pnpm/store.cafs': 1000.1.3
       '@pnpm/types': 1001.3.0
-      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)
+      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)
       detect-libc: 2.1.2
       p-defer: 3.0.0
       p-limit: 3.1.0
       p-queue: 6.6.2
       promise-share: 1.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.7.2
+      semver: 7.7.3
       ssri: 10.0.5
 
-  '@pnpm/package-store@1007.1.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))':
+  '@pnpm/package-store@1007.1.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))':
     dependencies:
       '@pnpm/create-cafs-store': 1000.0.30(@pnpm/logger@1001.0.1)
       '@pnpm/crypto.hash': 1000.2.1
       '@pnpm/error': 1000.0.5
       '@pnpm/fetcher-base': 1001.2.2
       '@pnpm/logger': 1001.0.1
-      '@pnpm/package-requester': 1011.2.2(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
+      '@pnpm/package-requester': 1011.2.2(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
       '@pnpm/resolver-base': 1005.4.1
       '@pnpm/store-controller-types': 1004.5.1
       '@pnpm/store.cafs': 1000.1.3
       '@pnpm/types': 1001.3.0
-      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)
+      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)
       '@zkochan/rimraf': 3.0.2
       is-subdir: 1.2.0
       load-json-file: 6.2.0
@@ -6020,7 +6009,7 @@ snapshots:
     dependencies:
       '@pnpm/logger': 1001.0.1
       '@pnpm/registry.types': 1000.1.4
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@pnpm/registry.types@1000.1.4':
     dependencies:
@@ -6036,7 +6025,7 @@ snapshots:
 
   '@pnpm/resolve-workspace-range@1000.0.0':
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@pnpm/resolver-base@1005.4.1':
     dependencies:
@@ -6046,42 +6035,42 @@ snapshots:
     dependencies:
       '@pnpm/types': 11.1.0
 
-  '@pnpm/resolving.bun-resolver@1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/resolving.bun-resolver@1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/constants': 1001.3.1
       '@pnpm/crypto.shasums-file': 1001.0.3
       '@pnpm/error': 1000.0.5
       '@pnpm/fetcher-base': 1001.2.2
       '@pnpm/fetching-types': 1000.2.1
-      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
-      '@pnpm/node.fetcher': 1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
+      '@pnpm/node.fetcher': 1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/npm-resolver': 1005.1.2(@pnpm/logger@1001.0.1)
       '@pnpm/resolver-base': 1005.4.1
       '@pnpm/types': 1001.3.0
       '@pnpm/util.lex-comparator': 3.0.2
-      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)
-      semver: 7.7.2
+      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)
+      semver: 7.7.3
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
       - supports-color
       - typanion
 
-  '@pnpm/resolving.deno-resolver@1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/resolving.deno-resolver@1005.0.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/constants': 1001.3.1
       '@pnpm/crypto.shasums-file': 1001.0.3
       '@pnpm/error': 1000.0.5
       '@pnpm/fetcher-base': 1001.2.2
       '@pnpm/fetching-types': 1000.2.1
-      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
-      '@pnpm/node.fetcher': 1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/fetching.binary-fetcher': 1005.0.3(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
+      '@pnpm/node.fetcher': 1001.0.20(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/npm-resolver': 1005.1.2(@pnpm/logger@1001.0.1)
       '@pnpm/resolver-base': 1005.4.1
       '@pnpm/types': 1001.3.0
       '@pnpm/util.lex-comparator': 3.0.2
-      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)
-      semver: 7.7.2
+      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)
+      semver: 7.7.3
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
@@ -6094,7 +6083,7 @@ snapshots:
 
   '@pnpm/semver.peer-range@1000.0.0':
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   '@pnpm/server@1001.0.20(@pnpm/logger@1001.0.1)':
     dependencies:
@@ -6109,14 +6098,14 @@ snapshots:
       - domexception
       - supports-color
 
-  '@pnpm/store-connection-manager@1002.3.12(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/store-connection-manager@1002.3.12(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/cli-meta': 1000.0.16
-      '@pnpm/client': 1001.1.17(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/client': 1001.1.17(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/config': 1004.9.2(@pnpm/logger@1001.0.1)
       '@pnpm/error': 1000.0.5
       '@pnpm/logger': 1001.0.1
-      '@pnpm/package-store': 1007.1.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))
+      '@pnpm/package-store': 1007.1.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))
       '@pnpm/server': 1001.0.20(@pnpm/logger@1001.0.1)
       '@pnpm/store-path': 1000.0.5
       '@zkochan/diable': 1.0.2
@@ -6165,7 +6154,7 @@ snapshots:
       '@pnpm/types': 1001.3.0
       symlink-dir: 6.0.5
 
-  '@pnpm/tarball-fetcher@1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/tarball-fetcher@1006.0.3(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
       '@pnpm/core-loggers': 1001.0.9(@pnpm/logger@1001.0.1)
       '@pnpm/error': 1000.0.5
@@ -6176,7 +6165,7 @@ snapshots:
       '@pnpm/logger': 1001.0.1
       '@pnpm/prepare-package': 1001.0.4(@pnpm/logger@1001.0.1)(typanion@3.14.0)
       '@pnpm/types': 1001.3.0
-      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)
+      '@pnpm/worker': 1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)
       '@zkochan/retry': 0.2.0
       lodash.throttle: 4.1.1
       p-map-values: 1.0.0
@@ -6211,7 +6200,7 @@ snapshots:
     dependencies:
       isexe: 2.0.0
 
-  '@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0)':
+  '@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9)':
     dependencies:
       '@pnpm/cafs-types': 1000.1.0
       '@pnpm/create-cafs-store': 1000.0.30(@pnpm/logger@1001.0.1)
@@ -6223,16 +6212,16 @@ snapshots:
       '@pnpm/logger': 1001.0.1
       '@pnpm/store.cafs': 1000.1.3
       '@pnpm/symlink-dependency': 1000.0.17(@pnpm/logger@1001.0.1)
-      '@rushstack/worker-pool': 0.4.9(@types/node@24.3.0)
+      '@rushstack/worker-pool': 0.4.9(@types/node@24.10.9)
       is-windows: 1.0.2
       load-json-file: 6.2.0
       p-limit: 3.1.0
     transitivePeerDependencies:
       - '@types/node'
 
-  '@pnpm/workspace.find-packages@1000.0.56(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)':
+  '@pnpm/workspace.find-packages@1000.0.56(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)':
     dependencies:
-      '@pnpm/cli-utils': 1001.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.3.0))(typanion@3.14.0)
+      '@pnpm/cli-utils': 1001.3.1(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.3(@pnpm/logger@1001.0.1)(@types/node@24.10.9))(typanion@3.14.0)
       '@pnpm/constants': 1001.3.1
       '@pnpm/fs.find-packages': 1000.0.22(@pnpm/logger@1001.0.1)
       '@pnpm/logger': 1001.0.1
@@ -6396,7 +6385,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.57.0':
     optional: true
 
-  '@rushstack/node-core-library@5.19.1(@types/node@24.3.0)':
+  '@rushstack/node-core-library@5.19.1(@types/node@24.10.9)':
     dependencies:
       ajv: 8.13.0
       ajv-draft-04: 1.0.0(ajv@8.13.0)
@@ -6407,37 +6396,37 @@ snapshots:
       resolve: 1.22.11
       semver: 7.5.4
     optionalDependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
 
-  '@rushstack/problem-matcher@0.1.1(@types/node@24.3.0)':
+  '@rushstack/problem-matcher@0.1.1(@types/node@24.10.9)':
     optionalDependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
 
   '@rushstack/rig-package@0.6.0':
     dependencies:
       resolve: 1.22.11
       strip-json-comments: 3.1.1
 
-  '@rushstack/terminal@0.21.0(@types/node@24.3.0)':
+  '@rushstack/terminal@0.21.0(@types/node@24.10.9)':
     dependencies:
-      '@rushstack/node-core-library': 5.19.1(@types/node@24.3.0)
-      '@rushstack/problem-matcher': 0.1.1(@types/node@24.3.0)
+      '@rushstack/node-core-library': 5.19.1(@types/node@24.10.9)
+      '@rushstack/problem-matcher': 0.1.1(@types/node@24.10.9)
       supports-color: 8.1.1
     optionalDependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
 
-  '@rushstack/ts-command-line@5.1.7(@types/node@24.3.0)':
+  '@rushstack/ts-command-line@5.1.7(@types/node@24.10.9)':
     dependencies:
-      '@rushstack/terminal': 0.21.0(@types/node@24.3.0)
+      '@rushstack/terminal': 0.21.0(@types/node@24.10.9)
       '@types/argparse': 1.0.38
       argparse: 1.0.10
       string-argv: 0.3.2
     transitivePeerDependencies:
       - '@types/node'
 
-  '@rushstack/worker-pool@0.4.9(@types/node@24.3.0)':
+  '@rushstack/worker-pool@0.4.9(@types/node@24.10.9)':
     optionalDependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
 
   '@sec-ant/readable-stream@0.4.1': {}
 
@@ -6471,7 +6460,7 @@ snapshots:
 
   '@types/conventional-commits-parser@5.0.2':
     dependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
 
   '@types/debug@4.1.12':
     dependencies:
@@ -6489,15 +6478,15 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@24.3.0':
+  '@types/node@24.10.9':
     dependencies:
-      undici-types: 7.10.0
+      undici-types: 7.16.0
 
   '@types/semver@7.7.1': {}
 
   '@types/ssri@7.1.5':
     dependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
 
   '@types/unist@3.0.3': {}
 
@@ -6591,7 +6580,7 @@ snapshots:
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.7.2
+      semver: 7.7.3
       ts-api-utils: 2.4.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -6644,7 +6633,7 @@ snapshots:
       '@typescript-eslint/types': 8.54.0
       eslint-visitor-keys: 4.2.1
 
-  '@vitest/coverage-v8@4.0.18(vitest@4.0.18(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/coverage-v8@4.0.18(vitest@4.0.18(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.18
@@ -6656,7 +6645,7 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.0.3
-      vitest: 4.0.18(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.18(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/expect@4.0.18':
     dependencies:
@@ -6667,13 +6656,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.0.18
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.1(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/pretty-format@4.0.18':
     dependencies:
@@ -6931,7 +6920,7 @@ snapshots:
 
   builtins@5.1.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   bundle-name@4.1.0:
     dependencies:
@@ -7039,7 +7028,7 @@ snapshots:
       pathe: 1.1.2
       pkg-types: 1.3.1
       scule: 1.3.0
-      semver: 7.7.2
+      semver: 7.7.3
       std-env: 3.10.0
       yaml: 2.8.2
     transitivePeerDependencies:
@@ -7058,7 +7047,7 @@ snapshots:
       pathe: 2.0.3
       pkg-types: 2.3.0
       scule: 1.3.0
-      semver: 7.7.2
+      semver: 7.7.3
       std-env: 3.10.0
     transitivePeerDependencies:
       - magicast
@@ -7210,9 +7199,9 @@ snapshots:
     dependencies:
       browserslist: 4.28.1
 
-  cosmiconfig-typescript-loader@6.2.0(@types/node@24.3.0)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3):
+  cosmiconfig-typescript-loader@6.2.0(@types/node@24.10.9)(cosmiconfig@9.0.0(typescript@5.9.3))(typescript@5.9.3):
     dependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
       cosmiconfig: 9.0.0(typescript@5.9.3)
       jiti: 2.6.1
       typescript: 5.9.3
@@ -7401,7 +7390,7 @@ snapshots:
   eslint-compat-utils@0.6.5(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       eslint: 9.39.2(jiti@2.6.1)
-      semver: 7.7.2
+      semver: 7.7.3
 
   eslint-config-escapace@5.10.2(@typescript-eslint/parser@8.54.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
@@ -7448,7 +7437,7 @@ snapshots:
     dependencies:
       empathic: 2.0.0
       module-replacements: 2.11.0
-      semver: 7.7.2
+      semver: 7.7.3
 
   eslint-plugin-jsonc@2.21.0(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
@@ -7534,7 +7523,7 @@ snapshots:
       natural-compare: 1.4.0
       nth-check: 2.1.1
       postcss-selector-parser: 7.1.1
-      semver: 7.7.2
+      semver: 7.7.3
       vue-eslint-parser: 10.2.0(eslint@9.39.2(jiti@2.6.1))
       xml-name-validator: 4.0.0
     optionalDependencies:
@@ -7642,10 +7631,10 @@ snapshots:
     dependencies:
       estraverse: 5.3.0
 
-  esroll@1.1.1(@types/node@24.3.0):
+  esroll@1.1.1(@types/node@24.10.9):
     dependencies:
-      '@microsoft/api-extractor': 7.56.0(@types/node@24.3.0)
-      '@microsoft/api-extractor-model': 7.32.2(@types/node@24.3.0)
+      '@microsoft/api-extractor': 7.56.0(@types/node@24.10.9)
+      '@microsoft/api-extractor-model': 7.32.2(@types/node@24.10.9)
       '@microsoft/tsdoc': 0.16.0
       '@rollup/plugin-json': 6.1.0(rollup@4.57.0)
       '@rollup/pluginutils': 5.3.0(rollup@4.57.0)
@@ -8178,7 +8167,7 @@ snapshots:
       acorn: 8.15.0
       eslint-visitor-keys: 3.4.3
       espree: 9.6.1
-      semver: 7.7.2
+      semver: 7.7.3
 
   jsonc-parser@3.3.1: {}
 
@@ -8196,10 +8185,10 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knip@5.63.0(@types/node@24.3.0)(typescript@5.9.3):
+  knip@5.82.1(@types/node@24.10.9)(typescript@5.9.3):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
       fast-glob: 3.3.3
       formatly: 0.3.0
       jiti: 2.6.1
@@ -8209,10 +8198,9 @@ snapshots:
       picocolors: 1.1.1
       picomatch: 4.0.3
       smol-toml: 1.6.0
-      strip-json-comments: 5.0.2
+      strip-json-comments: 5.0.3
       typescript: 5.9.3
-      zod: 3.25.76
-      zod-validation-error: 3.5.4(zod@3.25.76)
+      zod: 4.3.6
 
   lefthook-darwin-arm64@2.0.16:
     optional: true
@@ -8343,7 +8331,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   make-empty-dir@3.0.2:
     dependencies:
@@ -8727,7 +8715,7 @@ snapshots:
       make-fetch-happen: 14.0.3
       nopt: 8.1.0
       proc-log: 5.0.0
-      semver: 7.7.2
+      semver: 7.7.3
       tar: 7.5.7
       tinyglobby: 0.2.15
       which: 5.0.0
@@ -8747,7 +8735,7 @@ snapshots:
   normalize-package-data@7.0.1:
     dependencies:
       hosted-git-info: 8.1.0
-      semver: 7.7.2
+      semver: 7.7.3
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -8766,7 +8754,7 @@ snapshots:
     dependencies:
       hosted-git-info: 8.1.0
       proc-log: 5.0.0
-      semver: 7.7.2
+      semver: 7.7.3
       validate-npm-package-name: 6.0.2
 
   npm-packlist@5.1.3:
@@ -8965,7 +8953,7 @@ snapshots:
 
   parse-npm-tarball-url@4.0.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
   path-absolute@1.0.1: {}
 
@@ -9262,8 +9250,6 @@ snapshots:
     dependencies:
       lru-cache: 6.0.0
 
-  semver@7.7.2: {}
-
   semver@7.7.3: {}
 
   shebang-command@2.0.0:
@@ -9411,7 +9397,7 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  strip-json-comments@5.0.2: {}
+  strip-json-comments@5.0.3: {}
 
   supports-color@7.2.0:
     dependencies:
@@ -9448,7 +9434,7 @@ snapshots:
       ora: 8.2.0
       prompts: 2.4.2
       read-yaml-file: 2.1.0
-      semver: 7.7.2
+      semver: 7.7.3
       tightrope: 0.2.0
       ts-toolbelt: 9.6.0
     transitivePeerDependencies:
@@ -9568,7 +9554,7 @@ snapshots:
 
   umask@1.1.0: {}
 
-  undici-types@7.10.0: {}
+  undici-types@7.16.0: {}
 
   undici@6.23.0: {}
 
@@ -9640,9 +9626,9 @@ snapshots:
 
   version-selector-type@3.0.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.3
 
-  vite@7.3.1(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2):
+  vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       esbuild: 0.27.2
       fdir: 6.5.0(picomatch@4.0.3)
@@ -9651,16 +9637,16 @@ snapshots:
       rollup: 4.57.0
       tinyglobby: 0.2.15
     optionalDependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
       fsevents: 2.3.3
       jiti: 2.6.1
       tsx: 4.21.0
       yaml: 2.8.2
 
-  vitest@4.0.18(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@4.0.18(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 4.0.18
-      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       '@vitest/pretty-format': 4.0.18
       '@vitest/runner': 4.0.18
       '@vitest/snapshot': 4.0.18
@@ -9677,10 +9663,10 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.3.1(@types/node@24.3.0)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 7.3.1(@types/node@24.10.9)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 24.3.0
+      '@types/node': 24.10.9
     transitivePeerDependencies:
       - jiti
       - less
@@ -9702,7 +9688,7 @@ snapshots:
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
       esquery: 1.7.0
-      semver: 7.7.2
+      semver: 7.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -9715,7 +9701,7 @@ snapshots:
       espree: 9.6.1
       esquery: 1.7.0
       lodash: 4.17.23
-      semver: 7.7.2
+      semver: 7.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -9818,11 +9804,7 @@ snapshots:
 
   yoctocolors@2.1.2: {}
 
-  zod-validation-error@3.5.4(zod@3.25.76):
-    dependencies:
-      zod: 3.25.76
-
-  zod@3.25.76: {}
+  zod@4.3.6: {}
 
   zwitch@2.0.4: {}
 
