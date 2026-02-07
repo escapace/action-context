@@ -45,15 +45,29 @@ jobs:
               exit 1
             fi
           else
-            mapfile -t prs < <(gh api \
-              "repos/${GITHUB_REPOSITORY}/pulls" \
-              --paginate \
-              -f state=open \
-              -f per_page=100 \
-              --jq '.[].number')
+            prs_output="$(gh pr list \
+              --repo "${GITHUB_REPOSITORY}" \
+              --state open \
+              --limit 1000 \
+              --json number \
+              --jq '.[].number')"
+
+            if [[ -n "${prs_output}" ]]; then
+              mapfile -t prs <<< "${prs_output}"
+            fi
           fi
 
-          count="${#prs[@]}"
+          declare -a discovered_prs=()
+
+          for pr in "${prs[@]:-}"; do
+            if [[ "${pr}" =~ ^[0-9]+$ ]] && [[ "${pr}" -gt 0 ]]; then
+              discovered_prs+=("${pr}")
+            elif [[ -n "${pr}" ]]; then
+              echo "::warning::Skipping invalid PR identifier from discovery output: ${pr}"
+            fi
+          done
+
+          count="${#discovered_prs[@]}"
           printf 'Discovered %s PR(s)\n' "${count}"
 
           if [[ "${count}" -eq 0 ]]; then
@@ -62,7 +76,7 @@ jobs:
             exit 0
           fi
 
-          json_array="$(printf '%s\n' "${prs[@]}" | jq -R . | jq -s .)"
+          json_array="$(printf '%s\n' "${discovered_prs[@]}" | jq -R . | jq -s .)"
           matrix="$(jq -cn --argjson numbers "${json_array}" '{include: [$numbers[] | {pr_number: .}]}' )"
 
           echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
