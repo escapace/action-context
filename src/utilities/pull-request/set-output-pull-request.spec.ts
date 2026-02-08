@@ -52,6 +52,10 @@ vi.mock('./get-merge-state-clear', () => ({
   getMergeStateClear: vi.fn(),
 }))
 
+vi.mock('./get-last-commit-age-minute', () => ({
+  getLastCommitAgeMinute: vi.fn(),
+}))
+
 vi.mock('./get-commits-trusted', () => ({
   getCommitsTrusted: vi.fn(),
 }))
@@ -61,6 +65,7 @@ import { getInput } from '../get-input'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
 import { getMergeStateClear } from './get-merge-state-clear'
+import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import { getPullRequest } from './get-pull-request'
 import { fetchReviewData, isReviewClear } from './get-review-clear'
 import { setOutputPullRequest } from './set-output-pull-request'
@@ -79,6 +84,7 @@ describe('setOutputPullRequest', () => {
     vi.clearAllMocks()
     mockConstants.EVENT_NAME = 'pull_request'
     mockPayload.pull_request = { number: 95 }
+    vi.mocked(getLastCommitAgeMinute).mockResolvedValue(0)
   })
 
   it('emits default values on push events', async () => {
@@ -96,6 +102,7 @@ describe('setOutputPullRequest', () => {
     expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', false)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 0)
 
     expect(getPullRequest).not.toHaveBeenCalled()
   })
@@ -132,6 +139,7 @@ describe('setOutputPullRequest', () => {
     vi.mocked(getChecksClear).mockResolvedValue(true)
     vi.mocked(getMergeStateClear).mockResolvedValue(true)
     vi.mocked(getCommitsTrusted).mockResolvedValue(true)
+    vi.mocked(getLastCommitAgeMinute).mockResolvedValue(17)
 
     await setOutputPullRequest(mockOctokit)
 
@@ -143,6 +151,7 @@ describe('setOutputPullRequest', () => {
     expect(core.setOutput).toHaveBeenCalledWith('pr-mergeable', true)
     expect(core.setOutput).toHaveBeenCalledWith('pr-review-clear', true)
     expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', true)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 17)
     expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', true)
     expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', true)
   })
@@ -208,6 +217,7 @@ describe('setOutputPullRequest', () => {
 
     expect(getChecksClear).toHaveBeenCalledWith(mockOctokit, 'deadbeef1234')
     expect(getMergeStateClear).toHaveBeenCalledWith(mockOctokit, 95)
+    expect(getLastCommitAgeMinute).toHaveBeenCalledWith(mockOctokit, 95, 'deadbeef1234')
   })
 
   it('emits defaults with warning when PR number is missing from payload', async () => {
@@ -247,6 +257,7 @@ describe('setOutputPullRequest', () => {
     expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', false)
     expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', false)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 0)
   })
 
   it('degrades to defaults with warning on unknown PR fetch failure', async () => {
@@ -278,5 +289,6 @@ describe('setOutputPullRequest', () => {
     expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('PR_DATA_FETCH_FAILED'))
     expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
     expect(core.setOutput).toHaveBeenCalledWith('pr-review-clear', false)
+    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 0)
   })
 })

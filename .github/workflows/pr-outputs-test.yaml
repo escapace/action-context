@@ -97,6 +97,11 @@ jobs:
           echo "pr-commits-trusted: ${{ steps.context.outputs.pr-commits-trusted }}"
           [[ "${{ steps.context.outputs.pr-commits-trusted }}" =~ ^(true|false)$ ]] || { echo "::error::pr-commits-trusted should be a boolean"; exit 1; }
 
+      - name: validate pr-last-commit-age-minute
+        run: |
+          echo "pr-last-commit-age-minute: ${{ steps.context.outputs.pr-last-commit-age-minute }}"
+          [[ "${{ steps.context.outputs.pr-last-commit-age-minute }}" =~ ^[0-9]+$ ]] || { echo "::error::pr-last-commit-age-minute should be a non-negative integer"; exit 1; }
+
       - name: summary
         run: |
           echo "## PR Outputs" >> $GITHUB_STEP_SUMMARY
@@ -113,6 +118,7 @@ jobs:
           echo "| pr-checks-clear | ${{ steps.context.outputs.pr-checks-clear }} |" >> $GITHUB_STEP_SUMMARY
           echo "| pr-merge-state-clear | ${{ steps.context.outputs.pr-merge-state-clear }} |" >> $GITHUB_STEP_SUMMARY
           echo "| pr-commits-trusted | ${{ steps.context.outputs.pr-commits-trusted }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-last-commit-age-minute | ${{ steps.context.outputs.pr-last-commit-age-minute }} |" >> $GITHUB_STEP_SUMMARY
 
   test-pr-outputs-degraded:
     permissions:
@@ -144,6 +150,7 @@ jobs:
           [[ "${{ steps.context.outputs.pr-checks-clear }}" == "false" ]] || { echo "::error::pr-checks-clear should degrade to false"; exit 1; }
           [[ "${{ steps.context.outputs.pr-merge-state-clear }}" == "false" ]] || { echo "::error::pr-merge-state-clear should degrade to false"; exit 1; }
           [[ "${{ steps.context.outputs.pr-commits-trusted }}" == "false" ]] || { echo "::error::pr-commits-trusted should degrade to false"; exit 1; }
+          [[ "${{ steps.context.outputs.pr-last-commit-age-minute }}" == "0" ]] || { echo "::error::pr-last-commit-age-minute should degrade to 0"; exit 1; }
           [[ -z "${{ steps.context.outputs.pr-base-ref }}" ]] || { echo "::error::pr-base-ref should degrade to empty"; exit 1; }
           [[ -z "${{ steps.context.outputs.pr-head-ref }}" ]] || { echo "::error::pr-head-ref should degrade to empty"; exit 1; }
 
@@ -163,3 +170,4 @@ jobs:
           echo "| pr-checks-clear | ${{ steps.context.outputs.pr-checks-clear }} |" >> $GITHUB_STEP_SUMMARY
           echo "| pr-merge-state-clear | ${{ steps.context.outputs.pr-merge-state-clear }} |" >> $GITHUB_STEP_SUMMARY
           echo "| pr-commits-trusted | ${{ steps.context.outputs.pr-commits-trusted }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-last-commit-age-minute | ${{ steps.context.outputs.pr-last-commit-age-minute }} |" >> $GITHUB_STEP_SUMMARY

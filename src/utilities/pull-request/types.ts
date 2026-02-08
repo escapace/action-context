@@ -69,6 +69,7 @@ export interface PullRequestOutputs {
   'pr-checks-clear': boolean
   'pr-commits-trusted': boolean
   'pr-head-ref': string
+  'pr-last-commit-age-minute': number
   'pr-merge-state-clear': boolean
   'pr-mergeable': boolean
   'pr-not-draft': boolean

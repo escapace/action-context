@@ -7,6 +7,7 @@ import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
 import { getMergeStateClear } from './get-merge-state-clear'
 import { getPullRequest } from './get-pull-request'
+import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import { fetchReviewData, isReviewClear } from './get-review-clear'
 import { parseTrustedBots } from './parse-trusted-bots'
 import type { ResolvedContext } from '../resolve-context'
@@ -18,6 +19,7 @@ const DEFAULT_OUTPUTS: PullRequestOutputs = {
   'pr-checks-clear': false,
   'pr-commits-trusted': false,
   'pr-head-ref': '',
+  'pr-last-commit-age-minute': 0,
   'pr-merge-state-clear': false,
   'pr-mergeable': false,
   'pr-not-draft': false,
@@ -119,12 +121,14 @@ export const setOutputPullRequest = async (
     const prData = await getPullRequest(octokit, prNumber)
 
     // Fetch review data, check status, merge state, and commit trust in parallel
-    const [reviewData, checksClear, mergeStateClear, commitsTrusted] = await Promise.all([
-      fetchReviewData(octokit, prNumber),
-      getChecksClear(octokit, prData.headSha),
-      getMergeStateClear(octokit, prNumber),
-      getCommitsTrusted(octokit, prNumber, trustedBots),
-    ])
+    const [reviewData, checksClear, mergeStateClear, commitsTrusted, lastCommitAgeMinute] =
+      await Promise.all([
+        fetchReviewData(octokit, prNumber),
+        getChecksClear(octokit, prData.headSha),
+        getMergeStateClear(octokit, prNumber),
+        getCommitsTrusted(octokit, prNumber, trustedBots),
+        getLastCommitAgeMinute(octokit, prNumber, prData.headSha),
+      ])
 
     const reviewClear = isReviewClear(reviewData)
 
@@ -134,6 +138,7 @@ export const setOutputPullRequest = async (
       'pr-checks-clear': checksClear,
       'pr-commits-trusted': commitsTrusted,
       'pr-head-ref': prData.headRef,
+      'pr-last-commit-age-minute': lastCommitAgeMinute,
       'pr-merge-state-clear': mergeStateClear,
       'pr-mergeable': prData.mergeable,
       'pr-not-draft': prData.notDraft,

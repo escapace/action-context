@@ -141,6 +141,7 @@ jobs:
           PR_AUTHOR_BOT: ${{ steps.context.outputs.pr-author-bot }}
           PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
           PR_COMMITS_TRUSTED: ${{ steps.context.outputs.pr-commits-trusted }}
+          PR_LAST_COMMIT_AGE_MINUTE: ${{ steps.context.outputs.pr-last-commit-age-minute }}
           PR_MERGEABLE: ${{ steps.context.outputs.pr-mergeable }}
           PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
           PR_NOT_DRAFT: ${{ steps.context.outputs.pr-not-draft }}
@@ -157,6 +158,7 @@ jobs:
                 ['pr-not-draft', process.env.PR_NOT_DRAFT ?? ''],
                 ['pr-mergeable', process.env.PR_MERGEABLE ?? ''],
                 ['pr-commits-trusted', process.env.PR_COMMITS_TRUSTED ?? ''],
+                ['pr-last-commit-age-minute', process.env.PR_LAST_COMMIT_AGE_MINUTE ?? ''],
                 ['pr-checks-clear', process.env.PR_CHECKS_CLEAR ?? ''],
                 ['pr-merge-state-clear', process.env.PR_MERGE_STATE_CLEAR ?? ''],
                 ['pr-review-clear', process.env.PR_REVIEW_CLEAR ?? ''],

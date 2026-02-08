@@ -30,6 +30,7 @@ jobs:
           [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-number }}" == "${{ github.event.pull_request.number }}" ]] || { echo "::error::caller-visible pr-number mismatch"; exit 1; }
           [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-checks-clear }}" =~ ^(true|false)$ ]] || { echo "::error::caller-visible pr-checks-clear should be boolean"; exit 1; }
           [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-merge-state-clear }}" =~ ^(true|false)$ ]] || { echo "::error::caller-visible pr-merge-state-clear should be boolean"; exit 1; }
+          [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-last-commit-age-minute }}" =~ ^[0-9]+$ ]] || { echo "::error::caller-visible pr-last-commit-age-minute should be non-negative integer"; exit 1; }
 
       - name: summary
         run: |
@@ -40,3 +41,4 @@ jobs:
           echo "| pr-number | ${{ needs.call-reusable-pr-outputs.outputs.pr-number }} |" >> $GITHUB_STEP_SUMMARY
           echo "| pr-checks-clear | ${{ needs.call-reusable-pr-outputs.outputs.pr-checks-clear }} |" >> $GITHUB_STEP_SUMMARY
           echo "| pr-merge-state-clear | ${{ needs.call-reusable-pr-outputs.outputs.pr-merge-state-clear }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-last-commit-age-minute | ${{ needs.call-reusable-pr-outputs.outputs.pr-last-commit-age-minute }} |" >> $GITHUB_STEP_SUMMARY
