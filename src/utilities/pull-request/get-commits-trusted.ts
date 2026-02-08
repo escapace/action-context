@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import { paginateRest } from './paginate-rest'
 import type { Octokit, PullRequestCommit } from './types'
 
 /**
@@ -52,41 +53,31 @@ export const getCommitsTrusted = async (
   const { owner, repo } = github.context.repo
 
   // Fetch all commits (paginated)
-  const commits: PullRequestCommit[] = []
-
-  let page = 1
+  let commits: PullRequestCommit[]
 
   try {
-    while (true) {
+    commits = await paginateRest(async (page, perPage) => {
       const response = await octokit.rest.pulls.listCommits({
         owner,
         page,
-        per_page: 100,
+        per_page: perPage,
         pull_number: prNumber,
         repo,
       })
 
-      for (const item of response.data) {
-        commits.push({
-          author:
-            item.author !== null && item.author !== undefined
-              ? { login: item.author.login, type: item.author.type ?? 'User' }
+      return response.data.map((item) => ({
+        author:
+          item.author !== null && item.author !== undefined
+            ? { login: item.author.login, type: item.author.type ?? 'User' }
+            : null,
+        commit: {
+          verification:
+            item.commit.verification !== null && item.commit.verification !== undefined
+              ? { verified: item.commit.verification.verified }
               : null,
-          commit: {
-            verification:
-              item.commit.verification !== null && item.commit.verification !== undefined
-                ? { verified: item.commit.verification.verified }
-                : null,
-          },
-        })
-      }
-
-      if (response.data.length < 100) {
-        break
-      }
-
-      page++
-    }
+        },
+      }))
+    })
   } catch (error: unknown) {
     if (error !== null && typeof error === 'object' && 'status' in error && error.status === 403) {
       throw new Error(

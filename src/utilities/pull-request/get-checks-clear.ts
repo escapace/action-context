@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import { paginateRest } from './paginate-rest'
 import type { CheckRun, Octokit, StatusContext } from './types'
 
 const PASSING_CONCLUSIONS: ReadonlySet<string> = new Set(['neutral', 'skipped', 'success'])
@@ -33,35 +34,23 @@ export const isStatusContextPassing = (status: StatusContext): boolean => status
 const fetchCheckRuns = async (octokit: Octokit, reference: string): Promise<CheckRun[]> => {
   const { owner, repo } = github.context.repo
 
-  const checkRuns: CheckRun[] = []
-
-  let page = 1
-
   try {
-    while (true) {
+    return await paginateRest(async (page, perPage) => {
       const response = await octokit.rest.checks.listForRef({
         owner,
         page,
-        per_page: 100,
+        per_page: perPage,
         ref: reference,
         repo,
       })
 
-      for (const run of response.data.check_runs) {
-        checkRuns.push({
-          appSlug: run.app?.slug,
-          conclusion: run.conclusion ?? null,
-          detailsUrl: run.details_url ?? undefined,
-          status: run.status,
-        })
-      }
-
-      if (checkRuns.length >= response.data.total_count) {
-        break
-      }
-
-      page++
-    }
+      return response.data.check_runs.map((run) => ({
+        appSlug: run.app?.slug,
+        conclusion: run.conclusion ?? null,
+        detailsUrl: run.details_url ?? undefined,
+        status: run.status,
+      }))
+    })
   } catch (error: unknown) {
     if (error !== null && typeof error === 'object' && 'status' in error && error.status === 403) {
       throw new Error(
@@ -71,8 +60,6 @@ const fetchCheckRuns = async (octokit: Octokit, reference: string): Promise<Chec
 
     throw error
   }
-
-  return checkRuns
 }
 
 /**

@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import { paginateRest } from './paginate-rest'
 import type { Octokit } from './types'
 
 interface CommitTimestampRecord {
@@ -15,34 +16,24 @@ export const getLastCommitAgeMinute = async (
 ): Promise<number> => {
   const { owner, repo } = github.context.repo
 
-  const commits: CommitTimestampRecord[] = []
-
-  let page = 1
+  let commits: CommitTimestampRecord[]
 
   try {
-    while (true) {
+    commits = await paginateRest(async (page, perPage) => {
       const response = await octokit.rest.pulls.listCommits({
         owner,
         page,
-        per_page: 100,
+        per_page: perPage,
         pull_number: prNumber,
         repo,
       })
 
-      for (const item of response.data) {
-        commits.push({
-          authorDate: item.commit.author?.date ?? null,
-          committerDate: item.commit.committer?.date ?? null,
-          sha: item.sha,
-        })
-      }
-
-      if (response.data.length < 100) {
-        break
-      }
-
-      page++
-    }
+      return response.data.map((item) => ({
+        authorDate: item.commit.author?.date ?? null,
+        committerDate: item.commit.committer?.date ?? null,
+        sha: item.sha,
+      }))
+    })
   } catch (error: unknown) {
     if (error !== null && typeof error === 'object' && 'status' in error && error.status === 403) {
       throw new Error(
