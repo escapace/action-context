@@ -5,9 +5,10 @@ import { getInput } from '../get-input'
 import { setOutputs } from '../output'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
+import { getPullRequestErrorCode, type PullRequestErrorCode } from './error'
+import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import { getMergeStateClear } from './get-merge-state-clear'
 import { getPullRequest } from './get-pull-request'
-import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import { fetchReviewData, isReviewClear } from './get-review-clear'
 import { parseTrustedBots } from './parse-trusted-bots'
 import type { ResolvedContext } from '../resolve-context'
@@ -27,54 +28,55 @@ const DEFAULT_OUTPUTS: PullRequestOutputs = {
   'pr-review-clear': false,
 }
 
+type PullRequestDegradationCode = 'PR_DATA_FETCH_FAILED' | PullRequestErrorCode
+
 interface PullRequestDegradation {
-  code: string
+  code: PullRequestDegradationCode
   remediation: string
   summary: string
 }
 
-const mapPullRequestError = (error: unknown): PullRequestDegradation => {
-  const message = error instanceof Error ? error.message : ''
-
-  if (message.includes('Missing `pull-requests: read` permission')) {
-    return {
-      code: 'PR_PERMISSION_PULL_REQUESTS_READ',
-      remediation:
-        'set workflow permissions: pull-requests: read (and checks/statuses read for full PR outputs).',
-      summary: 'Missing permission to read pull request data.',
-    }
-  }
-
-  if (message.includes('Missing `checks: read` permission')) {
-    return {
-      code: 'PR_PERMISSION_CHECKS_READ',
-      remediation: 'set workflow permissions: checks: read.',
-      summary: 'Missing permission to read check runs.',
-    }
-  }
-
-  if (message.includes('Missing `statuses: read` permission')) {
-    return {
-      code: 'PR_PERMISSION_STATUSES_READ',
-      remediation: 'set workflow permissions: statuses: read.',
-      summary: 'Missing permission to read commit statuses.',
-    }
-  }
-
-  if (message.includes('Unable to read collaborator permissions for commit authors')) {
-    return {
-      code: 'PR_COLLABORATOR_PERMISSION_UNREADABLE',
-      remediation:
-        'ensure the token can read repository metadata for collaborator permission checks.',
-      summary: 'Unable to evaluate collaborator permissions for commit trust.',
-    }
-  }
-
-  return {
+const PULL_REQUEST_DEGRADATIONS: Record<PullRequestDegradationCode, PullRequestDegradation> = {
+  PR_COLLABORATOR_PERMISSION_UNREADABLE: {
+    code: 'PR_COLLABORATOR_PERMISSION_UNREADABLE',
+    remediation:
+      'ensure the token can read repository metadata for collaborator permission checks.',
+    summary: 'Unable to evaluate collaborator permissions for commit trust.',
+  },
+  PR_DATA_FETCH_FAILED: {
     code: 'PR_DATA_FETCH_FAILED',
     remediation: 'verify token permissions and GitHub API availability, then re-run the workflow.',
     summary: 'Unable to fetch pull request data.',
-  }
+  },
+  PR_PERMISSION_CHECKS_READ: {
+    code: 'PR_PERMISSION_CHECKS_READ',
+    remediation: 'set workflow permissions: checks: read.',
+    summary: 'Missing permission to read check runs.',
+  },
+  PR_PERMISSION_PULL_REQUESTS_READ: {
+    code: 'PR_PERMISSION_PULL_REQUESTS_READ',
+    remediation:
+      'set workflow permissions: pull-requests: read (and checks/statuses read for full PR outputs).',
+    summary: 'Missing permission to read pull request data.',
+  },
+  PR_PERMISSION_STATUSES_READ: {
+    code: 'PR_PERMISSION_STATUSES_READ',
+    remediation: 'set workflow permissions: statuses: read.',
+    summary: 'Missing permission to read commit statuses.',
+  },
+}
+
+const mapPullRequestError = (error: unknown): PullRequestDegradation => {
+  const code = getPullRequestErrorCode(error) ?? 'PR_DATA_FETCH_FAILED'
+
+  return PULL_REQUEST_DEGRADATIONS[code]
+}
+
+/**
+ * Emits default `pr-*` outputs for non-PR or degraded PR contexts.
+ */
+const emitDefaultPullRequestOutputs = (): void => {
+  setOutputs(DEFAULT_OUTPUTS)
 }
 
 const warnAndDegrade = (error: unknown): void => {
@@ -84,8 +86,41 @@ const warnAndDegrade = (error: unknown): void => {
     `[${issue.code}] ${issue.summary} PR outputs were reset to defaults. Remediation: ${issue.remediation}`,
   )
 
-  setOutputs(DEFAULT_OUTPUTS)
+  emitDefaultPullRequestOutputs()
 }
+
+interface BuildPullRequestOutputsInput {
+  checksClear: boolean
+  commitsTrusted: boolean
+  lastCommitAgeMinute: number
+  mergeStateClear: boolean
+  prData: {
+    authorBot: boolean
+    baseRef: string
+    headRef: string
+    mergeable: boolean
+    notDraft: boolean
+    number: number
+  }
+  reviewClear: boolean
+}
+
+/**
+ * Builds action outputs from resolved pull request facts.
+ */
+const buildPullRequestOutputs = (input: BuildPullRequestOutputsInput): PullRequestOutputs => ({
+  'pr-author-bot': input.prData.authorBot,
+  'pr-base-ref': input.prData.baseRef,
+  'pr-checks-clear': input.checksClear,
+  'pr-commits-trusted': input.commitsTrusted,
+  'pr-head-ref': input.prData.headRef,
+  'pr-last-commit-age-minute': input.lastCommitAgeMinute,
+  'pr-merge-state-clear': input.mergeStateClear,
+  'pr-mergeable': input.prData.mergeable,
+  'pr-not-draft': input.prData.notDraft,
+  'pr-number': input.prData.number,
+  'pr-review-clear': input.reviewClear,
+})
 
 /**
  * Fetch PR data and set all pr-* outputs.
@@ -100,7 +135,7 @@ export const setOutputPullRequest = async (
   const contextPrNumber = context?.hasPrContext === true ? context.prNumber : undefined
 
   if (contextPrNumber === undefined && EVENT_NAME !== 'pull_request') {
-    setOutputs(DEFAULT_OUTPUTS)
+    emitDefaultPullRequestOutputs()
 
     return
   }
@@ -109,7 +144,7 @@ export const setOutputPullRequest = async (
 
   if (typeof prNumber !== 'number' || prNumber <= 0) {
     core.warning('PR context was expected but no valid PR number is available; emitting defaults')
-    setOutputs(DEFAULT_OUTPUTS)
+    emitDefaultPullRequestOutputs()
 
     return
   }
@@ -132,19 +167,16 @@ export const setOutputPullRequest = async (
 
     const reviewClear = isReviewClear(reviewData)
 
-    setOutputs({
-      'pr-author-bot': prData.authorBot,
-      'pr-base-ref': prData.baseRef,
-      'pr-checks-clear': checksClear,
-      'pr-commits-trusted': commitsTrusted,
-      'pr-head-ref': prData.headRef,
-      'pr-last-commit-age-minute': lastCommitAgeMinute,
-      'pr-merge-state-clear': mergeStateClear,
-      'pr-mergeable': prData.mergeable,
-      'pr-not-draft': prData.notDraft,
-      'pr-number': prData.number,
-      'pr-review-clear': reviewClear,
-    })
+    setOutputs(
+      buildPullRequestOutputs({
+        checksClear,
+        commitsTrusted,
+        lastCommitAgeMinute,
+        mergeStateClear,
+        prData,
+        reviewClear,
+      }),
+    )
   } catch (error: unknown) {
     warnAndDegrade(error)
   }

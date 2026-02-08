@@ -54,7 +54,16 @@ export interface CommitVerification {
   verified: boolean
 }
 
-/** A single commit from REST pulls.listCommits. */
+/** Normalized metadata for a single commit from REST pulls.listCommits. */
+export interface PullRequestCommitMetadata {
+  author: CommitAuthor | null
+  authorDate: string | null
+  committerDate: string | null
+  sha: string
+  verification: CommitVerification | null
+}
+
+/** Legacy commit shape used by existing trust tests/helpers. */
 export interface PullRequestCommit {
   author: CommitAuthor | null
   commit: {

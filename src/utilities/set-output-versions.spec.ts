@@ -35,7 +35,7 @@ import * as core from '@actions/core'
 import { readFile } from 'node:fs/promises'
 import { getInput } from './get-input'
 import { isFile } from './is-files'
-import { setOutputVersions } from './set-output-versions'
+import { parseVersionsJsonRecords, setOutputVersions } from './set-output-versions'
 import { workspaceEngines } from './workspace-engines'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
 
@@ -181,5 +181,20 @@ describe('setOutputVersions', () => {
 
     expect(core.setOutput).toHaveBeenCalledWith('node-version', '24.12.0')
     expect(core.error).not.toHaveBeenCalled()
+  })
+})
+
+describe('parseVersionsJsonRecords', () => {
+  it('returns records for string and nested version values', () => {
+    expect(
+      parseVersionsJsonRecords({
+        kubectl: { version: '1.28.0' },
+        terraform: '1.5.0',
+      }),
+    ).toEqual([{ kubectl: '1.28.0' }, { terraform: '1.5.0' }])
+  })
+
+  it('returns empty list for non-object payloads', () => {
+    expect(parseVersionsJsonRecords('bad')).toEqual([])
   })
 })

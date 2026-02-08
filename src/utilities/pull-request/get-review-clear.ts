@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import { rethrowPullRequestsReadPermission } from './error'
 import type { Octokit, ReviewData } from './types'
 
 const REVIEW_QUERY = `
@@ -59,33 +60,8 @@ export const fetchReviewData = async (octokit: Octokit, prNumber: number): Promi
       repo,
     })
   } catch (error: unknown) {
-    // REST-style Octokit RequestError
-    if (error !== null && typeof error === 'object' && 'status' in error && error.status === 403) {
-      throw new Error(
-        'Missing `pull-requests: read` permission. Add it to the workflow permissions block.',
-      )
-    }
-
-    // GraphQL field-level authorization errors are often returned as
-    // GraphqlResponseError (HTTP 200) with `errors[]` entries.
-    if (error !== null && typeof error === 'object' && 'errors' in error) {
-      const maybeErrors = (error as { errors: unknown }).errors
-
-      if (
-        Array.isArray(maybeErrors) &&
-        maybeErrors.some((item) => {
-          if (item === null || typeof item !== 'object') return false
-
-          const maybeType = (item as { type?: unknown }).type
-
-          return maybeType === 'FORBIDDEN'
-        })
-      ) {
-        throw new Error(
-          'Missing `pull-requests: read` permission. Add it to the workflow permissions block.',
-        )
-      }
-    }
+    // REST-style Octokit RequestError and GraphQL field-level authorization errors.
+    rethrowPullRequestsReadPermission(error)
 
     throw error
   }

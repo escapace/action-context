@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import { rethrowMissingPermissionOnHttpStatus } from './error'
 import { paginateRest } from './paginate-rest'
 import type { CheckRun, Octokit, StatusContext } from './types'
 
@@ -52,11 +53,7 @@ const fetchCheckRuns = async (octokit: Octokit, reference: string): Promise<Chec
       }))
     })
   } catch (error: unknown) {
-    if (error !== null && typeof error === 'object' && 'status' in error && error.status === 403) {
-      throw new Error(
-        'Missing `checks: read` permission. Add it to the workflow permissions block.',
-      )
-    }
+    rethrowMissingPermissionOnHttpStatus(error, 'checks')
 
     throw error
   }
@@ -84,19 +81,19 @@ const fetchStatusContexts = async (
       state: status.state,
     }))
   } catch (error: unknown) {
-    if (error !== null && typeof error === 'object' && 'status' in error && error.status === 403) {
-      throw new Error(
-        'Missing `statuses: read` permission. Add it to the workflow permissions block.',
-      )
-    }
+    rethrowMissingPermissionOnHttpStatus(error, 'statuses')
 
     throw error
   }
 }
 
-const isCurrentWorkflowInProgressCheckRun = (checkRun: CheckRun): boolean => {
-  const runId = process.env.GITHUB_RUN_ID
-
+/**
+ * Returns true when a check run belongs to the current workflow run and is still in progress.
+ */
+export const isCurrentWorkflowInProgressCheckRun = (
+  checkRun: CheckRun,
+  runId: string | undefined,
+): boolean => {
   if (typeof runId !== 'string' || runId.length === 0) {
     return false
   }
@@ -129,8 +126,9 @@ export const getChecksClear = async (octokit: Octokit, headSha: string): Promise
     fetchStatusContexts(octokit, headSha),
   ])
 
+  const runId = process.env.GITHUB_RUN_ID
   const effectiveCheckRuns = checkRuns.filter(
-    (checkRun) => !isCurrentWorkflowInProgressCheckRun(checkRun),
+    (checkRun) => !isCurrentWorkflowInProgressCheckRun(checkRun, runId),
   )
 
   const checkRunsClear = effectiveCheckRuns.every(isCheckRunPassing)

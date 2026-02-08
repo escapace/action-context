@@ -1,6 +1,7 @@
 import * as github from '@actions/github'
-import { paginateRest } from './paginate-rest'
-import type { Octokit, PullRequestCommit } from './types'
+import { PullRequestActionError, isHttpStatus } from './error'
+import { fetchPullRequestCommits } from './fetch-pull-request-commits'
+import type { Octokit, PullRequestCommit, PullRequestCommitMetadata } from './types'
 
 /**
  * Determine whether a single commit is trusted.
@@ -10,8 +11,18 @@ import type { Octokit, PullRequestCommit } from './types'
  * - Human authors must have write or admin permission on the repo.
  * - Null authors (unresolvable email) are never trusted.
  */
+const getCommitVerification = (
+  commit: PullRequestCommit | PullRequestCommitMetadata,
+): { verified: boolean } | null => {
+  if ('verification' in commit) {
+    return commit.verification
+  }
+
+  return commit.commit.verification
+}
+
 export const isCommitTrusted = (
-  commit: PullRequestCommit,
+  commit: PullRequestCommit | PullRequestCommitMetadata,
   trustedBots: Set<string>,
   collaboratorPermissions: Map<string, string>,
 ): boolean => {
@@ -19,7 +30,7 @@ export const isCommitTrusted = (
   if (commit.author === null) return false
 
   // All commits must be signed
-  if (commit.commit.verification?.verified !== true) return false
+  if (getCommitVerification(commit)?.verified !== true) return false
 
   // Bot author — must be in allowlist
   if (commit.author.type === 'Bot') {
@@ -53,40 +64,7 @@ export const getCommitsTrusted = async (
   const { owner, repo } = github.context.repo
 
   // Fetch all commits (paginated)
-  let commits: PullRequestCommit[]
-
-  try {
-    commits = await paginateRest(async (page, perPage) => {
-      const response = await octokit.rest.pulls.listCommits({
-        owner,
-        page,
-        per_page: perPage,
-        pull_number: prNumber,
-        repo,
-      })
-
-      return response.data.map((item) => ({
-        author:
-          item.author !== null && item.author !== undefined
-            ? { login: item.author.login, type: item.author.type ?? 'User' }
-            : null,
-        commit: {
-          verification:
-            item.commit.verification !== null && item.commit.verification !== undefined
-              ? { verified: item.commit.verification.verified }
-              : null,
-        },
-      }))
-    })
-  } catch (error: unknown) {
-    if (error !== null && typeof error === 'object' && 'status' in error && error.status === 403) {
-      throw new Error(
-        'Missing `pull-requests: read` permission. Add it to the workflow permissions block.',
-      )
-    }
-
-    throw error
-  }
+  const commits = await fetchPullRequestCommits(octokit, prNumber)
 
   // No commits is unexpected but not trusted
   if (commits.length === 0) return false
@@ -113,18 +91,17 @@ export const getCommitsTrusted = async (
 
       collaboratorPermissions.set(login, response.data.permission)
     } catch (error: unknown) {
-      if (error !== null && typeof error === 'object' && 'status' in error) {
-        if (error.status === 403) {
-          throw new Error(
-            'Unable to read collaborator permissions for commit authors. Ensure the token has repository metadata access.',
-          )
-        }
+      if (isHttpStatus(error, 403)) {
+        throw new PullRequestActionError(
+          'PR_COLLABORATOR_PERMISSION_UNREADABLE',
+          'Unable to read collaborator permissions for commit authors. Ensure the token has repository metadata access.',
+        )
+      }
 
-        if (error.status === 404) {
-          // User is not a collaborator of this repository.
-          collaboratorPermissions.set(login, 'none')
-          continue
-        }
+      if (isHttpStatus(error, 404)) {
+        // User is not a collaborator of this repository.
+        collaboratorPermissions.set(login, 'none')
+        continue
       }
 
       throw error

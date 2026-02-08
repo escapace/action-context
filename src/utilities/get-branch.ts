@@ -3,6 +3,19 @@ import { isString } from 'es-toolkit'
 import assert from 'node:assert'
 import { EVENT_NAME } from '../constants'
 
+/**
+ * Parses a branch name from a full Git reference.
+ */
+export const parseBranchFromReference = (reference: string): string => {
+  const match = /refs\/heads\/(?<value>.+)/.exec(reference)
+  const groups = match?.groups ?? {}
+  const value = groups.value
+
+  assert.ok(isString(value), `Expected ${reference} to match '/refs\\/heads\\/(?<value>.+)/'`)
+
+  return value
+}
+
 export const getBranch = () => {
   // Return the branch associated with the current GitHub Actions event. For
   // pull_request events, return the head (a.k.a., from) branch, not the base
@@ -13,14 +26,9 @@ export const getBranch = () => {
   }
 
   const reference = process.env.GITHUB_REF!
+  const branch = parseBranchFromReference(reference)
 
-  const match = /refs\/heads\/(?<value>.+)/.exec(reference)
-  const groups = match?.groups ?? {}
-  const value = groups?.value
+  core.info(`Current branch: ${branch}`)
 
-  assert.ok(isString(value), `Expected ${reference} to match '/refs\\/heads\\/(?<value>[^/]+)/'`)
-
-  core.info(`Current branch: ${value}`)
-
-  return value
+  return branch
 }

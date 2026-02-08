@@ -67,6 +67,7 @@ import { getCommitsTrusted } from './get-commits-trusted'
 import { getMergeStateClear } from './get-merge-state-clear'
 import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import { getPullRequest } from './get-pull-request'
+import { PullRequestActionError } from './error'
 import { fetchReviewData, isReviewClear } from './get-review-clear'
 import { setOutputPullRequest } from './set-output-pull-request'
 import type { Octokit } from './types'
@@ -243,7 +244,8 @@ describe('setOutputPullRequest', () => {
     vi.mocked(getInput).mockReturnValue(undefined)
 
     vi.mocked(getPullRequest).mockRejectedValue(
-      new Error(
+      new PullRequestActionError(
+        'PR_PERMISSION_PULL_REQUESTS_READ',
         'Missing `pull-requests: read` permission. Add it to the workflow permissions block.',
       ),
     )

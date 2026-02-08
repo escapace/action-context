@@ -12,7 +12,7 @@ vi.mock('@actions/core', () => ({
 
 vi.mock('../constants', () => mockConstants)
 
-import { getBranch } from './get-branch'
+import { getBranch, parseBranchFromReference } from './get-branch'
 
 describe('getBranch', () => {
   const originalEnvironment = process.env
@@ -59,5 +59,15 @@ describe('getBranch', () => {
     process.env.GITHUB_REF = 'refs/tags/v1.0.0'
 
     expect(() => getBranch()).toThrow()
+  })
+})
+
+describe('parseBranchFromReference', () => {
+  it('parses slash-separated branch names', () => {
+    expect(parseBranchFromReference('refs/heads/releases/v4')).toBe('releases/v4')
+  })
+
+  it('throws on non-branch references', () => {
+    expect(() => parseBranchFromReference('refs/tags/v1.0.0')).toThrow()
   })
 })

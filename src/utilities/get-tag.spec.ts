@@ -13,7 +13,7 @@ vi.mock('./exec', () => ({
 }))
 
 import { exec } from './exec'
-import { getTag } from './get-tag'
+import { getTag, selectHighestTagFromOutput } from './get-tag'
 
 describe('getTag', () => {
   beforeEach(() => {
@@ -109,5 +109,17 @@ describe('getTag', () => {
     await expect(getTag('renovate/all-minor-patch')).rejects.toThrow(
       'Ensure checkout uses a branch ref',
     )
+  })
+})
+
+describe('selectHighestTagFromOutput', () => {
+  it('selects highest stable tag when prereleases are excluded', () => {
+    expect(selectHighestTagFromOutput('v1.0.0\nv1.1.0-rc.1', { includePrerelease: false })).toBe(
+      'v1.0.0',
+    )
+  })
+
+  it('returns undefined for empty or non-semver output', () => {
+    expect(selectHighestTagFromOutput('latest\nnightly')).toBeUndefined()
   })
 })

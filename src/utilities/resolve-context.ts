@@ -39,6 +39,26 @@ const parsePositiveInteger = (value: string | undefined): number | undefined => 
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined
 }
 
+/**
+ * Validates optional explicit PR input guard values against fetched PR values.
+ */
+const assertOptionalPrInputMatches = (
+  inputName: 'pr-head-ref' | 'pr-head-sha',
+  fetchedLabel: 'head ref' | 'head sha',
+  inputValue: string | undefined,
+  fetchedValue: string,
+): void => {
+  if (typeof inputValue !== 'string' || inputValue.trim().length === 0) {
+    return
+  }
+
+  if (inputValue !== fetchedValue) {
+    failInput(
+      `Provided ${inputName} '${inputValue}' does not match fetched PR ${fetchedLabel} '${fetchedValue}'.`,
+    )
+  }
+}
+
 interface PayloadPullRequest {
   head?: {
     ref?: string
@@ -117,27 +137,8 @@ export const resolveContext = async (octokit: Octokit): Promise<ResolvedContext>
 
   const pr = await getPullRequest(octokit, prNumber)
 
-  const inputHeadReference = getInput('pr-head-ref')
-  if (
-    typeof inputHeadReference === 'string' &&
-    inputHeadReference.trim().length > 0 &&
-    inputHeadReference !== pr.headRef
-  ) {
-    failInput(
-      `Provided pr-head-ref '${inputHeadReference}' does not match fetched PR head ref '${pr.headRef}'.`,
-    )
-  }
-
-  const inputHeadSha = getInput('pr-head-sha')
-  if (
-    typeof inputHeadSha === 'string' &&
-    inputHeadSha.trim().length > 0 &&
-    inputHeadSha !== pr.headSha
-  ) {
-    failInput(
-      `Provided pr-head-sha '${inputHeadSha}' does not match fetched PR head sha '${pr.headSha}'.`,
-    )
-  }
+  assertOptionalPrInputMatches('pr-head-ref', 'head ref', getInput('pr-head-ref'), pr.headRef)
+  assertOptionalPrInputMatches('pr-head-sha', 'head sha', getInput('pr-head-sha'), pr.headSha)
 
   return {
     branchForVersion: pr.headRef,

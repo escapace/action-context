@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import { rethrowMissingPermissionOnHttpStatus } from './error'
 import type { Octokit, PullRequestData } from './types'
 
 const MERGEABLE_RETRY_ATTEMPTS = 3
@@ -37,16 +38,7 @@ export const getPullRequest = async (
         repo,
       })
     } catch (error: unknown) {
-      if (
-        error !== null &&
-        typeof error === 'object' &&
-        'status' in error &&
-        error.status === 403
-      ) {
-        throw new Error(
-          'Missing `pull-requests: read` permission. Add it to the workflow permissions block.',
-        )
-      }
+      rethrowMissingPermissionOnHttpStatus(error, 'pull-requests')
 
       throw error
     }

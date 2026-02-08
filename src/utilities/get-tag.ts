@@ -24,11 +24,49 @@ const throwHelpfulReferenceError = (branch: string, error: unknown): never => {
   throw error
 }
 
+const isSelectableSemanticTag = (tag: string, includePrerelease: boolean): boolean => {
+  const cleaned = semver.clean(tag, SEMVER_OPTIONS)
+
+  if (cleaned === null) {
+    return false
+  }
+
+  if (includePrerelease) {
+    return true
+  }
+
+  const parsed = semver.parse(cleaned, SEMVER_OPTIONS)
+
+  return parsed !== null && parsed.prerelease.length === 0
+}
+
+/**
+ * Selects the highest semantic tag from git tag command output.
+ */
+export const selectHighestTagFromOutput = (
+  output: string,
+  options?: { includePrerelease?: boolean },
+): string | undefined => {
+  const includePrerelease = options?.includePrerelease ?? true
+
+  const tags = output
+    .split('\n')
+    .filter((tag): tag is string => isSelectableSemanticTag(tag, includePrerelease))
+    .sort((a, b) =>
+      semver.compareBuild(
+        semver.clean(a, SEMVER_OPTIONS)!,
+        semver.clean(b, SEMVER_OPTIONS)!,
+        SEMVER_OPTIONS,
+      ),
+    )
+
+  return last(tags)
+}
+
 export async function getTag(
   branch?: string,
   options?: { includePrerelease?: boolean },
 ): Promise<string | undefined> {
-  const includePrerelease = options?.includePrerelease ?? true
   let output: string
 
   try {
@@ -47,32 +85,9 @@ export async function getTag(
     throw error
   }
 
-  const list = output
-    .split('\n')
-    .filter((value): value is string => {
-      const cleaned = semver.clean(value, SEMVER_OPTIONS)
+  const tag = selectHighestTagFromOutput(output, options)
 
-      if (cleaned === null) {
-        return false
-      }
+  core.debug(`getLastGitTag():\n ${JSON.stringify(tag)}`)
 
-      if (includePrerelease) {
-        return true
-      }
-
-      const parsed = semver.parse(cleaned, SEMVER_OPTIONS)
-
-      return parsed !== null && parsed.prerelease.length === 0
-    })
-    .sort((a, b) =>
-      semver.compareBuild(
-        semver.clean(a, SEMVER_OPTIONS)!,
-        semver.clean(b, SEMVER_OPTIONS)!,
-        SEMVER_OPTIONS,
-      ),
-    )
-
-  core.debug(`getLastGitTag():\n ${JSON.stringify(list)}`)
-
-  return last(list)
+  return tag
 }

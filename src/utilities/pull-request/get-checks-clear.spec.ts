@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CheckRun, Octokit, StatusContext } from './types'
-import { isCheckRunPassing, isStatusContextPassing } from './get-checks-clear'
+import {
+  isCheckRunPassing,
+  isCurrentWorkflowInProgressCheckRun,
+  isStatusContextPassing,
+} from './get-checks-clear'
 
 describe('isCheckRunPassing', () => {
   it.each<{ check: CheckRun; expected: boolean; label: string }>([
@@ -48,6 +52,34 @@ describe('isStatusContextPassing', () => {
     { expected: false, label: 'EXPECTED', status: { state: 'expected' } },
   ])('$label → $expected', ({ expected, status }) => {
     expect(isStatusContextPassing(status)).toBe(expected)
+  })
+})
+
+describe('isCurrentWorkflowInProgressCheckRun', () => {
+  it('returns true only for in-progress github-actions checks on the provided run id', () => {
+    expect(
+      isCurrentWorkflowInProgressCheckRun(
+        {
+          appSlug: 'github-actions',
+          conclusion: null,
+          detailsUrl: 'https://github.com/escapace/action-context/actions/runs/21770828514/job/1',
+          status: 'in_progress',
+        },
+        '21770828514',
+      ),
+    ).toBe(true)
+
+    expect(
+      isCurrentWorkflowInProgressCheckRun(
+        {
+          appSlug: 'github-actions',
+          conclusion: null,
+          detailsUrl: 'https://github.com/escapace/action-context/actions/runs/111/job/1',
+          status: 'in_progress',
+        },
+        '21770828514',
+      ),
+    ).toBe(false)
   })
 })
 
