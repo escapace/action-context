@@ -3,14 +3,14 @@ import { isError, isString } from 'es-toolkit'
 import { createContext } from './context/create-context'
 import { setOutputGithubPages } from './utilities/set-output-github-pages'
 import { setOutputPullRequest } from './pull-request/set-output-pull-request'
-import { setOutputVersions } from './utilities/set-output-versions'
+import { setOutputEngines } from './engines/set-output-engines'
 import { setOutputVersion } from './version/set-output-version'
 
 const run = async () => {
   const context = await createContext()
 
   await setOutputVersion(context)
-  await setOutputVersions(context)
+  await setOutputEngines(context)
   await setOutputGithubPages(context)
   await setOutputPullRequest(context)
 

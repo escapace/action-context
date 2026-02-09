@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('./workspace-projects', () => ({
+vi.mock('../utilities/workspace-projects', () => ({
   workspaceProjects: vi.fn(),
 }))
 
-import { workspaceProjects } from './workspace-projects'
+import { workspaceProjects } from '../utilities/workspace-projects'
 import { workspaceEngines } from './workspace-engines'
 
 describe('workspaceEngines', () => {

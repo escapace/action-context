@@ -34,8 +34,8 @@ import { isFile } from './is-files'
 import {
   parseNodeVersionConstraint,
   parseVersionsJsonRecords,
-  setOutputVersions,
-} from './set-output-versions'
+  setOutputEngines,
+} from './set-output-engines'
 import { workspaceEngines } from './workspace-engines'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
 import type { Context } from '../types'
@@ -65,7 +65,7 @@ const createContext = (nodeVersion: string | undefined): Context => ({
   workflowRunId: '123456',
 })
 
-describe('setOutputVersions', () => {
+describe('setOutputEngines', () => {
   let nodeVersionInput: string | undefined
 
   beforeEach(() => {
@@ -90,7 +90,7 @@ describe('setOutputVersions', () => {
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
     const context = createContext(nodeVersionInput)
-    await setOutputVersions(context)
+    await setOutputEngines(context)
 
     expect(context.outputs['node-version']).toBe('24.12.0')
     expect(context.outputs['pnpm-version']).toBe('10.28.2')
@@ -103,7 +103,7 @@ describe('setOutputVersions', () => {
     const versionMap = new Map([['node-version', '22.15.0']])
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
-    await setOutputVersions(createContext(nodeVersionInput))
+    await setOutputEngines(createContext(nodeVersionInput))
 
     expect(workspaceEnginesMaximumVersions).toHaveBeenCalledWith(
       expect.arrayContaining([{ node: '22.15.0' }]),
@@ -117,7 +117,7 @@ describe('setOutputVersions', () => {
     const versionMap = new Map([['node-version', '22.15.0']])
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
-    await setOutputVersions(createContext(nodeVersionInput))
+    await setOutputEngines(createContext(nodeVersionInput))
 
     expect(workspaceEnginesMaximumVersions).toHaveBeenCalledWith(
       expect.arrayContaining([{ node: '22.15.0' }]),
@@ -148,7 +148,7 @@ describe('setOutputVersions', () => {
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
     const context = createContext(nodeVersionInput)
-    await setOutputVersions(context)
+    await setOutputEngines(context)
 
     expect(context.outputs['terraform-version']).toBe('1.5.0')
     expect(context.outputs['kubectl-version']).toBe('1.28.0')
@@ -175,7 +175,7 @@ describe('setOutputVersions', () => {
     ])
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
-    await setOutputVersions(createContext(nodeVersionInput))
+    await setOutputEngines(createContext(nodeVersionInput))
 
     expect(workspaceEnginesMaximumVersions).toHaveBeenCalledWith(
       expect.arrayContaining([{ node: '>=22.0.0' }, { pnpm: '>=10.0.0' }]),
@@ -189,7 +189,7 @@ describe('setOutputVersions', () => {
     const versionMap = new Map<string, string>()
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
-    await setOutputVersions(createContext(nodeVersionInput))
+    await setOutputEngines(createContext(nodeVersionInput))
 
     expect(readFile).not.toHaveBeenCalled()
   })
@@ -198,7 +198,7 @@ describe('setOutputVersions', () => {
     nodeVersionInput = undefined
     vi.mocked(isFile).mockRejectedValue(new Error('fs failure'))
 
-    await expect(setOutputVersions(createContext(nodeVersionInput))).resolves.toBeUndefined()
+    await expect(setOutputEngines(createContext(nodeVersionInput))).resolves.toBeUndefined()
 
     expect(core.error).not.toHaveBeenCalled()
   })
@@ -223,7 +223,7 @@ describe('setOutputVersions', () => {
     })
 
     const context = createContext(nodeVersionInput)
-    await setOutputVersions(context)
+    await setOutputEngines(context)
 
     expect(context.outputs['node-version']).toBe('24.12.0')
     expect(core.error).not.toHaveBeenCalled()

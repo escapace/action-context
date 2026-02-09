@@ -1,5 +1,5 @@
 import type { Project } from '@pnpm/workspace.find-packages'
-import { workspaceProjects } from './workspace-projects'
+import { workspaceProjects } from '../utilities/workspace-projects'
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
 export function parseDevEngines(

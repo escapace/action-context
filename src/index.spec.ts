@@ -20,8 +20,8 @@ const runModule = async () => {
     setOutputVersion: vi.fn(),
   }))
 
-  vi.doMock('./utilities/set-output-versions', () => ({
-    setOutputVersions: vi.fn(),
+  vi.doMock('./engines/set-output-engines', () => ({
+    setOutputEngines: vi.fn(),
   }))
 
   vi.doMock('./utilities/set-output-github-pages', () => ({
@@ -35,17 +35,17 @@ const runModule = async () => {
   const coreModule = await import('@actions/core')
   const contextModule = await import('./context/create-context')
   const setOutputVersionModule = await import('./version/set-output-version')
-  const setOutputVersionsModule = await import('./utilities/set-output-versions')
+  const setOutputEnginesModule = await import('./engines/set-output-engines')
   const setOutputGithubPagesModule = await import('./utilities/set-output-github-pages')
   const setOutputPullRequestModule = await import('./pull-request/set-output-pull-request')
 
   return {
     core: coreModule,
     createContext: contextModule.createContext,
+    setOutputEngines: setOutputEnginesModule.setOutputEngines,
     setOutputGithubPages: setOutputGithubPagesModule.setOutputGithubPages,
     setOutputPullRequest: setOutputPullRequestModule.setOutputPullRequest,
     setOutputVersion: setOutputVersionModule.setOutputVersion,
-    setOutputVersions: setOutputVersionsModule.setOutputVersions,
   }
 }
 
@@ -123,7 +123,7 @@ describe('run', () => {
     await import('./index')
 
     expect(mods.setOutputVersion).toHaveBeenCalled()
-    expect(mods.setOutputVersions).toHaveBeenCalled()
+    expect(mods.setOutputEngines).toHaveBeenCalled()
     expect(mods.setOutputGithubPages).toHaveBeenCalled()
     expect(mods.setOutputPullRequest).toHaveBeenCalled()
 
