@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createOutputs } from '../../context/outputs'
 import type { PullRequestContext } from '../../context/create-context'
 import type { Octokit, PullRequestCommitMetadata } from './types'
 import { isCommitTrusted } from './get-commits-trusted'
@@ -168,6 +169,7 @@ const createContext = (
   hasPullRequestContext: true,
   inputs: { contextSource: 'event', token: 'ghp_test_token', trustedBots: trustedBotsOverride },
   octokit,
+  outputs: createOutputs(),
   pullRequestNumber: 95,
   referenceName: 'main',
   referenceType: 'branch',

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createOutputs } from '../../context/outputs'
 import type { PullRequestContext } from '../../context/create-context'
 import type { ReviewData } from './types'
 import { isReviewClear } from './get-review-clear'
@@ -9,6 +10,7 @@ const createContext = (overrides: Partial<PullRequestContext> = {}): PullRequest
   hasPullRequestContext: true,
   inputs: { contextSource: 'event', token: 'ghp_test_token', trustedBots: new Set() },
   octokit: createMockOctokit(vi.fn()),
+  outputs: createOutputs(),
   pullRequestNumber: 95,
   referenceName: 'main',
   referenceType: 'branch',

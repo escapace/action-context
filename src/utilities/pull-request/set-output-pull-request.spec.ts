@@ -46,6 +46,7 @@ vi.mock('./get-commits-trusted', () => ({
 }))
 
 import * as core from '@actions/core'
+import { createOutputs } from '../../context/outputs'
 import { fetchMergeReviewData, isMergeStateClear, isReviewClear } from './fetch-merge-review-data'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
@@ -76,6 +77,7 @@ const createPrContext = (overrides: Partial<PullRequestContext> = {}): PullReque
   hasPullRequestContext: true,
   inputs: { ...defaultInputs },
   octokit: mockOctokit,
+  outputs: createOutputs(),
   pullRequestNumber: 95,
   referenceName: 'renovate/eslint-9.x',
   referenceType: 'branch',
@@ -94,6 +96,7 @@ const createNonPrContext = (overrides: Partial<BranchContext> = {}): BranchConte
   hasPullRequestContext: false,
   inputs: { ...defaultInputs },
   octokit: mockOctokit,
+  outputs: createOutputs(),
   pullRequestNumber: 0,
   referenceName: 'trunk',
   referenceType: 'branch',
@@ -122,17 +125,17 @@ describe('setOutputPullRequest', () => {
 
     await setOutputPullRequest(nonPrContext)
 
-    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-not-draft', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-base-ref', '')
-    expect(core.setOutput).toHaveBeenCalledWith('pr-head-ref', '')
-    expect(core.setOutput).toHaveBeenCalledWith('pr-author-bot', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-mergeable', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-review-clear', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 0)
+    expect(nonPrContext.outputs['pr-number']).toBe(0)
+    expect(nonPrContext.outputs['pr-not-draft']).toBe(false)
+    expect(nonPrContext.outputs['pr-base-ref']).toBe('')
+    expect(nonPrContext.outputs['pr-head-ref']).toBe('')
+    expect(nonPrContext.outputs['pr-author-bot']).toBe(false)
+    expect(nonPrContext.outputs['pr-mergeable']).toBe(false)
+    expect(nonPrContext.outputs['pr-review-clear']).toBe(false)
+    expect(nonPrContext.outputs['pr-checks-clear']).toBe(false)
+    expect(nonPrContext.outputs['pr-merge-state-clear']).toBe(false)
+    expect(nonPrContext.outputs['pr-commits-trusted']).toBe(false)
+    expect(nonPrContext.outputs['pr-last-commit-age-minute']).toBe(0)
 
     expect(getPullRequest).not.toHaveBeenCalled()
   })
@@ -142,7 +145,7 @@ describe('setOutputPullRequest', () => {
 
     await setOutputPullRequest(nonPrContext)
 
-    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
+    expect(nonPrContext.outputs['pr-number']).toBe(0)
     expect(getPullRequest).not.toHaveBeenCalled()
   })
 
@@ -178,17 +181,17 @@ describe('setOutputPullRequest', () => {
 
     await setOutputPullRequest(context)
 
-    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 95)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-not-draft', true)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-base-ref', 'main')
-    expect(core.setOutput).toHaveBeenCalledWith('pr-head-ref', 'renovate/eslint-9.x')
-    expect(core.setOutput).toHaveBeenCalledWith('pr-author-bot', true)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-mergeable', true)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-review-clear', true)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', true)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 17)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', true)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', true)
+    expect(context.outputs['pr-number']).toBe(95)
+    expect(context.outputs['pr-not-draft']).toBe(true)
+    expect(context.outputs['pr-base-ref']).toBe('main')
+    expect(context.outputs['pr-head-ref']).toBe('renovate/eslint-9.x')
+    expect(context.outputs['pr-author-bot']).toBe(true)
+    expect(context.outputs['pr-mergeable']).toBe(true)
+    expect(context.outputs['pr-review-clear']).toBe(true)
+    expect(context.outputs['pr-checks-clear']).toBe(true)
+    expect(context.outputs['pr-last-commit-age-minute']).toBe(17)
+    expect(context.outputs['pr-merge-state-clear']).toBe(true)
+    expect(context.outputs['pr-commits-trusted']).toBe(true)
   })
 
   it('passes trusted-bots input to getCommitsTrusted', async () => {
@@ -262,7 +265,7 @@ describe('setOutputPullRequest', () => {
 
     await setOutputPullRequest(nonPrContext)
 
-    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
+    expect(nonPrContext.outputs['pr-number']).toBe(0)
     expect(getPullRequest).not.toHaveBeenCalled()
   })
 
@@ -279,11 +282,11 @@ describe('setOutputPullRequest', () => {
     expect(core.warning).toHaveBeenCalledWith(
       expect.stringContaining('PR_PERMISSION_PULL_REQUESTS_READ'),
     )
-    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-checks-clear', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-merge-state-clear', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-commits-trusted', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 0)
+    expect(context.outputs['pr-number']).toBe(0)
+    expect(context.outputs['pr-checks-clear']).toBe(false)
+    expect(context.outputs['pr-merge-state-clear']).toBe(false)
+    expect(context.outputs['pr-commits-trusted']).toBe(false)
+    expect(context.outputs['pr-last-commit-age-minute']).toBe(0)
   })
 
   it('degrades to defaults with warning on unknown PR fetch failure', async () => {
@@ -314,8 +317,8 @@ describe('setOutputPullRequest', () => {
     await expect(setOutputPullRequest(context)).resolves.toBeUndefined()
 
     expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('PR_DATA_FETCH_FAILED'))
-    expect(core.setOutput).toHaveBeenCalledWith('pr-number', 0)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-review-clear', false)
-    expect(core.setOutput).toHaveBeenCalledWith('pr-last-commit-age-minute', 0)
+    expect(context.outputs['pr-number']).toBe(0)
+    expect(context.outputs['pr-review-clear']).toBe(false)
+    expect(context.outputs['pr-last-commit-age-minute']).toBe(0)
   })
 })

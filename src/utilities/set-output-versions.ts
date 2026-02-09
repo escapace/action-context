@@ -2,7 +2,6 @@ import { isPlainObject } from 'es-toolkit'
 import { readFile } from 'node:fs/promises'
 import semver from 'semver'
 import { isFile } from './is-files'
-import { setOutputs } from './output'
 import { parseNodeVersionConstraint } from '../context/parse-node-version-constraint'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
 import { parseDevEngines as parseDevelopmentEngines, workspaceEngines } from './workspace-engines'
@@ -137,7 +136,7 @@ export const setOutputVersions = async (context: Context) => {
     /* silent */
   }
 
-  const outputs = Object.fromEntries(getMaximumVersionsBestEffort(versions))
-
-  setOutputs(outputs)
+  for (const [name, version] of getMaximumVersionsBestEffort(versions)) {
+    context.outputs[name] = version
+  }
 }

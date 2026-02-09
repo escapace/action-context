@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import semver from 'semver'
+import { createOutputs } from './context/outputs'
+import type { ActionOutputs } from './context/outputs'
 import type { Octokit } from './utilities/pull-request/types'
 
 const runModule = async () => {
@@ -15,16 +16,8 @@ const runModule = async () => {
     createContext: vi.fn(),
   }))
 
-  vi.doMock('./utilities/get-current-version', () => ({
-    getVersion: vi.fn(),
-  }))
-
-  vi.doMock('./utilities/is-latest-version', () => ({
-    isLatestVersion: vi.fn(),
-  }))
-
-  vi.doMock('./utilities/get-changelog', () => ({
-    getChangelog: vi.fn(),
+  vi.doMock('./version/set-output-version', () => ({
+    setOutputVersion: vi.fn(),
   }))
 
   vi.doMock('./utilities/set-output-versions', () => ({
@@ -41,9 +34,7 @@ const runModule = async () => {
 
   const coreModule = await import('@actions/core')
   const contextModule = await import('./context/create-context')
-  const getVersionModule = await import('./utilities/get-current-version')
-  const isLatestVersionModule = await import('./utilities/is-latest-version')
-  const getChangelogModule = await import('./utilities/get-changelog')
+  const setOutputVersionModule = await import('./version/set-output-version')
   const setOutputVersionsModule = await import('./utilities/set-output-versions')
   const setOutputGithubPagesModule = await import('./utilities/set-output-github-pages')
   const setOutputPullRequestModule =
@@ -52,11 +43,9 @@ const runModule = async () => {
   return {
     core: coreModule,
     createContext: contextModule.createContext,
-    getChangelog: getChangelogModule.getChangelog,
-    getVersion: getVersionModule.getVersion,
-    isLatestVersion: isLatestVersionModule.isLatestVersion,
     setOutputGithubPages: setOutputGithubPagesModule.setOutputGithubPages,
     setOutputPullRequest: setOutputPullRequestModule.setOutputPullRequest,
+    setOutputVersion: setOutputVersionModule.setOutputVersion,
     setOutputVersions: setOutputVersionsModule.setOutputVersions,
   }
 }
@@ -82,13 +71,33 @@ const baseContext = {
   workflowRunId: '123456',
 } as const
 
+/**
+ * Simulates setOutputVersion populating outputs on the mock context.
+ */
+const simulateSetOutputVersion = (
+  setOutputVersion: typeof import('./version/set-output-version').setOutputVersion,
+  outputValues: Partial<ActionOutputs>,
+): void => {
+  vi.mocked(setOutputVersion).mockImplementation(async (context) => {
+    for (const [key, value] of Object.entries(outputValues) as Array<
+      [string, ActionOutputs[string]]
+    >) {
+      context.outputs[key] = value
+    }
+
+    return await Promise.resolve()
+  })
+}
+
 describe('run', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('sets all outputs for a branch context (testing environment)', async () => {
+  it('calls all output stages and flushes outputs', async () => {
     const mods = await runModule()
+
+    const outputs = createOutputs()
 
     vi.mocked(mods.createContext).mockResolvedValue({
       ...baseContext,
@@ -99,48 +108,29 @@ describe('run', () => {
         trustedBots: new Set(),
       },
       octokit: createMockOctokit(),
+      outputs,
     })
 
-    const version = new semver.SemVer('0.11.2-trunk.f2e1fe5')
-    vi.mocked(mods.getVersion).mockResolvedValue(version)
-    vi.mocked(mods.isLatestVersion).mockResolvedValue(true)
-    vi.mocked(mods.getChangelog).mockResolvedValue('')
+    simulateSetOutputVersion(mods.setOutputVersion, {
+      'changelog': '',
+      'environment': 'testing',
+      'latest': true,
+      'prerelease': true,
+      'prerelease-identifier': 'trunk',
+      'short-commit': 'f2e1fe5',
+      'version': '0.11.2-trunk.f2e1fe5',
+    })
 
     await import('./index')
+
+    expect(mods.setOutputVersion).toHaveBeenCalled()
+    expect(mods.setOutputVersions).toHaveBeenCalled()
+    expect(mods.setOutputGithubPages).toHaveBeenCalled()
+    expect(mods.setOutputPullRequest).toHaveBeenCalled()
 
     expect(mods.core.setOutput).toHaveBeenCalledWith('environment', 'testing')
     expect(mods.core.setOutput).toHaveBeenCalledWith('short-commit', 'f2e1fe5')
-    expect(mods.getChangelog).not.toHaveBeenCalled()
-    expect(mods.setOutputVersions).toHaveBeenCalled()
-  })
-
-  it('sets production environment for tag without prerelease', async () => {
-    const mods = await runModule()
-
-    vi.mocked(mods.createContext).mockResolvedValue({
-      ...baseContext,
-      hasPullRequestContext: false,
-      inputs: {
-        contextSource: 'event',
-        nodeVersion: undefined,
-        token: 'ghp_test_token',
-        trustedBots: new Set(),
-      },
-      octokit: createMockOctokit(),
-      pullRequestNumber: 0,
-      referenceName: 'v1.0.0',
-      referenceType: 'tag',
-      versionBranch: '',
-    })
-
-    vi.mocked(mods.getVersion).mockResolvedValue(new semver.SemVer('1.0.0'))
-    vi.mocked(mods.isLatestVersion).mockResolvedValue(true)
-    vi.mocked(mods.getChangelog).mockResolvedValue('## Changes')
-
-    await import('./index')
-
-    expect(mods.core.setOutput).toHaveBeenCalledWith('environment', 'production')
-    expect(mods.getChangelog).toHaveBeenCalledWith({ prerelease: false, token: 'ghp_test_token' })
+    expect(mods.core.setOutput).toHaveBeenCalledWith('version', '0.11.2-trunk.f2e1fe5')
   })
 
   it('calls core.setFailed when runtime token is missing', async () => {

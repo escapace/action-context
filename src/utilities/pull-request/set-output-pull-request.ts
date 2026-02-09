@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-import { setOutputs } from '../output'
 import { fetchMergeReviewData, isMergeStateClear, isReviewClear } from './fetch-merge-review-data'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
@@ -7,6 +6,7 @@ import { getPullRequestErrorCode, type PullRequestErrorCode } from './error'
 import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import { getPullRequest } from './get-pull-request'
 import type { Context } from '../../context/create-context'
+import type { ActionOutputs } from '../../context/outputs'
 import type { PullRequestOutputs } from './types'
 
 const DEFAULT_OUTPUTS: PullRequestOutputs = {
@@ -68,20 +68,24 @@ const mapPullRequestError = (error: unknown): PullRequestDegradation => {
 }
 
 /**
- * Emits default `pr-*` outputs for non-PR or degraded PR contexts.
+ * Assigns default `pr-*` outputs for non-PR or degraded PR contexts.
  */
-const emitDefaultPullRequestOutputs = (): void => {
-  setOutputs(DEFAULT_OUTPUTS)
+const assignDefaultPullRequestOutputs = (outputs: ActionOutputs): void => {
+  for (const [key, value] of Object.entries(DEFAULT_OUTPUTS) as Array<
+    [string, ActionOutputs[string]]
+  >) {
+    outputs[key] = value
+  }
 }
 
-const warnAndDegrade = (error: unknown): void => {
+const warnAndDegrade = (outputs: ActionOutputs, error: unknown): void => {
   const issue = mapPullRequestError(error)
 
   core.warning(
     `[${issue.code}] ${issue.summary} PR outputs were reset to defaults. Remediation: ${issue.remediation}`,
   )
 
-  emitDefaultPullRequestOutputs()
+  assignDefaultPullRequestOutputs(outputs)
 }
 
 interface BuildPullRequestOutputsInput {
@@ -120,12 +124,14 @@ const buildPullRequestOutputs = (input: BuildPullRequestOutputsInput): PullReque
 /**
  * Fetch PR data and set all pr-* outputs.
  *
- * On non-PR events, emits zero/default values. `pr-number === 0`
+ * On non-PR events, assigns zero/default values. `pr-number === 0`
  * serves as the implicit gate for consumers.
  */
 export const setOutputPullRequest = async (context: Context): Promise<void> => {
+  const { outputs } = context
+
   if (!context.hasPullRequestContext) {
-    emitDefaultPullRequestOutputs()
+    assignDefaultPullRequestOutputs(outputs)
 
     return
   }
@@ -145,17 +151,21 @@ export const setOutputPullRequest = async (context: Context): Promise<void> => {
     const mergeStateClear = isMergeStateClear(mergeReviewData.mergeStateStatus)
     const reviewClear = isReviewClear(mergeReviewData.reviewData)
 
-    setOutputs(
-      buildPullRequestOutputs({
-        checksClear,
-        commitsTrusted,
-        lastCommitAgeMinute,
-        mergeStateClear,
-        prData,
-        reviewClear,
-      }),
-    )
+    const prOutputs = buildPullRequestOutputs({
+      checksClear,
+      commitsTrusted,
+      lastCommitAgeMinute,
+      mergeStateClear,
+      prData,
+      reviewClear,
+    })
+
+    for (const [key, value] of Object.entries(prOutputs) as Array<
+      [string, ActionOutputs[string]]
+    >) {
+      outputs[key] = value
+    }
   } catch (error: unknown) {
-    warnAndDegrade(error)
+    warnAndDegrade(outputs, error)
   }
 }

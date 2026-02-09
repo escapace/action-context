@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import { isError, isString, last } from 'es-toolkit'
 import semver from 'semver'
-import { exec } from './exec'
+import { exec } from '../utilities/exec'
 
 const getErrorMessage = (error: unknown): string => {
   if (isError(error)) return error.message

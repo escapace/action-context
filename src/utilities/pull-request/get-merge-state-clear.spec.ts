@@ -6,6 +6,7 @@ vi.mock('@actions/github', () => ({
   },
 }))
 
+import { createOutputs } from '../../context/outputs'
 import type { PullRequestContext } from '../../context/create-context'
 import { getMergeStateClear } from './get-merge-state-clear'
 import type { Octokit } from './types'
@@ -19,6 +20,7 @@ const createContext = (
   hasPullRequestContext: true,
   inputs: { contextSource: 'event', token: 'ghp_test_token', trustedBots: new Set() },
   octokit,
+  outputs: createOutputs(),
   pullRequestNumber: 95,
   referenceName: 'main',
   referenceType: 'branch',

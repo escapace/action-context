@@ -8,11 +8,11 @@ vi.mock('../constants', () => ({
   SEMVER_OPTIONS: { includePrerelease: true, loose: false },
 }))
 
-vi.mock('./exec', () => ({
+vi.mock('../utilities/exec', () => ({
   exec: vi.fn(),
 }))
 
-import { exec } from './exec'
+import { exec } from '../utilities/exec'
 import { getTag, selectHighestTagFromOutput } from './get-tag'
 
 describe('getTag', () => {

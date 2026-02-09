@@ -2,6 +2,7 @@ import * as github from '@actions/github'
 import { createShortCommit } from '../utilities/create-short-commit'
 import { getPullRequest } from '../utilities/pull-request/get-pull-request'
 import type { Octokit } from '../utilities/pull-request/types'
+import { createOutputs, type ActionOutputs } from './outputs'
 import { readBranch } from './read-branch'
 import { resolveInputs, type ValidatedInputs } from './resolve-inputs'
 import { throwInputError } from './throw-input-error'
@@ -64,6 +65,9 @@ interface ContextBase {
 
   /** Validated action inputs. */
   inputs: ValidatedInputs
+
+  /** Typed action outputs proxy. Throws on read before write. */
+  outputs: ActionOutputs
 }
 
 /**
@@ -163,6 +167,7 @@ const readPayloadPullRequest = (): PayloadPullRequest | undefined => {
 interface ResolvedBase {
   inputs: ValidatedInputs
   octokit: Octokit
+  outputs: ActionOutputs
   repositoryName: string
   repositoryOwner: string
   workflowRunId: string | undefined
@@ -272,6 +277,7 @@ export const createContext = async (): Promise<Context> => {
   const base: ResolvedBase = {
     inputs,
     octokit,
+    outputs: createOutputs(),
     repositoryName: github.context.repo.repo,
     repositoryOwner: github.context.repo.owner,
     workflowRunId: String(github.context.runId),

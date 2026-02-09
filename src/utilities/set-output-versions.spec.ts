@@ -29,6 +29,7 @@ vi.mock('node:fs/promises', () => ({
 
 import * as core from '@actions/core'
 import { readFile } from 'node:fs/promises'
+import { createOutputs } from '../context/outputs'
 import { isFile } from './is-files'
 import {
   parseNodeVersionConstraint,
@@ -52,6 +53,7 @@ const createContext = (nodeVersion: string | undefined): Context => ({
   hasPullRequestContext: false,
   inputs: { contextSource: 'event', nodeVersion, token: 'ghp_test_token', trustedBots: new Set() },
   octokit: createMockOctokit(),
+  outputs: createOutputs(),
   pullRequestNumber: 0,
   referenceName: 'trunk',
   referenceType: 'branch',
@@ -87,10 +89,11 @@ describe('setOutputVersions', () => {
     ])
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
-    await setOutputVersions(createContext(nodeVersionInput))
+    const context = createContext(nodeVersionInput)
+    await setOutputVersions(context)
 
-    expect(core.setOutput).toHaveBeenCalledWith('node-version', '24.12.0')
-    expect(core.setOutput).toHaveBeenCalledWith('pnpm-version', '10.28.2')
+    expect(context.outputs['node-version']).toBe('24.12.0')
+    expect(context.outputs['pnpm-version']).toBe('10.28.2')
   })
 
   it('includes node-version from input when provided', async () => {
@@ -144,10 +147,11 @@ describe('setOutputVersions', () => {
     ])
     vi.mocked(workspaceEnginesMaximumVersions).mockReturnValue(versionMap)
 
-    await setOutputVersions(createContext(nodeVersionInput))
+    const context = createContext(nodeVersionInput)
+    await setOutputVersions(context)
 
-    expect(core.setOutput).toHaveBeenCalledWith('terraform-version', '1.5.0')
-    expect(core.setOutput).toHaveBeenCalledWith('kubectl-version', '1.28.0')
+    expect(context.outputs['terraform-version']).toBe('1.5.0')
+    expect(context.outputs['kubectl-version']).toBe('1.28.0')
   })
 
   it('includes devEngines from root package.json', async () => {
@@ -218,9 +222,10 @@ describe('setOutputVersions', () => {
       return map
     })
 
-    await setOutputVersions(createContext(nodeVersionInput))
+    const context = createContext(nodeVersionInput)
+    await setOutputVersions(context)
 
-    expect(core.setOutput).toHaveBeenCalledWith('node-version', '24.12.0')
+    expect(context.outputs['node-version']).toBe('24.12.0')
     expect(core.error).not.toHaveBeenCalled()
   })
 })

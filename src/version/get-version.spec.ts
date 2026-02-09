@@ -10,7 +10,7 @@ vi.mock('@actions/github', () => ({
   context: { sha: 'abc1234567890abcdef1234567890abcdef123456' },
 }))
 
-vi.mock('./exec', () => ({
+vi.mock('../utilities/exec', () => ({
   exec: vi.fn(),
 }))
 
@@ -27,10 +27,11 @@ vi.mock('changelogen', () => ({
 }))
 
 import { getGitDiff } from 'changelogen'
-import { exec } from './exec'
-import { getVersion } from './get-current-version'
+import { createOutputs } from '../context/outputs'
+import { exec } from '../utilities/exec'
+import { getVersion } from './get-version'
 import type { Context } from '../context/create-context'
-import type { Octokit } from './pull-request/types'
+import type { Octokit } from '../utilities/pull-request/types'
 import { getSemver } from './get-semver'
 import { getTag } from './get-tag'
 
@@ -49,6 +50,7 @@ const contextBase = {
     trustedBots: new Set<string>(),
   },
   octokit: createMockOctokit(),
+  outputs: createOutputs(),
   repositoryName: 'action-context',
   repositoryOwner: 'escapace',
   versionCommitSha: 'abc1234567890abcdef1234567890abcdef123456',

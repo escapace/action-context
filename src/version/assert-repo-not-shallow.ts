@@ -1,4 +1,4 @@
-import { exec } from './exec'
+import { exec } from '../utilities/exec'
 
 export const assertRepoNotShallow = async (): Promise<void> => {
   const shallow = await exec('git', ['rev-parse', '--is-shallow-repository'])

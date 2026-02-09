@@ -3,10 +3,11 @@ import { isError, isString } from 'es-toolkit'
 import path from 'node:path'
 import { workspaceProjects } from './workspace-projects'
 import { isNativeError } from 'node:util/types'
-import { setOutputs } from './output'
 import type { Context } from '../context/create-context'
 
 export const setOutputGithubPages = async (context: Context) => {
+  const { outputs } = context
+
   try {
     const githubPages =
       (
@@ -22,7 +23,9 @@ export const setOutputGithubPages = async (context: Context) => {
       )?.data?.build_type === 'workflow'
 
     if (!githubPages) {
-      return setOutputs({ 'github-pages': githubPages })
+      outputs['github-pages'] = githubPages
+
+      return
     }
 
     const directory = process.cwd()
@@ -31,23 +34,16 @@ export const setOutputGithubPages = async (context: Context) => {
       isString(value.manifest?.scripts?.['build:github-pages']),
     )
 
-    if (projects.length !== 1) {
-      return setOutputs({ 'github-pages': githubPages })
+    outputs['github-pages'] = githubPages
+
+    if (projects.length === 1) {
+      outputs['github-pages-path'] = path.relative(
+        directory,
+        path.join(path.resolve(directory, projects[0].rootDir), 'lib/github-pages'),
+      )
     }
-
-    const githubPagesPath = path.relative(
-      directory,
-      path.join(path.resolve(directory, projects[0].rootDir), 'lib/github-pages'),
-    )
-
-    const outputs = {
-      'github-pages': githubPages,
-      'github-pages-path': githubPagesPath,
-    }
-
-    setOutputs(outputs)
   } catch (error) {
-    setOutputs({ 'github-pages': false })
+    outputs['github-pages'] = false
     core.error(isNativeError(error) ? error : 'Unknown Error')
   }
 }

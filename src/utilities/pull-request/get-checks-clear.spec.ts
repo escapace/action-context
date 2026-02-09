@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createOutputs } from '../../context/outputs'
 import type { Context } from '../../context/create-context'
 import type { CheckRun, Octokit, StatusContext } from './types'
 import {
@@ -15,6 +16,7 @@ const createContext = (octokit: Octokit, workflowRunId: string | undefined): Con
   hasPullRequestContext: true,
   inputs: { contextSource: 'event', token: 'ghp_test_token', trustedBots: new Set() },
   octokit,
+  outputs: createOutputs(),
   pullRequestNumber: 95,
   referenceName: 'main',
   referenceType: 'branch',

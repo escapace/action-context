@@ -6,6 +6,7 @@ vi.mock('@actions/github', () => ({
   },
 }))
 
+import { createOutputs } from '../../context/outputs'
 import type { PullRequestContext } from '../../context/create-context'
 import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import type { Octokit } from './types'
@@ -21,6 +22,7 @@ const createContext = (
   hasPullRequestContext: true,
   inputs: { contextSource: 'event', token: 'ghp_test_token', trustedBots: new Set() },
   octokit,
+  outputs: createOutputs(),
   pullRequestNumber: 115,
   referenceName: 'main',
   referenceType: 'branch',
