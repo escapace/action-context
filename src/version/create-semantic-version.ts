@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import semver from 'semver'
 
-export const getSemver = (properties: {
+export const createSemanticVersion = (properties: {
   major: number
   minor: number
   patch: number

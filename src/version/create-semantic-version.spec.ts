@@ -4,22 +4,22 @@ vi.mock('@actions/core', () => ({
   debug: vi.fn(),
 }))
 
-import { getSemver } from './get-semver'
+import { createSemanticVersion } from './create-semantic-version'
 
-describe('getSemver', () => {
+describe('createSemanticVersion', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('parses a version without prerelease', () => {
-    const result = getSemver({ major: 1, minor: 2, patch: 3, prerelease: [] })
+    const result = createSemanticVersion({ major: 1, minor: 2, patch: 3, prerelease: [] })
 
     expect(result).not.toBeNull()
     expect(result?.version).toBe('1.2.3')
   })
 
   it('parses a version with prerelease identifiers', () => {
-    const result = getSemver({
+    const result = createSemanticVersion({
       major: 0,
       minor: 11,
       patch: 2,
@@ -31,7 +31,7 @@ describe('getSemver', () => {
   })
 
   it('parses a version with numeric prerelease', () => {
-    const result = getSemver({
+    const result = createSemanticVersion({
       major: 1,
       minor: 0,
       patch: 0,
@@ -44,7 +44,7 @@ describe('getSemver', () => {
 
   it('throws for invalid version components', () => {
     expect(() =>
-      getSemver({
+      createSemanticVersion({
         major: -1,
         minor: 0,
         patch: 0,

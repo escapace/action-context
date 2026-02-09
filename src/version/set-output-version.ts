@@ -1,7 +1,7 @@
 import assert from 'node:assert'
 import type { Context } from '../context/create-context'
-import { getChangelog } from './get-changelog'
-import { getVersion } from './get-version'
+import { createChangelog } from './create-changelog'
+import { createVersion } from './create-version'
 import { isLatestVersion } from './is-latest-version'
 
 /**
@@ -10,7 +10,7 @@ import { isLatestVersion } from './is-latest-version'
  */
 export const setOutputVersion = async (context: Context): Promise<void> => {
   const { inputs, outputs } = context
-  const currentVersion = await getVersion(context)
+  const currentVersion = await createVersion(context)
 
   assert(currentVersion !== null, 'Failed to derive a semantic version.')
 
@@ -26,6 +26,6 @@ export const setOutputVersion = async (context: Context): Promise<void> => {
   outputs['short-commit'] = context.versionCommitShaShort
   outputs.latest = await isLatestVersion(currentVersion)
   outputs.changelog = isTag
-    ? ((await getChangelog({ prerelease: isPrerelease, token: inputs.token })) ?? '')
+    ? ((await createChangelog({ prerelease: isPrerelease, token: inputs.token })) ?? '')
     : ''
 }

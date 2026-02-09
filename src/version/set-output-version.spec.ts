@@ -1,21 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import semver from 'semver'
 
-vi.mock('./get-version', () => ({
-  getVersion: vi.fn(),
+vi.mock('./create-version', () => ({
+  createVersion: vi.fn(),
 }))
 
 vi.mock('./is-latest-version', () => ({
   isLatestVersion: vi.fn(),
 }))
 
-vi.mock('./get-changelog', () => ({
-  getChangelog: vi.fn(),
+vi.mock('./create-changelog', () => ({
+  createChangelog: vi.fn(),
 }))
 
 import { createOutputs } from '../context/outputs'
-import { getChangelog } from './get-changelog'
-import { getVersion } from './get-version'
+import { createChangelog } from './create-changelog'
+import { createVersion } from './create-version'
 import { isLatestVersion } from './is-latest-version'
 import { setOutputVersion } from './set-output-version'
 import type { Context } from '../context/create-context'
@@ -82,7 +82,7 @@ describe('setOutputVersion', () => {
     const context = createBranchContext()
     const version = new semver.SemVer('0.11.2-trunk.f2e1fe5')
 
-    vi.mocked(getVersion).mockResolvedValue(version)
+    vi.mocked(createVersion).mockResolvedValue(version)
     vi.mocked(isLatestVersion).mockResolvedValue(true)
 
     await setOutputVersion(context)
@@ -95,16 +95,16 @@ describe('setOutputVersion', () => {
     expect(context.outputs.latest).toBe(true)
     expect(context.outputs.changelog).toBe('')
 
-    expect(getChangelog).not.toHaveBeenCalled()
+    expect(createChangelog).not.toHaveBeenCalled()
   })
 
   it('sets production environment for release tag', async () => {
     const context = createTagContext('v1.0.0')
     const version = new semver.SemVer('1.0.0')
 
-    vi.mocked(getVersion).mockResolvedValue(version)
+    vi.mocked(createVersion).mockResolvedValue(version)
     vi.mocked(isLatestVersion).mockResolvedValue(true)
-    vi.mocked(getChangelog).mockResolvedValue('## Changes')
+    vi.mocked(createChangelog).mockResolvedValue('## Changes')
 
     await setOutputVersion(context)
 
@@ -115,16 +115,16 @@ describe('setOutputVersion', () => {
     expect(context.outputs.latest).toBe(true)
     expect(context.outputs.changelog).toBe('## Changes')
 
-    expect(getChangelog).toHaveBeenCalledWith({ prerelease: false, token: 'ghp_test_token' })
+    expect(createChangelog).toHaveBeenCalledWith({ prerelease: false, token: 'ghp_test_token' })
   })
 
   it('sets staging environment for prerelease tag', async () => {
     const context = createTagContext('v1.0.0-rc.1')
     const version = new semver.SemVer('1.0.0-rc.1')
 
-    vi.mocked(getVersion).mockResolvedValue(version)
+    vi.mocked(createVersion).mockResolvedValue(version)
     vi.mocked(isLatestVersion).mockResolvedValue(false)
-    vi.mocked(getChangelog).mockResolvedValue('## RC Changes')
+    vi.mocked(createChangelog).mockResolvedValue('## RC Changes')
 
     await setOutputVersion(context)
 
@@ -135,26 +135,26 @@ describe('setOutputVersion', () => {
     expect(context.outputs.latest).toBe(false)
     expect(context.outputs.changelog).toBe('## RC Changes')
 
-    expect(getChangelog).toHaveBeenCalledWith({ prerelease: true, token: 'ghp_test_token' })
+    expect(createChangelog).toHaveBeenCalledWith({ prerelease: true, token: 'ghp_test_token' })
   })
 
-  it('defaults changelog to empty string when getChangelog returns undefined', async () => {
+  it('defaults changelog to empty string when createChangelog returns undefined', async () => {
     const context = createTagContext('v1.0.0')
     const version = new semver.SemVer('1.0.0')
 
-    vi.mocked(getVersion).mockResolvedValue(version)
+    vi.mocked(createVersion).mockResolvedValue(version)
     vi.mocked(isLatestVersion).mockResolvedValue(true)
-    vi.mocked(getChangelog).mockResolvedValue(undefined)
+    vi.mocked(createChangelog).mockResolvedValue(undefined)
 
     await setOutputVersion(context)
 
     expect(context.outputs.changelog).toBe('')
   })
 
-  it('throws when getVersion returns null', async () => {
+  it('throws when createVersion returns null', async () => {
     const context = createBranchContext()
 
-    vi.mocked(getVersion).mockResolvedValue(null)
+    vi.mocked(createVersion).mockResolvedValue(null)
 
     await expect(setOutputVersion(context)).rejects.toThrow('Failed to derive a semantic version.')
   })

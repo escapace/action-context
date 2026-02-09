@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import type { ChangelogOptions } from 'changelogithub'
 import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
 
-export const getChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
+export const createChangelog = async (options: Pick<ChangelogOptions, 'prerelease' | 'token'>) => {
   try {
     const { commits, config, output } = await generate({
       capitalize: false,

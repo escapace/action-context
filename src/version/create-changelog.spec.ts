@@ -12,9 +12,9 @@ vi.mock('changelogithub', () => ({
 
 import * as core from '@actions/core'
 import { generate, hasTagOnGitHub, isRepoShallow } from 'changelogithub'
-import { getChangelog } from './get-changelog'
+import { createChangelog } from './create-changelog'
 
-describe('getChangelog', () => {
+describe('createChangelog', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -28,7 +28,7 @@ describe('getChangelog', () => {
     vi.mocked(generate).mockResolvedValue(generateResult as never)
     vi.mocked(hasTagOnGitHub).mockResolvedValue(true)
 
-    const result = await getChangelog({ prerelease: false, token: 'ghp_test' })
+    const result = await createChangelog({ prerelease: false, token: 'ghp_test' })
 
     expect(result).toBe('## v1.0.0\n\n- feat: something')
   })
@@ -42,7 +42,7 @@ describe('getChangelog', () => {
     vi.mocked(generate).mockResolvedValue(generateResult as never)
     vi.mocked(hasTagOnGitHub).mockResolvedValue(true)
 
-    await getChangelog({ prerelease: true, token: 'ghp_test' })
+    await createChangelog({ prerelease: true, token: 'ghp_test' })
 
     expect(generate).toHaveBeenCalledWith({
       capitalize: false,
@@ -62,7 +62,7 @@ describe('getChangelog', () => {
     }
     vi.mocked(generate).mockResolvedValue(generateResult as never)
 
-    const result = await getChangelog({ prerelease: false, token: 'ghp_test' })
+    const result = await createChangelog({ prerelease: false, token: 'ghp_test' })
 
     expect(result).toBeUndefined()
     expect(core.warning).toHaveBeenCalledWith('no GitHub token found')
@@ -77,7 +77,7 @@ describe('getChangelog', () => {
     vi.mocked(generate).mockResolvedValue(generateResult as never)
     vi.mocked(hasTagOnGitHub).mockResolvedValue(false)
 
-    const result = await getChangelog({ prerelease: false, token: 'ghp_test' })
+    const result = await createChangelog({ prerelease: false, token: 'ghp_test' })
 
     expect(result).toBeUndefined()
     expect(core.warning).toHaveBeenCalledWith(
@@ -95,7 +95,7 @@ describe('getChangelog', () => {
     vi.mocked(hasTagOnGitHub).mockResolvedValue(true)
     vi.mocked(isRepoShallow).mockResolvedValue(true)
 
-    const result = await getChangelog({ prerelease: false, token: 'ghp_test' })
+    const result = await createChangelog({ prerelease: false, token: 'ghp_test' })
 
     expect(result).toBeUndefined()
     expect(core.warning).toHaveBeenCalledWith(expect.stringContaining('shallowly'))
@@ -104,7 +104,7 @@ describe('getChangelog', () => {
   it('warns and returns undefined when generate throws', async () => {
     vi.mocked(generate).mockRejectedValue(new Error('network error'))
 
-    const result = await getChangelog({ prerelease: false, token: 'ghp_test' })
+    const result = await createChangelog({ prerelease: false, token: 'ghp_test' })
 
     expect(result).toBeUndefined()
     expect(core.warning).toHaveBeenCalledWith('network error')

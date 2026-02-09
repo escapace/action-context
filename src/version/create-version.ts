@@ -7,8 +7,8 @@ import { conventionalCommitRegex, defaultIncrement } from '../constants'
 import { assertRepoNotShallow } from './assert-repo-not-shallow'
 import { createShortCommit } from '../utilities/create-short-commit'
 import { exec } from '../utilities/exec'
-import { getSemver } from './get-semver'
-import { getTag } from './get-tag'
+import { createSemanticVersion } from './create-semantic-version'
+import { readTag } from './read-tag'
 import type { BranchContext, Context, PullRequestContext } from '../context/create-context'
 
 type VersionIncrement = 'major' | 'minor' | 'patch'
@@ -173,7 +173,7 @@ const getNextBranchVersion = async (lastGitTag: string, branch: string, shortCom
   const increment = await resolveIncrementFromDiff(lastGitTag)
   const nextCore = applyIncrement(parseTagVersionCore(lastGitTag), increment)
 
-  return getSemver({
+  return createSemanticVersion({
     ...nextCore,
     prerelease: [preReleaseCase(branch), shortCommit],
   })
@@ -182,7 +182,7 @@ const getNextBranchVersion = async (lastGitTag: string, branch: string, shortCom
 /**
  * Returns semantic version for the current workflow context.
  */
-export const getVersion = async (context: Context) => {
+export const createVersion = async (context: Context) => {
   const referenceType = context.referenceType
   const referenceName = context.referenceName
 
@@ -207,7 +207,7 @@ export const getVersion = async (context: Context) => {
     referenceType,
   )
 
-  const lastGitTag = await getTag(branchContext.branch)
+  const lastGitTag = await readTag(branchContext.branch)
 
   if (lastGitTag === undefined) {
     return getInitialBranchVersion(branchContext.branch, branchContext.shortCommit)

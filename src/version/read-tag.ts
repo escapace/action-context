@@ -56,7 +56,7 @@ export const selectHighestTagFromOutput = (
   return last(tags)
 }
 
-export async function getTag(
+export async function readTag(
   branch?: string,
   options?: { includePrerelease?: boolean },
 ): Promise<string | undefined> {
@@ -80,7 +80,7 @@ export async function getTag(
 
   const tag = selectHighestTagFromOutput(output, options)
 
-  core.debug(`getLastGitTag():\n ${JSON.stringify(tag)}`)
+  core.debug(`readTag():\n ${JSON.stringify(tag)}`)
 
   return tag
 }

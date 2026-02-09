@@ -1,11 +1,11 @@
 import semver from 'semver'
 import { assertRepoNotShallow } from './assert-repo-not-shallow'
-import { getTag } from './get-tag'
+import { readTag } from './read-tag'
 
 export const isLatestVersion = async (currentVersion: semver.SemVer) => {
   await assertRepoNotShallow()
 
-  const tag = await getTag(undefined, { includePrerelease: false })
+  const tag = await readTag(undefined, { includePrerelease: false })
 
   if (tag === undefined) {
     return true

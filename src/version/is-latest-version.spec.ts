@@ -5,12 +5,12 @@ vi.mock('./assert-repo-not-shallow', () => ({
   assertRepoNotShallow: vi.fn(),
 }))
 
-vi.mock('./get-tag', () => ({
-  getTag: vi.fn(),
+vi.mock('./read-tag', () => ({
+  readTag: vi.fn(),
 }))
 
 import { assertRepoNotShallow } from './assert-repo-not-shallow'
-import { getTag } from './get-tag'
+import { readTag } from './read-tag'
 import { isLatestVersion } from './is-latest-version'
 
 describe('isLatestVersion', () => {
@@ -20,45 +20,45 @@ describe('isLatestVersion', () => {
   })
 
   it('returns true when no tags exist', async () => {
-    vi.mocked(getTag).mockResolvedValue(undefined)
+    vi.mocked(readTag).mockResolvedValue(undefined)
 
     const version = semver.parse('0.1.0')!
     expect(await isLatestVersion(version)).toBe(true)
   })
 
   it('returns true when current version is greater than latest tag', async () => {
-    vi.mocked(getTag).mockResolvedValue('v1.0.0')
+    vi.mocked(readTag).mockResolvedValue('v1.0.0')
 
     const version = semver.parse('2.0.0')!
     expect(await isLatestVersion(version)).toBe(true)
   })
 
   it('returns true when current version equals latest tag', async () => {
-    vi.mocked(getTag).mockResolvedValue('v1.0.0')
+    vi.mocked(readTag).mockResolvedValue('v1.0.0')
 
     const version = semver.parse('1.0.0')!
     expect(await isLatestVersion(version)).toBe(true)
   })
 
   it('returns false when current version is less than latest tag', async () => {
-    vi.mocked(getTag).mockResolvedValue('v2.0.0')
+    vi.mocked(readTag).mockResolvedValue('v2.0.0')
 
     const version = semver.parse('1.0.0')!
     expect(await isLatestVersion(version)).toBe(false)
   })
 
   it('calls shallow-history guard before reading tags', async () => {
-    vi.mocked(getTag).mockResolvedValue(undefined)
+    vi.mocked(readTag).mockResolvedValue(undefined)
 
     const version = semver.parse('1.0.0')!
     await isLatestVersion(version)
 
     expect(assertRepoNotShallow).toHaveBeenCalledTimes(1)
-    expect(getTag).toHaveBeenCalledWith(undefined, { includePrerelease: false })
+    expect(readTag).toHaveBeenCalledWith(undefined, { includePrerelease: false })
   })
 
   it('compares against latest stable tag', async () => {
-    vi.mocked(getTag).mockResolvedValue('v1.0.0')
+    vi.mocked(readTag).mockResolvedValue('v1.0.0')
 
     const version = semver.parse('1.0.0-rc.1')!
     expect(await isLatestVersion(version)).toBe(false)
@@ -72,7 +72,7 @@ describe('isLatestVersion', () => {
   ])(
     'matches README latest examples for current=$current against stableTag=$stableTag',
     async ({ current, expected, stableTag }) => {
-      vi.mocked(getTag).mockResolvedValue(stableTag)
+      vi.mocked(readTag).mockResolvedValue(stableTag)
 
       const version = semver.parse(current)!
       await expect(isLatestVersion(version)).resolves.toBe(expected)
@@ -84,6 +84,6 @@ describe('isLatestVersion', () => {
 
     const version = semver.parse('1.0.0')!
     await expect(isLatestVersion(version)).rejects.toThrow('Repository history is shallow.')
-    expect(getTag).not.toHaveBeenCalled()
+    expect(readTag).not.toHaveBeenCalled()
   })
 })

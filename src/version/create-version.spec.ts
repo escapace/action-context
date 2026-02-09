@@ -14,12 +14,12 @@ vi.mock('../utilities/exec', () => ({
   exec: vi.fn(),
 }))
 
-vi.mock('./get-semver', () => ({
-  getSemver: vi.fn(),
+vi.mock('./create-semantic-version', () => ({
+  createSemanticVersion: vi.fn(),
 }))
 
-vi.mock('./get-tag', () => ({
-  getTag: vi.fn(),
+vi.mock('./read-tag', () => ({
+  readTag: vi.fn(),
 }))
 
 vi.mock('changelogen', () => ({
@@ -29,11 +29,11 @@ vi.mock('changelogen', () => ({
 import { getGitDiff } from 'changelogen'
 import { createOutputs } from '../context/outputs'
 import { exec } from '../utilities/exec'
-import { getVersion } from './get-version'
+import { createVersion } from './create-version'
 import type { Context } from '../context/create-context'
 import type { Octokit } from '../utilities/pull-request/types'
-import { getSemver } from './get-semver'
-import { getTag } from './get-tag'
+import { createSemanticVersion } from './create-semantic-version'
+import { readTag } from './read-tag'
 
 const createMockOctokit = (): Octokit => {
   const octokit = {}
@@ -85,7 +85,7 @@ const createContext = (): Context => {
   }
 }
 
-describe('getVersion', () => {
+describe('createVersion', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     process.env.GITHUB_REF_TYPE = 'branch'
@@ -101,7 +101,7 @@ describe('getVersion', () => {
     it('parses a valid semver tag', async () => {
       process.env.GITHUB_REF_NAME = 'v1.2.3'
 
-      const result = await getVersion(createContext())
+      const result = await createVersion(createContext())
 
       expect(result).not.toBeNull()
       expect(result?.major).toBe(1)
@@ -112,7 +112,7 @@ describe('getVersion', () => {
     it('parses a prerelease tag', async () => {
       process.env.GITHUB_REF_NAME = 'v1.0.0-rc.1'
 
-      const result = await getVersion(createContext())
+      const result = await createVersion(createContext())
 
       expect(result).not.toBeNull()
       expect(result?.prerelease).toEqual(['rc', 1])
@@ -121,7 +121,7 @@ describe('getVersion', () => {
     it('throws for an invalid semver tag', async () => {
       process.env.GITHUB_REF_NAME = 'not-a-version'
 
-      await expect(getVersion(createContext())).rejects.toThrow('Not semver string')
+      await expect(createVersion(createContext())).rejects.toThrow('Not semver string')
     })
   })
 
@@ -137,9 +137,9 @@ describe('getVersion', () => {
     })
 
     it('asserts the repo is not shallow', async () => {
-      vi.mocked(getTag).mockResolvedValue(undefined)
+      vi.mocked(readTag).mockResolvedValue(undefined)
 
-      await getVersion(createContext())
+      await createVersion(createContext())
 
       expect(exec).toHaveBeenCalledWith('git', ['rev-parse', '--is-shallow-repository'])
     })
@@ -150,13 +150,13 @@ describe('getVersion', () => {
         return await Promise.resolve('')
       })
 
-      await expect(getVersion(createContext())).rejects.toThrow()
+      await expect(createVersion(createContext())).rejects.toThrow()
     })
 
     it('returns 0.1.0 prerelease when no tags exist', async () => {
-      vi.mocked(getTag).mockResolvedValue(undefined)
+      vi.mocked(readTag).mockResolvedValue(undefined)
 
-      const result = await getVersion(createContext())
+      const result = await createVersion(createContext())
 
       expect(result).not.toBeNull()
       expect(result?.major).toBe(0)
@@ -166,7 +166,7 @@ describe('getVersion', () => {
     })
 
     it('bumps patch on fix commits', async () => {
-      vi.mocked(getTag).mockResolvedValue('v0.11.1')
+      vi.mocked(readTag).mockResolvedValue('v0.11.1')
       vi.mocked(getGitDiff).mockResolvedValue([
         {
           author: { email: '', name: '' },
@@ -175,11 +175,11 @@ describe('getVersion', () => {
           shortHash: 'abc',
         },
       ] as never)
-      vi.mocked(getSemver).mockReturnValue(semver.parse('0.11.2-trunk.f2e1fe5')!)
+      vi.mocked(createSemanticVersion).mockReturnValue(semver.parse('0.11.2-trunk.f2e1fe5')!)
 
-      await getVersion(createContext())
+      await createVersion(createContext())
 
-      expect(getSemver).toHaveBeenCalledWith({
+      expect(createSemanticVersion).toHaveBeenCalledWith({
         major: 0,
         minor: 11,
         patch: 2,
@@ -188,7 +188,7 @@ describe('getVersion', () => {
     })
 
     it('bumps minor on feat commits', async () => {
-      vi.mocked(getTag).mockResolvedValue('v0.11.1')
+      vi.mocked(readTag).mockResolvedValue('v0.11.1')
       vi.mocked(getGitDiff).mockResolvedValue([
         {
           author: { email: '', name: '' },
@@ -197,11 +197,11 @@ describe('getVersion', () => {
           shortHash: 'abc',
         },
       ] as never)
-      vi.mocked(getSemver).mockReturnValue(semver.parse('0.12.0-trunk.f2e1fe5')!)
+      vi.mocked(createSemanticVersion).mockReturnValue(semver.parse('0.12.0-trunk.f2e1fe5')!)
 
-      await getVersion(createContext())
+      await createVersion(createContext())
 
-      expect(getSemver).toHaveBeenCalledWith({
+      expect(createSemanticVersion).toHaveBeenCalledWith({
         major: 0,
         minor: 12,
         patch: 0,
@@ -210,7 +210,7 @@ describe('getVersion', () => {
     })
 
     it('bumps major on breaking change with ! suffix', async () => {
-      vi.mocked(getTag).mockResolvedValue('v0.11.1')
+      vi.mocked(readTag).mockResolvedValue('v0.11.1')
       vi.mocked(getGitDiff).mockResolvedValue([
         {
           author: { email: '', name: '' },
@@ -219,11 +219,11 @@ describe('getVersion', () => {
           shortHash: 'abc',
         },
       ] as never)
-      vi.mocked(getSemver).mockReturnValue(semver.parse('1.0.0-trunk.f2e1fe5')!)
+      vi.mocked(createSemanticVersion).mockReturnValue(semver.parse('1.0.0-trunk.f2e1fe5')!)
 
-      await getVersion(createContext())
+      await createVersion(createContext())
 
-      expect(getSemver).toHaveBeenCalledWith({
+      expect(createSemanticVersion).toHaveBeenCalledWith({
         major: 1,
         minor: 0,
         patch: 0,
@@ -232,7 +232,7 @@ describe('getVersion', () => {
     })
 
     it('bumps major on BREAKING CHANGE in message body', async () => {
-      vi.mocked(getTag).mockResolvedValue('v0.11.1')
+      vi.mocked(readTag).mockResolvedValue('v0.11.1')
       vi.mocked(getGitDiff).mockResolvedValue([
         {
           author: { email: '', name: '' },
@@ -241,11 +241,11 @@ describe('getVersion', () => {
           shortHash: 'abc',
         },
       ] as never)
-      vi.mocked(getSemver).mockReturnValue(semver.parse('1.0.0-trunk.f2e1fe5')!)
+      vi.mocked(createSemanticVersion).mockReturnValue(semver.parse('1.0.0-trunk.f2e1fe5')!)
 
-      await getVersion(createContext())
+      await createVersion(createContext())
 
-      expect(getSemver).toHaveBeenCalledWith({
+      expect(createSemanticVersion).toHaveBeenCalledWith({
         major: 1,
         minor: 0,
         patch: 0,
@@ -254,7 +254,7 @@ describe('getVersion', () => {
     })
 
     it('defaults to patch when no conventional commits match', async () => {
-      vi.mocked(getTag).mockResolvedValue('v0.11.1')
+      vi.mocked(readTag).mockResolvedValue('v0.11.1')
       vi.mocked(getGitDiff).mockResolvedValue([
         {
           author: { email: '', name: '' },
@@ -263,11 +263,11 @@ describe('getVersion', () => {
           shortHash: 'abc',
         },
       ] as never)
-      vi.mocked(getSemver).mockReturnValue(semver.parse('0.11.2-trunk.f2e1fe5')!)
+      vi.mocked(createSemanticVersion).mockReturnValue(semver.parse('0.11.2-trunk.f2e1fe5')!)
 
-      await getVersion(createContext())
+      await createVersion(createContext())
 
-      expect(getSemver).toHaveBeenCalledWith({
+      expect(createSemanticVersion).toHaveBeenCalledWith({
         major: 0,
         minor: 11,
         patch: 2,
@@ -277,9 +277,9 @@ describe('getVersion', () => {
 
     it('sanitizes branch name in prerelease (non-alphanumeric to hyphens)', async () => {
       process.env.GITHUB_REF_NAME = 'renovate/lock-file-maintenance'
-      vi.mocked(getTag).mockResolvedValue(undefined)
+      vi.mocked(readTag).mockResolvedValue(undefined)
 
-      const result = await getVersion(createContext())
+      const result = await createVersion(createContext())
 
       expect(result).not.toBeNull()
       expect(result?.prerelease[0]).toBe('renovate-lock-file-maintenance')
@@ -293,22 +293,22 @@ describe('getVersion', () => {
           return await Promise.resolve('abc1234567890abcdef1234567890abcdef123456')
         return await Promise.resolve('')
       })
-      vi.mocked(getTag).mockResolvedValue(undefined)
+      vi.mocked(readTag).mockResolvedValue(undefined)
 
-      await getVersion(createContext())
+      await createVersion(createContext())
 
       expect(exec).toHaveBeenCalledWith('git', ['rev-parse', '--verify', 'trunk'])
     })
 
     it('skips branch latest commit assertion when pull request context is available', async () => {
       process.env.GITHUB_EVENT_NAME = 'pull_request'
-      vi.mocked(getTag).mockResolvedValue(undefined)
+      vi.mocked(readTag).mockResolvedValue(undefined)
 
       const context = createContext()
       context.hasPullRequestContext = true
       context.pullRequestNumber = 95
 
-      await getVersion(context)
+      await createVersion(context)
 
       const verifyCallArguments = vi
         .mocked(exec)
