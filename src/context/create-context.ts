@@ -1,117 +1,18 @@
 import * as github from '@actions/github'
+import type {
+  ActionOutputs,
+  BranchContext,
+  Context,
+  Octokit,
+  PullRequestContext,
+  TagContext,
+} from '../types'
 import { createShortCommit } from '../utilities/create-short-commit'
-import { getPullRequest } from '../utilities/pull-request/get-pull-request'
-import type { Octokit } from '../utilities/pull-request/types'
-import { createOutputs, type ActionOutputs } from './outputs'
+import { getPullRequest } from '../pull-request/get-pull-request'
+import { createOutputs } from './outputs'
 import { readBranch } from './read-branch'
 import { resolveInputs, type ValidatedInputs } from './resolve-inputs'
 import { throwInputError } from './throw-input-error'
-
-// ── Context types ────────────────────────────────────────────────────────
-
-/**
- * Shared properties present in every context variant.
- */
-interface ContextBase {
-  // ── Repository identity ──────────────────────────────────────────────
-
-  /** Repository owner (organization or user). */
-  repositoryOwner: string
-
-  /** Repository name without owner prefix. */
-  repositoryName: string
-
-  // ── Git reference ────────────────────────────────────────────────────
-
-  /** Reference name (branch or tag). */
-  referenceName: string
-
-  // ── Version ──────────────────────────────────────────────────────────
-
-  /**
-   * Full commit SHA used for version derivation.
-   *
-   * @remarks
-   * In branch and pull request modes, this is the HEAD commit of the
-   * branch being versioned. In tag mode, this is the commit the tag
-   * references.
-   */
-  versionCommitSha: string
-
-  /** Abbreviated form of `versionCommitSha` for prerelease suffix and output. */
-  versionCommitShaShort: string
-
-  // ── Workflow ─────────────────────────────────────────────────────────
-
-  /** GitHub Actions event name. */
-  eventName: string
-
-  /**
-   * Context resolution source.
-   *
-   * @remarks
-   * `'event'` derives context from the workflow event payload.
-   * `'pr'` derives context from explicit `pr-*` action inputs.
-   */
-  contextSource: 'event' | 'pr'
-
-  /** Workflow run identifier, used to exclude self from check evaluation. */
-  workflowRunId: string | undefined
-
-  // ── Dependencies ─────────────────────────────────────────────────────
-
-  /** Authenticated GitHub API client. */
-  octokit: Octokit
-
-  /** Validated action inputs. */
-  inputs: ValidatedInputs
-
-  /** Typed action outputs proxy. Throws on read before write. */
-  outputs: ActionOutputs
-}
-
-/**
- * Context for tag-triggered workflows.
- *
- * @remarks
- * No pull request context is available. `versionBranch` is always empty.
- */
-export interface TagContext extends ContextBase {
-  hasPullRequestContext: false
-  pullRequestNumber: 0
-  referenceType: 'tag'
-  versionBranch: ''
-}
-
-/**
- * Context for branch push events without pull request association.
- */
-export interface BranchContext extends ContextBase {
-  hasPullRequestContext: false
-  pullRequestNumber: 0
-  referenceType: 'branch'
-  versionBranch: string
-}
-
-/**
- * Context for pull request events or explicit PR mode.
- *
- * @remarks
- * `pullRequestNumber` is always a positive integer.
- */
-export interface PullRequestContext extends ContextBase {
-  hasPullRequestContext: true
-  pullRequestNumber: number
-  referenceType: 'branch'
-  versionBranch: string
-}
-
-/**
- * Discriminated union of all workflow context variants.
- *
- * Discriminants: `referenceType` and `hasPullRequestContext`.
- */
-export type Context = BranchContext | PullRequestContext | TagContext
 
 // ── Validation helpers ───────────────────────────────────────────────────
 

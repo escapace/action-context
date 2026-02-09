@@ -18,8 +18,8 @@ import { createChangelog } from './create-changelog'
 import { createVersion } from './create-version'
 import { isLatestVersion } from './is-latest-version'
 import { setOutputVersion } from './set-output-version'
-import type { Context } from '../context/create-context'
-import type { Octokit } from '../utilities/pull-request/types'
+import type { Context } from '../types'
+import type { Octokit } from '../pull-request/types'
 
 const createMockOctokit = (): Octokit => {
   const octokit = {}

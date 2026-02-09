@@ -1,12 +1,11 @@
 import * as core from '@actions/core'
+import type { ActionOutputs, Context } from '../types'
 import { fetchMergeReviewData, isMergeStateClear, isReviewClear } from './fetch-merge-review-data'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
 import { getPullRequestErrorCode, type PullRequestErrorCode } from './error'
 import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import { getPullRequest } from './get-pull-request'
-import type { Context } from '../../context/create-context'
-import type { ActionOutputs } from '../../context/outputs'
 import type { PullRequestOutputs } from './types'
 
 const DEFAULT_OUTPUTS: PullRequestOutputs = {

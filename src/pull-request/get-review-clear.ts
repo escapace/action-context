@@ -1,5 +1,5 @@
 import { rethrowPullRequestsReadPermission } from './error'
-import type { Context } from '../../context/create-context'
+import type { Context } from '../types'
 import type { ReviewData } from './types'
 
 const REVIEW_QUERY = `

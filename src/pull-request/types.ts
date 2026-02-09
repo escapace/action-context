@@ -1,10 +1,10 @@
-import type * as github from '@actions/github'
+import type { Octokit } from '../types'
 
-export type Octokit = ReturnType<typeof github.getOctokit>
+export type { Octokit }
 
 /**
- * Minimal context required for API calls.
- * RuntimeContext extends this; context resolution can provide a minimal implementation.
+ * Minimal context required for internal API helper functions.
+ * Not exported - module-private type used by fetch helpers.
  */
 export interface BaseContext {
   octokit: Octokit

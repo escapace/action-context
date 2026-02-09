@@ -1,6 +1,6 @@
 import { rethrowMissingPermissionOnHttpStatus } from './error'
 import { paginateRest } from './paginate-rest'
-import type { Context } from '../../context/create-context'
+import type { Context } from '../types'
 import type { BaseContext, CheckRun, StatusContext } from './types'
 
 const PASSING_CONCLUSIONS: ReadonlySet<string> = new Set(['neutral', 'skipped', 'success'])

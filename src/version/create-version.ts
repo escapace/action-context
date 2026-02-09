@@ -9,7 +9,7 @@ import { createShortCommit } from '../utilities/create-short-commit'
 import { exec } from '../utilities/exec'
 import { createSemanticVersion } from './create-semantic-version'
 import { readTag } from './read-tag'
-import type { BranchContext, Context, PullRequestContext } from '../context/create-context'
+import type { BranchContext, Context, PullRequestContext } from '../types'
 
 type VersionIncrement = 'major' | 'minor' | 'patch'
 

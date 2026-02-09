@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import type { Context } from '../context/create-context'
+import type { Context } from '../types'
 import { createChangelog } from './create-changelog'
 import { createVersion } from './create-version'
 import { isLatestVersion } from './is-latest-version'

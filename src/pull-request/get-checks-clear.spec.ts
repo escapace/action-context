@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createOutputs } from '../../context/outputs'
-import type { Context } from '../../context/create-context'
+import { createOutputs } from '../context/outputs'
+import type { Context } from '../types'
 import type { CheckRun, Octokit, StatusContext } from './types'
 import {
   isCheckRunPassing,

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createOutputs } from '../../context/outputs'
-import type { PullRequestContext } from '../../context/create-context'
+import { createOutputs } from '../context/outputs'
+import type { PullRequestContext } from '../types'
 import type { ReviewData } from './types'
 import { isReviewClear } from './get-review-clear'
 

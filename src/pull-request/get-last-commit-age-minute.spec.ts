@@ -6,8 +6,8 @@ vi.mock('@actions/github', () => ({
   },
 }))
 
-import { createOutputs } from '../../context/outputs'
-import type { PullRequestContext } from '../../context/create-context'
+import { createOutputs } from '../context/outputs'
+import type { PullRequestContext } from '../types'
 import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
 import type { Octokit } from './types'
 

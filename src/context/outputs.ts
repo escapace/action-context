@@ -1,34 +1,4 @@
-export type ActionOutputValue = boolean | number | string
-
-export interface ActionOutputs {
-  // Core outputs
-  'changelog': string
-  'environment': string
-  'github-pages': boolean
-  'github-pages-path': string
-  'latest': boolean
-  'node-version': string
-  'prerelease': boolean
-  'prerelease-identifier': string
-  'short-commit': string
-  'version': string
-
-  // Pull request outputs
-  'pr-author-bot': boolean
-  'pr-base-ref': string
-  'pr-checks-clear': boolean
-  'pr-commits-trusted': boolean
-  'pr-head-ref': string
-  'pr-last-commit-age-minute': number
-  'pr-merge-state-clear': boolean
-  'pr-mergeable': boolean
-  'pr-not-draft': boolean
-  'pr-number': number
-  'pr-review-clear': boolean
-
-  // Dynamic engine outputs
-  [key: string]: ActionOutputValue
-}
+import type { ActionOutputs, ActionOutputValue } from '../types'
 
 export const createOutputs = (): ActionOutputs => {
   const state = new Map<string, ActionOutputValue>()

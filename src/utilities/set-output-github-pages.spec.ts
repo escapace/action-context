@@ -14,8 +14,8 @@ import * as core from '@actions/core'
 import { createOutputs } from '../context/outputs'
 import { workspaceProjects } from './workspace-projects'
 import { setOutputGithubPages } from './set-output-github-pages'
-import type { Context } from '../context/create-context'
-import type { Octokit } from './pull-request/types'
+import type { Context } from '../types'
+import type { Octokit } from '../pull-request/types'
 
 const createMockOctokit = (getPagesResult: unknown): Octokit => {
   const octokit = {

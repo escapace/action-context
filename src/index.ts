@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import { isError, isString } from 'es-toolkit'
 import { createContext } from './context/create-context'
 import { setOutputGithubPages } from './utilities/set-output-github-pages'
-import { setOutputPullRequest } from './utilities/pull-request/set-output-pull-request'
+import { setOutputPullRequest } from './pull-request/set-output-pull-request'
 import { setOutputVersions } from './utilities/set-output-versions'
 import { setOutputVersion } from './version/set-output-version'
 

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOutputs } from './context/outputs'
-import type { ActionOutputs } from './context/outputs'
-import type { Octokit } from './utilities/pull-request/types'
+import type { ActionOutputs } from './types'
+import type { Octokit } from './types'
 
 const runModule = async () => {
   vi.resetModules()
@@ -28,7 +28,7 @@ const runModule = async () => {
     setOutputGithubPages: vi.fn(),
   }))
 
-  vi.doMock('./utilities/pull-request/set-output-pull-request', () => ({
+  vi.doMock('./pull-request/set-output-pull-request', () => ({
     setOutputPullRequest: vi.fn(),
   }))
 
@@ -37,8 +37,7 @@ const runModule = async () => {
   const setOutputVersionModule = await import('./version/set-output-version')
   const setOutputVersionsModule = await import('./utilities/set-output-versions')
   const setOutputGithubPagesModule = await import('./utilities/set-output-github-pages')
-  const setOutputPullRequestModule =
-    await import('./utilities/pull-request/set-output-pull-request')
+  const setOutputPullRequestModule = await import('./pull-request/set-output-pull-request')
 
   return {
     core: coreModule,

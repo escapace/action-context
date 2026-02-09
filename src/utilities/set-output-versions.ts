@@ -5,7 +5,7 @@ import { isFile } from './is-files'
 import { parseNodeVersionConstraint } from '../context/parse-node-version-constraint'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
 import { parseDevEngines as parseDevelopmentEngines, workspaceEngines } from './workspace-engines'
-import type { Context } from '../context/create-context'
+import type { Context } from '../types'
 
 const mergeVersionMaps = (sources: Iterable<Map<string, string>>): Map<string, string> => {
   const merged = new Map<string, string>()

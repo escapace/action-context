@@ -3,7 +3,7 @@ import { isError, isString } from 'es-toolkit'
 import path from 'node:path'
 import { workspaceProjects } from './workspace-projects'
 import { isNativeError } from 'node:util/types'
-import type { Context } from '../context/create-context'
+import type { Context } from '../types'
 
 export const setOutputGithubPages = async (context: Context) => {
   const { outputs } = context

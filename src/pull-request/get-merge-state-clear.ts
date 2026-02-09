@@ -1,5 +1,5 @@
 import { rethrowPullRequestsReadPermission } from './error'
-import type { Context } from '../../context/create-context'
+import type { Context } from '../types'
 
 const GREEN_MERGE_STATES = new Set(['CLEAN', 'HAS_HOOKS'])
 

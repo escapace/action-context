@@ -46,7 +46,7 @@ vi.mock('./get-commits-trusted', () => ({
 }))
 
 import * as core from '@actions/core'
-import { createOutputs } from '../../context/outputs'
+import { createOutputs } from '../context/outputs'
 import { fetchMergeReviewData, isMergeStateClear, isReviewClear } from './fetch-merge-review-data'
 import { getChecksClear } from './get-checks-clear'
 import { getCommitsTrusted } from './get-commits-trusted'
@@ -55,7 +55,7 @@ import { getPullRequest } from './get-pull-request'
 import { PullRequestActionError } from './error'
 import { setOutputPullRequest } from './set-output-pull-request'
 import type { Octokit } from './types'
-import type { BranchContext, PullRequestContext } from '../../context/create-context'
+import type { BranchContext, PullRequestContext } from '../types'
 
 const createMockOctokit = (): Octokit => {
   const octokit = {}

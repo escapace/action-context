@@ -38,8 +38,8 @@ import {
 } from './set-output-versions'
 import { workspaceEngines } from './workspace-engines'
 import { workspaceEnginesMaximumVersions } from './workspace-engines-maximum-versions'
-import type { Context } from '../context/create-context'
-import type { Octokit } from './pull-request/types'
+import type { Context } from '../types'
+import type { Octokit } from '../pull-request/types'
 
 const createMockOctokit = (): Octokit => {
   const octokit = {}

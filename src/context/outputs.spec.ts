@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createOutputs, type ActionOutputValue } from './outputs'
+import type { ActionOutputValue } from '../types'
+import { createOutputs } from './outputs'
 
 /** Widens the proxy type so `delete` is allowed in tests. */
 const asRecord = (outputs: unknown): Record<string, ActionOutputValue | undefined> =>
