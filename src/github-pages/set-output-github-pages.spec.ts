@@ -6,13 +6,13 @@ vi.mock('@actions/core', () => ({
   setOutput: vi.fn(),
 }))
 
-vi.mock('./workspace-projects', () => ({
+vi.mock('../utilities/workspace-projects', () => ({
   workspaceProjects: vi.fn(),
 }))
 
 import * as core from '@actions/core'
 import { createOutputs } from '../context/outputs'
-import { workspaceProjects } from './workspace-projects'
+import { workspaceProjects } from '../utilities/workspace-projects'
 import { setOutputGithubPages } from './set-output-github-pages'
 import type { Context } from '../types'
 import type { Octokit } from '../pull-request/types'

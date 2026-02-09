@@ -1,9 +1,9 @@
 import * as core from '@actions/core'
 import { isError, isString } from 'es-toolkit'
 import path from 'node:path'
-import { workspaceProjects } from './workspace-projects'
 import { isNativeError } from 'node:util/types'
 import type { Context } from '../types'
+import { workspaceProjects } from '../utilities/workspace-projects'
 
 export const setOutputGithubPages = async (context: Context) => {
   const { outputs } = context

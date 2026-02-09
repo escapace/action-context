@@ -159,6 +159,7 @@ For consistent behavior, declare explicit pull request permissions in workflows 
 | `github-pages`          | `false`                          | `true` when GitHub Pages is enabled with workflow builds.                                                         |
 | `github-pages-path`     | `packages/docs/lib/github-pages` | Emitted only when exactly one workspace package defines `build:github-pages`.                                     |
 | `node-version`          | `24.12.0`                        | Resolved node version from discovered constraints.                                                                |
+| `context`               | `{"version":"0.11.2",...}`       | JSON snapshot of all outputs. Convenience for passing complete context to downstream jobs.                        |
 
 ### `latest` interpretation in feature branches and pull requests
 

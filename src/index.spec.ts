@@ -24,7 +24,7 @@ const runModule = async () => {
     setOutputEngines: vi.fn(),
   }))
 
-  vi.doMock('./utilities/set-output-github-pages', () => ({
+  vi.doMock('./github-pages/set-output-github-pages', () => ({
     setOutputGithubPages: vi.fn(),
   }))
 
@@ -36,7 +36,7 @@ const runModule = async () => {
   const contextModule = await import('./context/create-context')
   const setOutputVersionModule = await import('./version/set-output-version')
   const setOutputEnginesModule = await import('./engines/set-output-engines')
-  const setOutputGithubPagesModule = await import('./utilities/set-output-github-pages')
+  const setOutputGithubPagesModule = await import('./github-pages/set-output-github-pages')
   const setOutputPullRequestModule = await import('./pull-request/set-output-pull-request')
 
   return {
