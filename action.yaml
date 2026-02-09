@@ -32,6 +32,8 @@ name: 'action-context'
 outputs:
   changelog:
     description: 'Markdown changelog generated from conventional commits between the previous tag and the current ref. Non-empty on tag events only.'
+  context:
+    description: 'JSON snapshot of all action outputs. Convenience output for passing complete context to downstream jobs or external systems.'
   environment:
     description: 'Deployment environment: production for release tags, staging for prerelease tags, testing for non-tag events.'
   github-pages:
