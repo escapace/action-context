@@ -130,6 +130,38 @@ describe('run', () => {
     expect(mods.core.setOutput).toHaveBeenCalledWith('environment', 'testing')
     expect(mods.core.setOutput).toHaveBeenCalledWith('short-commit', 'f2e1fe5')
     expect(mods.core.setOutput).toHaveBeenCalledWith('version', '0.11.2-trunk.f2e1fe5')
+
+    // Verify context output is set with JSON snapshot
+    expect(mods.core.setOutput).toHaveBeenCalledWith(
+      'context',
+      expect.stringContaining('"version":"0.11.2-trunk.f2e1fe5"'),
+    )
+    expect(mods.core.setOutput).toHaveBeenCalledWith(
+      'context',
+      expect.stringContaining('"environment":"testing"'),
+    )
+
+    // Verify it's valid JSON
+    const contextCall = vi
+      .mocked(mods.core.setOutput)
+      .mock.calls.find(([key]) => key === 'context') as [string, string] | undefined
+    expect(contextCall).toBeDefined()
+
+    if (contextCall === undefined) {
+      throw new Error('context output not found')
+    }
+
+    const [, contextValue] = contextCall
+
+    const parseJson = (): unknown => JSON.parse(contextValue)
+    expect(parseJson).not.toThrow()
+
+    const parsed: unknown = JSON.parse(contextValue)
+    expect(parsed).toMatchObject({
+      'environment': 'testing',
+      'short-commit': 'f2e1fe5',
+      'version': '0.11.2-trunk.f2e1fe5',
+    })
   })
 
   it('calls core.setFailed when runtime token is missing', async () => {

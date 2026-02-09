@@ -172,3 +172,22 @@ describe('createOutputs', () => {
     })
   })
 })
+
+describe('JSON.stringify compatibility', () => {
+  it('should serialize outputs to JSON without triggering toJSON trap', () => {
+    const outputs = createOutputs()
+
+    outputs.version = '1.0.0'
+    outputs['pr-number'] = 42
+    outputs.latest = true
+
+    const json = JSON.stringify(outputs)
+    const parsed: unknown = JSON.parse(json)
+
+    expect(parsed).toEqual({
+      'latest': true,
+      'pr-number': 42,
+      'version': '1.0.0',
+    })
+  })
+})

@@ -12,7 +12,8 @@ export const createOutputs = (): ActionOutputs => {
         return undefined
       }
 
-      if (property === 'then') {
+      // Allow JSON.stringify and Promise detection
+      if (property === 'then' || property === 'toJSON') {
         return undefined
       }
 
