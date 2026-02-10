@@ -35,7 +35,7 @@ Select the mode by trigger type and whether merge policy consumes `pr-*` outputs
     fetch-depth: 0
     ref: ${{ github.head_ref || github.ref }}
 
-- uses: escapace/action-context@v0.2.0
+- uses: escapace/action-context@0.12.0
   id: context
 ```
 
@@ -54,7 +54,7 @@ steps:
       fetch-depth: 0
       ref: ${{ github.head_ref || github.ref }}
 
-  - uses: escapace/action-context@v0.2.0
+  - uses: escapace/action-context@0.12.0
     id: context
     with:
       trusted-bots: |
@@ -79,7 +79,7 @@ steps:
       fetch-depth: 0
       ref: ${{ inputs.pr-head-ref }}
 
-  - uses: escapace/action-context@v0.2.0
+  - uses: escapace/action-context@0.12.0
     id: context
     with:
       context-source: pr
@@ -112,7 +112,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref }}
 
-      - uses: escapace/action-context@v0.2.0
+      - uses: escapace/action-context@0.12.0
         id: context
 ```
 
@@ -225,7 +225,7 @@ Version discovery is best effort and source-isolated:
 
 Reference workflow: [`.github/workflows/automerge.yaml`](.github/workflows/automerge.yaml)
 
-For use outside this repository, change `uses: ./` to `uses: escapace/action-context@v0.2.0` in the `evaluate pull request context` step.
+For use outside this repository, change `uses: ./` to `uses: escapace/action-context@0.12.0` in the `evaluate pull request context` step.
 
 This repository includes a canonical automerge workflow that discovers open pull requests on a schedule (and optional manual dispatch), evaluates `action-context` in explicit PR mode, and enables auto-merge when policy gates pass.
 
