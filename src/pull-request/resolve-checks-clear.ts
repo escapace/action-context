@@ -120,7 +120,7 @@ export const isCurrentWorkflowInProgressCheckRun = (
  *
  * Empty results (no checks configured) count as passing.
  */
-export const getChecksClear = async (context: Context, headSha: string): Promise<boolean> => {
+export const resolveChecksClear = async (context: Context, headSha: string): Promise<boolean> => {
   const { workflowRunId } = context
 
   const [checkRuns, statusContexts] = await Promise.all([

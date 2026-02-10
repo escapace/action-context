@@ -26,7 +26,7 @@ const MERGE_STATE_QUERY = `
  *
  * Returns `true` for merge-ready states and `false` for blocked/unknown states.
  */
-export const getMergeStateClear = async (context: Context): Promise<boolean> => {
+export const fetchMergeState = async (context: Context): Promise<boolean> => {
   const { octokit, pullRequestNumber, repositoryName, repositoryOwner } = context
 
   if (pullRequestNumber <= 0) {

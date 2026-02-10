@@ -13,7 +13,7 @@ const sleep = async (ms: number) => await new Promise((resolve) => setTimeout(re
  * This function retries with backoff until a definitive value is returned
  * or attempts are exhausted (in which case mergeable defaults to `false`).
  */
-export const getPullRequest = async (
+export const fetchPullRequest = async (
   context: BaseContext,
   prNumber: number,
 ): Promise<PullRequestData> => {

@@ -6,7 +6,7 @@ vi.mock('@actions/github', () => ({
   },
 }))
 
-import { getPullRequest } from './get-pull-request'
+import { fetchPullRequest } from './fetch-pull-request'
 
 import type { BaseContext, Octokit } from './types'
 
@@ -35,7 +35,7 @@ const basePrData = {
   user: { login: 'renovate[bot]', type: 'Bot' },
 }
 
-describe('getPullRequest', () => {
+describe('fetchPullRequest', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -43,7 +43,7 @@ describe('getPullRequest', () => {
   it('returns PR data for a non-draft bot PR', async () => {
     const octokit = createMockOctokit([{ data: basePrData }])
 
-    const result = await getPullRequest(createContext(octokit), 95)
+    const result = await fetchPullRequest(createContext(octokit), 95)
 
     expect(result).toEqual({
       authorBot: true,
@@ -59,7 +59,7 @@ describe('getPullRequest', () => {
   it('returns notDraft: false for draft PRs', async () => {
     const octokit = createMockOctokit([{ data: { ...basePrData, draft: true } }])
 
-    const result = await getPullRequest(createContext(octokit), 95)
+    const result = await fetchPullRequest(createContext(octokit), 95)
 
     expect(result.notDraft).toBe(false)
   })
@@ -69,7 +69,7 @@ describe('getPullRequest', () => {
       { data: { ...basePrData, user: { login: 'yyxi', type: 'User' } } },
     ])
 
-    const result = await getPullRequest(createContext(octokit), 95)
+    const result = await fetchPullRequest(createContext(octokit), 95)
 
     expect(result.authorBot).toBe(false)
   })
@@ -77,7 +77,7 @@ describe('getPullRequest', () => {
   it('returns authorBot: false when user is null', async () => {
     const octokit = createMockOctokit([{ data: { ...basePrData, user: null } }])
 
-    const result = await getPullRequest(createContext(octokit), 95)
+    const result = await fetchPullRequest(createContext(octokit), 95)
 
     expect(result.authorBot).toBe(false)
   })
@@ -88,7 +88,7 @@ describe('getPullRequest', () => {
       { data: { ...basePrData, mergeable: true } },
     ])
 
-    const result = await getPullRequest(createContext(octokit), 95)
+    const result = await fetchPullRequest(createContext(octokit), 95)
 
     expect(result.mergeable).toBe(true)
     expect(vi.mocked(octokit.rest.pulls.get).mock.calls).toHaveLength(2)
@@ -101,7 +101,7 @@ describe('getPullRequest', () => {
       { data: { ...basePrData, mergeable: null } },
     ])
 
-    const result = await getPullRequest(createContext(octokit), 95)
+    const result = await fetchPullRequest(createContext(octokit), 95)
 
     expect(result.mergeable).toBe(false)
     expect(vi.mocked(octokit.rest.pulls.get).mock.calls).toHaveLength(3)
@@ -115,7 +115,7 @@ describe('getPullRequest', () => {
       rest: { pulls: { get: vi.fn().mockRejectedValue(error) } },
     } as unknown as Octokit
 
-    await expect(getPullRequest(createContext(octokit), 95)).rejects.toThrow(
+    await expect(fetchPullRequest(createContext(octokit), 95)).rejects.toThrow(
       'Missing `pull-requests: read` permission',
     )
   })
@@ -128,7 +128,7 @@ describe('getPullRequest', () => {
       rest: { pulls: { get: vi.fn().mockRejectedValue(error) } },
     } as unknown as Octokit
 
-    await expect(getPullRequest(createContext(octokit), 95)).rejects.toThrow(
+    await expect(fetchPullRequest(createContext(octokit), 95)).rejects.toThrow(
       'Internal Server Error',
     )
   })
@@ -136,7 +136,7 @@ describe('getPullRequest', () => {
   it('returns mergeable: false when API returns false', async () => {
     const octokit = createMockOctokit([{ data: { ...basePrData, mergeable: false } }])
 
-    const result = await getPullRequest(createContext(octokit), 95)
+    const result = await fetchPullRequest(createContext(octokit), 95)
 
     expect(result.mergeable).toBe(false)
   })

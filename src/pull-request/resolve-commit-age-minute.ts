@@ -1,7 +1,7 @@
 import { fetchPullRequestCommits } from './fetch-pull-request-commits'
 import type { Context } from '../types'
 
-export const getLastCommitAgeMinute = async (
+export const resolveCommitAgeMinute = async (
   context: Context,
   headSha: string,
   nowEpochMs: number = Date.now(),

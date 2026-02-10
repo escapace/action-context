@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createOutputs } from '../context/outputs'
 import type { PullRequestContext } from '../types'
 import type { Octokit, PullRequestCommitMetadata } from './types'
-import { isCommitTrusted } from './get-commits-trusted'
+import { isCommitTrusted } from './resolve-commit-verification'
 
 const repositoryContext = { repositoryName: 'action-context', repositoryOwner: 'escapace' }
 const trustedBots = new Set(['dependabot[bot]', 'renovate[bot]'])
@@ -182,7 +182,7 @@ const createContext = (
   ...overrides,
 })
 
-describe('getCommitsTrusted', () => {
+describe('resolveCommitVerification', () => {
   const originalEnvironment = process.env.GITHUB_REPOSITORY
 
   beforeEach(() => {
@@ -199,7 +199,7 @@ describe('getCommitsTrusted', () => {
   })
 
   it('returns true for a pure bot PR with trusted signed commits', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({
@@ -213,11 +213,11 @@ describe('getCommitsTrusted', () => {
       vi.fn(),
     )
 
-    expect(await getCommitsTrusted(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
   })
 
   it('returns false for a bot PR with untrusted bot', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({
@@ -231,11 +231,11 @@ describe('getCommitsTrusted', () => {
       vi.fn(),
     )
 
-    expect(await getCommitsTrusted(createContext(octokit, emptyBots))).toBe(false)
+    expect(await resolveCommitVerification(createContext(octokit, emptyBots))).toBe(false)
   })
 
   it('checks collaborator permissions for human authors', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const getCollaboratorPermissionLevel = vi.fn().mockResolvedValue({
       data: { permission: 'write' },
@@ -257,7 +257,7 @@ describe('getCommitsTrusted', () => {
       getCollaboratorPermissionLevel,
     )
 
-    expect(await getCommitsTrusted(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
     expect(getCollaboratorPermissionLevel).toHaveBeenCalledWith({
       owner: 'escapace',
       repo: 'action-context',
@@ -266,7 +266,7 @@ describe('getCommitsTrusted', () => {
   })
 
   it('returns false when human author has read-only access', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({
@@ -280,19 +280,19 @@ describe('getCommitsTrusted', () => {
       vi.fn().mockResolvedValue({ data: { permission: 'read' } }),
     )
 
-    expect(await getCommitsTrusted(createContext(octokit, trustedBots))).toBe(false)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(false)
   })
 
   it('returns false for empty commit list', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const octokit = createMockOctokit(vi.fn().mockResolvedValue({ data: [] }), vi.fn())
 
-    expect(await getCommitsTrusted(createContext(octokit, trustedBots))).toBe(false)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(false)
   })
 
   it('deduplicates permission checks for repeated human authors', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const getCollaboratorPermissionLevel = vi.fn().mockResolvedValue({
       data: { permission: 'write' },
@@ -314,12 +314,12 @@ describe('getCommitsTrusted', () => {
       getCollaboratorPermissionLevel,
     )
 
-    expect(await getCommitsTrusted(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
     expect(getCollaboratorPermissionLevel).toHaveBeenCalledTimes(1)
   })
 
   it('does not call permission endpoint for pure bot PRs', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const getCollaboratorPermissionLevel = vi.fn()
 
@@ -339,25 +339,25 @@ describe('getCommitsTrusted', () => {
       getCollaboratorPermissionLevel,
     )
 
-    expect(await getCommitsTrusted(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
     expect(getCollaboratorPermissionLevel).not.toHaveBeenCalled()
   })
 
   it('throws descriptive error on 403 from listCommits', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const error = new Error('Resource not accessible by integration')
     Reflect.set(error, 'status', 403)
 
     const octokit = createMockOctokit(vi.fn().mockRejectedValue(error), vi.fn())
 
-    await expect(getCommitsTrusted(createContext(octokit, trustedBots))).rejects.toThrow(
+    await expect(resolveCommitVerification(createContext(octokit, trustedBots))).rejects.toThrow(
       'Missing `pull-requests: read` permission',
     )
   })
 
   it('throws descriptive error on 403 from collaborator permission endpoint', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const error = new Error('Forbidden')
     Reflect.set(error, 'status', 403)
@@ -371,13 +371,13 @@ describe('getCommitsTrusted', () => {
       vi.fn().mockRejectedValue(error),
     )
 
-    await expect(getCommitsTrusted(createContext(octokit, trustedBots))).rejects.toThrow(
+    await expect(resolveCommitVerification(createContext(octokit, trustedBots))).rejects.toThrow(
       'Unable to read collaborator permissions for commit authors',
     )
   })
 
   it('treats 404 from collaborator permission endpoint as untrusted author', async () => {
-    const { getCommitsTrusted } = await import('./get-commits-trusted')
+    const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const error = new Error('Not Found')
     Reflect.set(error, 'status', 404)
@@ -394,6 +394,8 @@ describe('getCommitsTrusted', () => {
       vi.fn().mockRejectedValue(error),
     )
 
-    await expect(getCommitsTrusted(createContext(octokit, trustedBots))).resolves.toBe(false)
+    await expect(resolveCommitVerification(createContext(octokit, trustedBots))).resolves.toBe(
+      false,
+    )
   })
 })

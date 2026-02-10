@@ -8,7 +8,7 @@ vi.mock('@actions/github', () => ({
 
 import { createOutputs } from '../context/outputs'
 import type { PullRequestContext } from '../types'
-import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
+import { resolveCommitAgeMinute } from './resolve-commit-age-minute'
 import type { Octokit } from './types'
 
 const repositoryContext = { repositoryName: 'action-context', repositoryOwner: 'escapace' }
@@ -47,7 +47,7 @@ const createMockOctokit = (listCommits: ReturnType<typeof vi.fn>): Octokit => {
   return octokit as never
 }
 
-describe('getLastCommitAgeMinute', () => {
+describe('resolveCommitAgeMinute', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -68,7 +68,7 @@ describe('getLastCommitAgeMinute', () => {
     )
 
     await expect(
-      getLastCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-08T03:48:44Z')),
+      resolveCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-08T03:48:44Z')),
     ).resolves.toBe(1196)
   })
 
@@ -95,7 +95,7 @@ describe('getLastCommitAgeMinute', () => {
     )
 
     await expect(
-      getLastCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T11:00:00Z')),
+      resolveCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T11:00:00Z')),
     ).resolves.toBe(120)
   })
 
@@ -112,7 +112,7 @@ describe('getLastCommitAgeMinute', () => {
     )
 
     await expect(
-      getLastCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T09:00:00Z')),
+      resolveCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T09:00:00Z')),
     ).resolves.toBe(30)
   })
 
@@ -129,7 +129,7 @@ describe('getLastCommitAgeMinute', () => {
     )
 
     await expect(
-      getLastCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T09:00:00Z')),
+      resolveCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T09:00:00Z')),
     ).resolves.toBe(60)
   })
 
@@ -149,7 +149,7 @@ describe('getLastCommitAgeMinute', () => {
     )
 
     await expect(
-      getLastCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T10:00:00Z')),
+      resolveCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T10:00:00Z')),
     ).resolves.toBe(0)
   })
 
@@ -180,7 +180,7 @@ describe('getLastCommitAgeMinute', () => {
     const octokit = createMockOctokit(listCommits)
 
     await expect(
-      getLastCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T10:00:00Z')),
+      resolveCommitAgeMinute(createContext(octokit), 'headsha', Date.parse('2026-02-07T10:00:00Z')),
     ).resolves.toBe(60)
 
     expect(listCommits).toHaveBeenNthCalledWith(
@@ -199,7 +199,7 @@ describe('getLastCommitAgeMinute', () => {
 
     const octokit = createMockOctokit(vi.fn().mockRejectedValue(error))
 
-    await expect(getLastCommitAgeMinute(createContext(octokit), 'headsha')).rejects.toThrow(
+    await expect(resolveCommitAgeMinute(createContext(octokit), 'headsha')).rejects.toThrow(
       'Missing `pull-requests: read` permission',
     )
   })

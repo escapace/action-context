@@ -8,7 +8,7 @@ import type {
   TagContext,
 } from '../types'
 import { createShortCommit } from '../utilities/create-short-commit'
-import { getPullRequest } from '../pull-request/get-pull-request'
+import { fetchPullRequest } from '../pull-request/fetch-pull-request'
 import { createOutputs } from './outputs'
 import { readBranch } from './read-branch'
 import { resolveInputs, type ValidatedInputs } from './resolve-inputs'
@@ -196,7 +196,7 @@ export const createContext = async (): Promise<Context> => {
     return throwInputError("context-source='pr' requires a positive integer in input 'pr-number'.")
   }
 
-  const pr = await getPullRequest(base, prNumber)
+  const pr = await fetchPullRequest(base, prNumber)
 
   assertOptionalPrInputMatches('pr-head-ref', inputs.prHeadRef, pr.headRef)
   assertOptionalPrInputMatches('pr-head-sha', inputs.prHeadSha, pr.headSha)

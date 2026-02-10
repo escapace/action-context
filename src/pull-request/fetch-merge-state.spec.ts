@@ -8,7 +8,7 @@ vi.mock('@actions/github', () => ({
 
 import { createOutputs } from '../context/outputs'
 import type { PullRequestContext } from '../types'
-import { getMergeStateClear } from './get-merge-state-clear'
+import { fetchMergeState } from './fetch-merge-state'
 import type { Octokit } from './types'
 
 const createContext = (
@@ -39,7 +39,7 @@ const createMockOctokit = (graphql: ReturnType<typeof vi.fn>): Octokit => {
   return octokit as never
 }
 
-describe('getMergeStateClear', () => {
+describe('fetchMergeState', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -60,9 +60,9 @@ describe('getMergeStateClear', () => {
       }),
     )
 
-    await expect(
-      getMergeStateClear(createContext(octokit, { pullRequestNumber: 102 })),
-    ).resolves.toBe(expected)
+    await expect(fetchMergeState(createContext(octokit, { pullRequestNumber: 102 }))).resolves.toBe(
+      expected,
+    )
   })
 
   it('returns false when pull request node is missing', async () => {
@@ -72,9 +72,9 @@ describe('getMergeStateClear', () => {
       }),
     )
 
-    await expect(
-      getMergeStateClear(createContext(octokit, { pullRequestNumber: 102 })),
-    ).resolves.toBe(false)
+    await expect(fetchMergeState(createContext(octokit, { pullRequestNumber: 102 }))).resolves.toBe(
+      false,
+    )
   })
 
   it('queries by pull request number', async () => {
@@ -84,7 +84,7 @@ describe('getMergeStateClear', () => {
 
     const octokit = createMockOctokit(graphql)
 
-    await getMergeStateClear(createContext(octokit, { pullRequestNumber: 95 }))
+    await fetchMergeState(createContext(octokit, { pullRequestNumber: 95 }))
 
     expect(graphql).toHaveBeenCalledWith(
       expect.stringContaining('mergeStateStatus'),
@@ -99,7 +99,7 @@ describe('getMergeStateClear', () => {
     const octokit = createMockOctokit(vi.fn().mockRejectedValue(error))
 
     await expect(
-      getMergeStateClear(createContext(octokit, { pullRequestNumber: 95 })),
+      fetchMergeState(createContext(octokit, { pullRequestNumber: 95 })),
     ).rejects.toThrow('Missing `pull-requests: read` permission')
   })
 
@@ -111,7 +111,7 @@ describe('getMergeStateClear', () => {
     const octokit = createMockOctokit(vi.fn().mockRejectedValue(error))
 
     await expect(
-      getMergeStateClear(createContext(octokit, { pullRequestNumber: 95 })),
+      fetchMergeState(createContext(octokit, { pullRequestNumber: 95 })),
     ).rejects.toThrow('Missing `pull-requests: read` permission')
   })
 
@@ -120,7 +120,7 @@ describe('getMergeStateClear', () => {
     const octokit = createMockOctokit(vi.fn().mockRejectedValue(error))
 
     await expect(
-      getMergeStateClear(createContext(octokit, { pullRequestNumber: 95 })),
+      fetchMergeState(createContext(octokit, { pullRequestNumber: 95 })),
     ).rejects.toThrow('Boom')
   })
 })

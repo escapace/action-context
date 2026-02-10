@@ -6,7 +6,7 @@ import {
   isCheckRunPassing,
   isCurrentWorkflowInProgressCheckRun,
   isStatusContextPassing,
-} from './get-checks-clear'
+} from './resolve-checks-clear'
 
 const repositoryContext = { repositoryName: 'action-context', repositoryOwner: 'escapace' }
 
@@ -119,7 +119,7 @@ const createMockOctokit = (
   return octokit as never
 }
 
-describe('getChecksClear', () => {
+describe('resolveChecksClear', () => {
   const originalRepositoryEnvironment = process.env.GITHUB_REPOSITORY
   const originalRunIdEnvironment = process.env.GITHUB_RUN_ID
 
@@ -143,20 +143,20 @@ describe('getChecksClear', () => {
   })
 
   it('returns true when no checks exist', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({ data: { check_runs: [], total_count: 0 } }),
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      true,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(true)
   })
 
   it('returns true when all checks pass', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({
@@ -172,13 +172,13 @@ describe('getChecksClear', () => {
       vi.fn().mockResolvedValue({ data: { statuses: [{ state: 'success' }] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      true,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(true)
   })
 
   it('returns false when a check run fails', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({
@@ -193,13 +193,13 @@ describe('getChecksClear', () => {
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      false,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(false)
   })
 
   it('returns false when a status context is pending', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({
@@ -213,13 +213,13 @@ describe('getChecksClear', () => {
       }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      false,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(false)
   })
 
   it('returns false when a check is still in progress', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const octokit = createMockOctokit(
       vi.fn().mockResolvedValue({
@@ -234,13 +234,13 @@ describe('getChecksClear', () => {
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      false,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(false)
   })
 
   it('ignores in-progress check runs from the current workflow run', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     process.env.GITHUB_RUN_ID = '21770828514'
 
@@ -269,13 +269,13 @@ describe('getChecksClear', () => {
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      true,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(true)
   })
 
   it('does not ignore in-progress check runs from other workflow runs', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     process.env.GITHUB_RUN_ID = '21770828514'
 
@@ -297,13 +297,13 @@ describe('getChecksClear', () => {
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      false,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(false)
   })
 
   it('does not ignore completed checks from the current workflow run', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     process.env.GITHUB_RUN_ID = '21770828514'
 
@@ -325,13 +325,13 @@ describe('getChecksClear', () => {
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      false,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(false)
   })
 
   it('throws descriptive error on 403 from checks.listForRef', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const error = new Error('Resource not accessible by integration')
     Reflect.set(error, 'status', 403)
@@ -342,12 +342,12 @@ describe('getChecksClear', () => {
     )
 
     await expect(
-      getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+      resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
     ).rejects.toThrow('Missing `checks: read` permission')
   })
 
   it('throws descriptive error on 403 from getCombinedStatusForRef', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const error = new Error('Resource not accessible by integration')
     Reflect.set(error, 'status', 403)
@@ -358,12 +358,12 @@ describe('getChecksClear', () => {
     )
 
     await expect(
-      getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+      resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
     ).rejects.toThrow('Missing `statuses: read` permission')
   })
 
   it('rethrows non-403 errors from checks.listForRef', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const error = new Error('Internal Server Error')
     Reflect.set(error, 'status', 500)
@@ -374,12 +374,12 @@ describe('getChecksClear', () => {
     )
 
     await expect(
-      getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+      resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
     ).rejects.toThrow('Internal Server Error')
   })
 
   it('paginates check runs', async () => {
-    const { getChecksClear } = await import('./get-checks-clear')
+    const { resolveChecksClear } = await import('./resolve-checks-clear')
 
     const page1Runs = Array.from({ length: 100 }, () => ({
       conclusion: 'success',
@@ -403,9 +403,9 @@ describe('getChecksClear', () => {
       vi.fn().mockResolvedValue({ data: { statuses: [] } }),
     )
 
-    expect(await getChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234')).toBe(
-      true,
-    )
+    expect(
+      await resolveChecksClear(createContext(octokit, process.env.GITHUB_RUN_ID), 'abc1234'),
+    ).toBe(true)
     expect(listForReference).toHaveBeenCalledTimes(2)
     expect(listForReference.mock.calls[1][0]).toMatchObject({ page: 2 })
   })

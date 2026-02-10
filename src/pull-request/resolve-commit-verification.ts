@@ -46,7 +46,7 @@ export const isCommitTrusted = (
  * 2. For each unique human author, check collaborator permission.
  * 3. Evaluate each commit against the trust model.
  */
-export const getCommitsTrusted = async (context: Context): Promise<boolean> => {
+export const resolveCommitVerification = async (context: Context): Promise<boolean> => {
   const { inputs, octokit, pullRequestNumber, repositoryName, repositoryOwner } = context
 
   if (pullRequestNumber <= 0) {

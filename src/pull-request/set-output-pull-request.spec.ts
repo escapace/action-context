@@ -23,8 +23,8 @@ vi.mock('@actions/github', () => ({
   },
 }))
 
-vi.mock('./get-pull-request', () => ({
-  getPullRequest: vi.fn(),
+vi.mock('./fetch-pull-request', () => ({
+  fetchPullRequest: vi.fn(),
 }))
 
 vi.mock('./fetch-merge-review-data', () => ({
@@ -33,25 +33,25 @@ vi.mock('./fetch-merge-review-data', () => ({
   isReviewClear: vi.fn(),
 }))
 
-vi.mock('./get-checks-clear', () => ({
-  getChecksClear: vi.fn(),
+vi.mock('./resolve-checks-clear', () => ({
+  resolveChecksClear: vi.fn(),
 }))
 
-vi.mock('./get-last-commit-age-minute', () => ({
-  getLastCommitAgeMinute: vi.fn(),
+vi.mock('./resolve-commit-age-minute', () => ({
+  resolveCommitAgeMinute: vi.fn(),
 }))
 
-vi.mock('./get-commits-trusted', () => ({
-  getCommitsTrusted: vi.fn(),
+vi.mock('./resolve-commit-verification', () => ({
+  resolveCommitVerification: vi.fn(),
 }))
 
 import * as core from '@actions/core'
 import { createOutputs } from '../context/outputs'
 import { fetchMergeReviewData, isMergeStateClear, isReviewClear } from './fetch-merge-review-data'
-import { getChecksClear } from './get-checks-clear'
-import { getCommitsTrusted } from './get-commits-trusted'
-import { getLastCommitAgeMinute } from './get-last-commit-age-minute'
-import { getPullRequest } from './get-pull-request'
+import { resolveChecksClear } from './resolve-checks-clear'
+import { resolveCommitVerification } from './resolve-commit-verification'
+import { resolveCommitAgeMinute } from './resolve-commit-age-minute'
+import { fetchPullRequest } from './fetch-pull-request'
 import { PullRequestActionError } from './error'
 import { setOutputPullRequest } from './set-output-pull-request'
 import type { Octokit } from './types'
@@ -117,7 +117,7 @@ describe('setOutputPullRequest', () => {
     process.env.GITHUB_EVENT_NAME = 'pull_request'
     mockPayload.pull_request = { number: 95 }
     context = createPrContext()
-    vi.mocked(getLastCommitAgeMinute).mockResolvedValue(0)
+    vi.mocked(resolveCommitAgeMinute).mockResolvedValue(0)
   })
 
   it('emits default values on push events', async () => {
@@ -137,7 +137,7 @@ describe('setOutputPullRequest', () => {
     expect(nonPrContext.outputs['pr-commits-trusted']).toBe(false)
     expect(nonPrContext.outputs['pr-last-commit-age-minute']).toBe(0)
 
-    expect(getPullRequest).not.toHaveBeenCalled()
+    expect(fetchPullRequest).not.toHaveBeenCalled()
   })
 
   it('emits default values on tag events', async () => {
@@ -146,7 +146,7 @@ describe('setOutputPullRequest', () => {
     await setOutputPullRequest(nonPrContext)
 
     expect(nonPrContext.outputs['pr-number']).toBe(0)
-    expect(getPullRequest).not.toHaveBeenCalled()
+    expect(fetchPullRequest).not.toHaveBeenCalled()
   })
 
   it('fetches PR data and sets all outputs on pull_request events', async () => {
@@ -154,7 +154,7 @@ describe('setOutputPullRequest', () => {
       inputs: { ...defaultInputs, trustedBots: new Set(['dependabot[bot]', 'renovate[bot]']) },
     })
 
-    vi.mocked(getPullRequest).mockResolvedValue({
+    vi.mocked(fetchPullRequest).mockResolvedValue({
       authorBot: true,
       baseRef: 'main',
       headRef: 'renovate/eslint-9.x',
@@ -175,9 +175,9 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isMergeStateClear).mockReturnValue(true)
     vi.mocked(isReviewClear).mockReturnValue(true)
-    vi.mocked(getChecksClear).mockResolvedValue(true)
-    vi.mocked(getCommitsTrusted).mockResolvedValue(true)
-    vi.mocked(getLastCommitAgeMinute).mockResolvedValue(17)
+    vi.mocked(resolveChecksClear).mockResolvedValue(true)
+    vi.mocked(resolveCommitVerification).mockResolvedValue(true)
+    vi.mocked(resolveCommitAgeMinute).mockResolvedValue(17)
 
     await setOutputPullRequest(context)
 
@@ -199,7 +199,7 @@ describe('setOutputPullRequest', () => {
       inputs: { ...defaultInputs, trustedBots: new Set(['dependabot[bot]', 'renovate[bot]']) },
     })
 
-    vi.mocked(getPullRequest).mockResolvedValue({
+    vi.mocked(fetchPullRequest).mockResolvedValue({
       authorBot: true,
       baseRef: 'main',
       headRef: 'renovate/eslint-9.x',
@@ -220,16 +220,16 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isMergeStateClear).mockReturnValue(true)
     vi.mocked(isReviewClear).mockReturnValue(true)
-    vi.mocked(getChecksClear).mockResolvedValue(true)
-    vi.mocked(getCommitsTrusted).mockResolvedValue(true)
+    vi.mocked(resolveChecksClear).mockResolvedValue(true)
+    vi.mocked(resolveCommitVerification).mockResolvedValue(true)
 
     await setOutputPullRequest(context)
 
-    expect(getCommitsTrusted).toHaveBeenCalledWith(context)
+    expect(resolveCommitVerification).toHaveBeenCalledWith(context)
   })
 
   it('fetches checks using head sha and merge/review data from combined query', async () => {
-    vi.mocked(getPullRequest).mockResolvedValue({
+    vi.mocked(fetchPullRequest).mockResolvedValue({
       authorBot: true,
       baseRef: 'main',
       headRef: 'renovate/eslint-9.x',
@@ -250,14 +250,14 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isMergeStateClear).mockReturnValue(true)
     vi.mocked(isReviewClear).mockReturnValue(true)
-    vi.mocked(getChecksClear).mockResolvedValue(true)
-    vi.mocked(getCommitsTrusted).mockResolvedValue(true)
+    vi.mocked(resolveChecksClear).mockResolvedValue(true)
+    vi.mocked(resolveCommitVerification).mockResolvedValue(true)
 
     await setOutputPullRequest(context)
 
-    expect(getChecksClear).toHaveBeenCalledWith(context, 'deadbeef1234')
+    expect(resolveChecksClear).toHaveBeenCalledWith(context, 'deadbeef1234')
     expect(fetchMergeReviewData).toHaveBeenCalledWith(context)
-    expect(getLastCommitAgeMinute).toHaveBeenCalledWith(context, 'deadbeef1234')
+    expect(resolveCommitAgeMinute).toHaveBeenCalledWith(context, 'deadbeef1234')
   })
 
   it('emits default values on non-pull_request events', async () => {
@@ -266,11 +266,11 @@ describe('setOutputPullRequest', () => {
     await setOutputPullRequest(nonPrContext)
 
     expect(nonPrContext.outputs['pr-number']).toBe(0)
-    expect(getPullRequest).not.toHaveBeenCalled()
+    expect(fetchPullRequest).not.toHaveBeenCalled()
   })
 
   it('degrades to defaults with warning on pull-requests permission failure', async () => {
-    vi.mocked(getPullRequest).mockRejectedValue(
+    vi.mocked(fetchPullRequest).mockRejectedValue(
       new PullRequestActionError(
         'PR_PERMISSION_PULL_REQUESTS_READ',
         'Missing `pull-requests: read` permission. Add it to the workflow permissions block.',
@@ -290,7 +290,7 @@ describe('setOutputPullRequest', () => {
   })
 
   it('degrades to defaults with warning on unknown PR fetch failure', async () => {
-    vi.mocked(getPullRequest).mockResolvedValue({
+    vi.mocked(fetchPullRequest).mockResolvedValue({
       authorBot: true,
       baseRef: 'main',
       headRef: 'renovate/eslint-9.x',
@@ -311,8 +311,8 @@ describe('setOutputPullRequest', () => {
 
     vi.mocked(isMergeStateClear).mockReturnValue(true)
     vi.mocked(isReviewClear).mockReturnValue(true)
-    vi.mocked(getChecksClear).mockRejectedValue(new Error('Boom'))
-    vi.mocked(getCommitsTrusted).mockResolvedValue(true)
+    vi.mocked(resolveChecksClear).mockRejectedValue(new Error('Boom'))
+    vi.mocked(resolveCommitVerification).mockResolvedValue(true)
 
     await expect(setOutputPullRequest(context)).resolves.toBeUndefined()
 
