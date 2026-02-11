@@ -21,6 +21,7 @@ export interface PullRequestData {
   mergeable: boolean
   notDraft: boolean
   number: number
+  title: string
 }
 
 /** A single review from the latestReviews connection. */
@@ -69,6 +70,7 @@ export interface PullRequestCommitMetadata {
   author: CommitAuthor | null
   authorDate: string | null
   committerDate: string | null
+  message: string
   sha: string
   verification: CommitVerification | null
 }
@@ -79,6 +81,7 @@ export interface PullRequestOutputs {
   'pr-base-ref': string
   'pr-checks-clear': boolean
   'pr-commits-trusted': boolean
+  'pr-conventional-commits': string
   'pr-head-ref': string
   'pr-last-commit-age-minute': number
   'pr-merge-state-clear': boolean

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createOutputs } from '../context/outputs'
 import type { PullRequestContext } from '../types'
 import type { Octokit, PullRequestCommitMetadata } from './types'
@@ -17,6 +17,7 @@ const signedBotCommit = (login: string): PullRequestCommitMetadata => ({
   author: { login, type: 'Bot' },
   authorDate: null,
   committerDate: null,
+  message: 'chore(deps): update dependency',
   sha: 'abc123',
   verification: { verified: true },
 })
@@ -25,6 +26,7 @@ const unsignedBotCommit = (login: string): PullRequestCommitMetadata => ({
   author: { login, type: 'Bot' },
   authorDate: null,
   committerDate: null,
+  message: 'chore(deps): update dependency',
   sha: 'abc123',
   verification: { verified: false },
 })
@@ -33,6 +35,7 @@ const signedHumanCommit = (login: string): PullRequestCommitMetadata => ({
   author: { login, type: 'User' },
   authorDate: null,
   committerDate: null,
+  message: 'feat: add feature',
   sha: 'abc123',
   verification: { verified: true },
 })
@@ -41,6 +44,7 @@ const unsignedHumanCommit = (login: string): PullRequestCommitMetadata => ({
   author: { login, type: 'User' },
   authorDate: null,
   committerDate: null,
+  message: 'feat: add feature',
   sha: 'abc123',
   verification: { verified: false },
 })
@@ -49,6 +53,7 @@ const nullAuthorCommit: PullRequestCommitMetadata = {
   author: null,
   authorDate: null,
   committerDate: null,
+  message: 'fix: something',
   sha: 'abc123',
   verification: { verified: true },
 }
@@ -121,6 +126,7 @@ describe('isCommitTrusted', () => {
       author: { login: 'ghost', type: 'Organization' },
       authorDate: null,
       committerDate: null,
+      message: 'fix: something',
       sha: 'abc123',
       verification: { verified: true },
     }
@@ -133,6 +139,7 @@ describe('isCommitTrusted', () => {
       author: { login: 'yyxi', type: 'User' },
       authorDate: null,
       committerDate: null,
+      message: 'fix: something',
       sha: 'abc123',
       verification: null,
     }
@@ -145,13 +152,9 @@ describe('isCommitTrusted', () => {
   })
 })
 
-const createMockOctokit = (
-  listCommits: ReturnType<typeof vi.fn>,
-  getCollaboratorPermissionLevel: ReturnType<typeof vi.fn>,
-): Octokit => {
+const createMockOctokit = (getCollaboratorPermissionLevel: ReturnType<typeof vi.fn>): Octokit => {
   const octokit = {
     rest: {
-      pulls: { listCommits },
       repos: { getCollaboratorPermissionLevel },
     },
   }
@@ -183,55 +186,22 @@ const createContext = (
 })
 
 describe('resolveCommitVerification', () => {
-  const originalEnvironment = process.env.GITHUB_REPOSITORY
-
-  beforeEach(() => {
-    vi.resetModules()
-    process.env.GITHUB_REPOSITORY = 'escapace/action-context'
-  })
-
-  afterEach(() => {
-    if (originalEnvironment === undefined) {
-      delete process.env.GITHUB_REPOSITORY
-    } else {
-      process.env.GITHUB_REPOSITORY = originalEnvironment
-    }
-  })
-
   it('returns true for a pure bot PR with trusted signed commits', async () => {
     const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          {
-            author: { login: 'renovate[bot]', type: 'Bot' },
-            commit: { verification: { verified: true } },
-          },
-        ],
-      }),
-      vi.fn(),
-    )
+    const octokit = createMockOctokit(vi.fn())
+    const commits = [signedBotCommit('renovate[bot]')]
 
-    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots), commits)).toBe(true)
   })
 
   it('returns false for a bot PR with untrusted bot', async () => {
     const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          {
-            author: { login: 'renovate[bot]', type: 'Bot' },
-            commit: { verification: { verified: true } },
-          },
-        ],
-      }),
-      vi.fn(),
-    )
+    const octokit = createMockOctokit(vi.fn())
+    const commits = [signedBotCommit('renovate[bot]')]
 
-    expect(await resolveCommitVerification(createContext(octokit, emptyBots))).toBe(false)
+    expect(await resolveCommitVerification(createContext(octokit, emptyBots), commits)).toBe(false)
   })
 
   it('checks collaborator permissions for human authors', async () => {
@@ -241,23 +211,10 @@ describe('resolveCommitVerification', () => {
       data: { permission: 'write' },
     })
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          {
-            author: { login: 'renovate[bot]', type: 'Bot' },
-            commit: { verification: { verified: true } },
-          },
-          {
-            author: { login: 'yyxi', type: 'User' },
-            commit: { verification: { verified: true } },
-          },
-        ],
-      }),
-      getCollaboratorPermissionLevel,
-    )
+    const octokit = createMockOctokit(getCollaboratorPermissionLevel)
+    const commits = [signedBotCommit('renovate[bot]'), signedHumanCommit('yyxi')]
 
-    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots), commits)).toBe(true)
     expect(getCollaboratorPermissionLevel).toHaveBeenCalledWith({
       owner: 'escapace',
       repo: 'action-context',
@@ -268,27 +225,20 @@ describe('resolveCommitVerification', () => {
   it('returns false when human author has read-only access', async () => {
     const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          {
-            author: { login: 'yyxi', type: 'User' },
-            commit: { verification: { verified: true } },
-          },
-        ],
-      }),
-      vi.fn().mockResolvedValue({ data: { permission: 'read' } }),
-    )
+    const octokit = createMockOctokit(vi.fn().mockResolvedValue({ data: { permission: 'read' } }))
+    const commits = [signedHumanCommit('yyxi')]
 
-    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(false)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots), commits)).toBe(
+      false,
+    )
   })
 
   it('returns false for empty commit list', async () => {
     const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
-    const octokit = createMockOctokit(vi.fn().mockResolvedValue({ data: [] }), vi.fn())
+    const octokit = createMockOctokit(vi.fn())
 
-    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(false)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots), [])).toBe(false)
   })
 
   it('deduplicates permission checks for repeated human authors', async () => {
@@ -298,23 +248,10 @@ describe('resolveCommitVerification', () => {
       data: { permission: 'write' },
     })
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          {
-            author: { login: 'yyxi', type: 'User' },
-            commit: { verification: { verified: true } },
-          },
-          {
-            author: { login: 'yyxi', type: 'User' },
-            commit: { verification: { verified: true } },
-          },
-        ],
-      }),
-      getCollaboratorPermissionLevel,
-    )
+    const octokit = createMockOctokit(getCollaboratorPermissionLevel)
+    const commits = [signedHumanCommit('yyxi'), signedHumanCommit('yyxi')]
 
-    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots), commits)).toBe(true)
     expect(getCollaboratorPermissionLevel).toHaveBeenCalledTimes(1)
   })
 
@@ -322,38 +259,11 @@ describe('resolveCommitVerification', () => {
     const { resolveCommitVerification } = await import('./resolve-commit-verification')
 
     const getCollaboratorPermissionLevel = vi.fn()
+    const octokit = createMockOctokit(getCollaboratorPermissionLevel)
+    const commits = [signedBotCommit('renovate[bot]'), signedBotCommit('dependabot[bot]')]
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          {
-            author: { login: 'renovate[bot]', type: 'Bot' },
-            commit: { verification: { verified: true } },
-          },
-          {
-            author: { login: 'dependabot[bot]', type: 'Bot' },
-            commit: { verification: { verified: true } },
-          },
-        ],
-      }),
-      getCollaboratorPermissionLevel,
-    )
-
-    expect(await resolveCommitVerification(createContext(octokit, trustedBots))).toBe(true)
+    expect(await resolveCommitVerification(createContext(octokit, trustedBots), commits)).toBe(true)
     expect(getCollaboratorPermissionLevel).not.toHaveBeenCalled()
-  })
-
-  it('throws descriptive error on 403 from listCommits', async () => {
-    const { resolveCommitVerification } = await import('./resolve-commit-verification')
-
-    const error = new Error('Resource not accessible by integration')
-    Reflect.set(error, 'status', 403)
-
-    const octokit = createMockOctokit(vi.fn().mockRejectedValue(error), vi.fn())
-
-    await expect(resolveCommitVerification(createContext(octokit, trustedBots))).rejects.toThrow(
-      'Missing `pull-requests: read` permission',
-    )
   })
 
   it('throws descriptive error on 403 from collaborator permission endpoint', async () => {
@@ -362,18 +272,12 @@ describe('resolveCommitVerification', () => {
     const error = new Error('Forbidden')
     Reflect.set(error, 'status', 403)
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          { author: { login: 'yyxi', type: 'User' }, commit: { verification: { verified: true } } },
-        ],
-      }),
-      vi.fn().mockRejectedValue(error),
-    )
+    const octokit = createMockOctokit(vi.fn().mockRejectedValue(error))
+    const commits = [signedHumanCommit('yyxi')]
 
-    await expect(resolveCommitVerification(createContext(octokit, trustedBots))).rejects.toThrow(
-      'Unable to read collaborator permissions for commit authors',
-    )
+    await expect(
+      resolveCommitVerification(createContext(octokit, trustedBots), commits),
+    ).rejects.toThrow('Unable to read collaborator permissions for commit authors')
   })
 
   it('treats 404 from collaborator permission endpoint as untrusted author', async () => {
@@ -382,20 +286,20 @@ describe('resolveCommitVerification', () => {
     const error = new Error('Not Found')
     Reflect.set(error, 'status', 404)
 
-    const octokit = createMockOctokit(
-      vi.fn().mockResolvedValue({
-        data: [
-          {
-            author: { login: 'external-user', type: 'User' },
-            commit: { verification: { verified: true } },
-          },
-        ],
-      }),
-      vi.fn().mockRejectedValue(error),
-    )
+    const octokit = createMockOctokit(vi.fn().mockRejectedValue(error))
+    const commits: PullRequestCommitMetadata[] = [
+      {
+        author: { login: 'external-user', type: 'User' },
+        authorDate: null,
+        committerDate: null,
+        message: 'fix: something',
+        sha: 'abc123',
+        verification: { verified: true },
+      },
+    ]
 
-    await expect(resolveCommitVerification(createContext(octokit, trustedBots))).resolves.toBe(
-      false,
-    )
+    await expect(
+      resolveCommitVerification(createContext(octokit, trustedBots), commits),
+    ).resolves.toBe(false)
   })
 })

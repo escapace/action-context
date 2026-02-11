@@ -62,5 +62,6 @@ export const fetchPullRequest = async (
     mergeable: mergeable === true,
     notDraft: data.draft !== true,
     number: data.number,
+    title: data.title,
   }
 }

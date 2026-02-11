@@ -16,6 +16,9 @@ on:
       pr-checks-clear:
         description: 'pr-checks-clear output from action-context in workflow_call mode'
         value: ${{ jobs.validate.outputs.pr-checks-clear }}
+      pr-conventional-commits:
+        description: 'pr-conventional-commits output from action-context in workflow_call mode'
+        value: ${{ jobs.validate.outputs.pr-conventional-commits }}
       pr-last-commit-age-minute:
         description: 'pr-last-commit-age-minute output from action-context in workflow_call mode'
         value: ${{ jobs.validate.outputs.pr-last-commit-age-minute }}
@@ -37,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       pr-checks-clear: ${{ steps.context.outputs.pr-checks-clear }}
+      pr-conventional-commits: ${{ steps.context.outputs.pr-conventional-commits }}
       pr-last-commit-age-minute: ${{ steps.context.outputs.pr-last-commit-age-minute }}
       pr-merge-state-clear: ${{ steps.context.outputs.pr-merge-state-clear }}
       pr-number: ${{ steps.context.outputs.pr-number }}
@@ -80,5 +84,6 @@ jobs:
           [[ "${{ steps.context.outputs.pr-number }}" == "${{ inputs.pr-number }}" ]] || { echo "::error::pr-number mismatch in workflow_call mode"; exit 1; }
           [[ "${{ steps.context.outputs.pr-head-ref }}" == "${{ inputs.pr-head-ref }}" ]] || { echo "::error::pr-head-ref mismatch in workflow_call mode"; exit 1; }
           [[ "${{ steps.context.outputs.pr-checks-clear }}" =~ ^(true|false)$ ]] || { echo "::error::pr-checks-clear should be boolean"; exit 1; }
+          [[ "${{ steps.context.outputs.pr-conventional-commits }}" =~ ^(all|title-only|commits-only|none)$ ]] || { echo "::error::pr-conventional-commits should be one of all, title-only, commits-only, none"; exit 1; }
           [[ "${{ steps.context.outputs.pr-merge-state-clear }}" =~ ^(true|false)$ ]] || { echo "::error::pr-merge-state-clear should be boolean"; exit 1; }
           [[ "${{ steps.context.outputs.pr-last-commit-age-minute }}" =~ ^[0-9]+$ ]] || { echo "::error::pr-last-commit-age-minute should be non-negative integer"; exit 1; }

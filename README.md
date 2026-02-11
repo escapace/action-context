@@ -178,19 +178,20 @@ A shallow checkout fails before `latest` evaluation. Use `fetch-depth: 0`.
 
 ### Pull request outputs
 
-| Name                        | Example        | Description                                                                                               |
-| --------------------------- | -------------- | --------------------------------------------------------------------------------------------------------- |
-| `pr-number`                 | `95`           | Pull request number. `0` when pull request context is unavailable.                                        |
-| `pr-not-draft`              | `true`         | `true` when pull request is not draft.                                                                    |
-| `pr-base-ref`               | `trunk`        | Pull request base branch. Empty when unavailable.                                                         |
-| `pr-head-ref`               | `renovate/foo` | Pull request head branch. Empty when unavailable.                                                         |
-| `pr-last-commit-age-minute` | `1196`         | Elapsed full minutes since the latest pull request head commit. `0` when unavailable.                     |
-| `pr-author-bot`             | `true`         | `true` when pull request author account type is `Bot`.                                                    |
-| `pr-mergeable`              | `true`         | `true` when no merge conflicts are reported.                                                              |
-| `pr-review-clear`           | `true`         | `true` when review state does not block merge.                                                            |
-| `pr-checks-clear`           | `true`         | `true` when check runs and status contexts pass.                                                          |
-| `pr-merge-state-clear`      | `true`         | `true` when GitHub reports merge-ready state (`CLEAN` or `HAS_HOOKS`).                                    |
-| `pr-commits-trusted`        | `true`         | `true` when every commit is signed and authored by an allowlisted bot or a human with write/admin access. |
+| Name                        | Example        | Description                                                                                                                   |
+| --------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `pr-number`                 | `95`           | Pull request number. `0` when pull request context is unavailable.                                                            |
+| `pr-not-draft`              | `true`         | `true` when pull request is not draft.                                                                                        |
+| `pr-base-ref`               | `trunk`        | Pull request base branch. Empty when unavailable.                                                                             |
+| `pr-head-ref`               | `renovate/foo` | Pull request head branch. Empty when unavailable.                                                                             |
+| `pr-last-commit-age-minute` | `1196`         | Elapsed full minutes since the latest pull request head commit. `0` when unavailable.                                         |
+| `pr-author-bot`             | `true`         | `true` when pull request author account type is `Bot`.                                                                        |
+| `pr-mergeable`              | `true`         | `true` when no merge conflicts are reported.                                                                                  |
+| `pr-review-clear`           | `true`         | `true` when review state does not block merge.                                                                                |
+| `pr-checks-clear`           | `true`         | `true` when check runs and status contexts pass.                                                                              |
+| `pr-merge-state-clear`      | `true`         | `true` when GitHub reports merge-ready state (`CLEAN` or `HAS_HOOKS`).                                                        |
+| `pr-commits-trusted`        | `true`         | `true` when every commit is signed and authored by an allowlisted bot or a human with write/admin access.                     |
+| `pr-conventional-commits`   | `title-only`   | Conventional commit compliance: `all` (squash/rebase safe), `title-only` (squash safe), `commits-only` (rebase safe), `none`. |
 
 ### Dynamic engine outputs
 

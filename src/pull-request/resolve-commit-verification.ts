@@ -1,5 +1,4 @@
 import { PullRequestActionError, isHttpStatus } from './error'
-import { fetchPullRequestCommits } from './fetch-pull-request-commits'
 import type { Context } from '../types'
 import type { PullRequestCommitMetadata } from './types'
 
@@ -39,24 +38,23 @@ export const isCommitTrusted = (
 }
 
 /**
- * Fetch PR commits and determine whether all are trusted.
+ * Determine whether all PR commits are trusted.
  *
  * Steps:
- * 1. Fetch all commits on the PR via REST pulls.listCommits.
- * 2. For each unique human author, check collaborator permission.
- * 3. Evaluate each commit against the trust model.
+ * 1. For each unique human author, check collaborator permission.
+ * 2. Evaluate each commit against the trust model.
+ *
+ * Commits are provided by the caller to avoid duplicate API fetches
+ * when other consumers (e.g., conventional commit validation) also
+ * need commit data.
  */
-export const resolveCommitVerification = async (context: Context): Promise<boolean> => {
-  const { inputs, octokit, pullRequestNumber, repositoryName, repositoryOwner } = context
-
-  if (pullRequestNumber <= 0) {
-    throw new Error('PR context was expected but no valid PR number is available.')
-  }
+export const resolveCommitVerification = async (
+  context: Context,
+  commits: PullRequestCommitMetadata[],
+): Promise<boolean> => {
+  const { inputs, octokit, repositoryName, repositoryOwner } = context
 
   const trustedBots = inputs.trustedBots
-
-  // Fetch all commits (paginated)
-  const commits = await fetchPullRequestCommits(context, pullRequestNumber)
 
   // No commits is unexpected but not trusted
   if (commits.length === 0) return false

@@ -20,6 +20,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: 20.4.1
         version: 20.4.1
+      '@commitlint/lint':
+        specifier: 20.4.1
+        version: 20.4.1
       '@escapace/pnpm-pack':
         specifier: 0.6.1
         version: 0.6.1(@pnpm/logger@1001.0.1)

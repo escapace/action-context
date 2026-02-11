@@ -52,6 +52,8 @@ outputs:
     description: 'Whether all status checks are passing. False when pull request context is unavailable.'
   pr-commits-trusted:
     description: 'Whether every pull request commit author is trusted (allowlisted bot with verified signature, or human with verified signature and write/admin permission). False when pull request context is unavailable.'
+  pr-conventional-commits:
+    description: 'Conventional commit compliance for merge strategy selection. all: title and all commits follow conventional commits (squash or rebase safe). title-only: only PR title follows conventional commits (squash safe). commits-only: only commits follow conventional commits (rebase safe). none: neither follows conventional commits. Defaults to none when pull request context is unavailable.'
   pr-head-ref:
     description: 'Pull request head branch name. Empty when pull request context is unavailable.'
   pr-last-commit-age-minute:

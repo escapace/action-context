@@ -45,11 +45,21 @@ vi.mock('./resolve-commit-verification', () => ({
   resolveCommitVerification: vi.fn(),
 }))
 
+vi.mock('./resolve-conventional-commits', () => ({
+  resolveConventionalCommits: vi.fn(),
+}))
+
+vi.mock('./fetch-pull-request-commits', () => ({
+  fetchPullRequestCommits: vi.fn(),
+}))
+
 import * as core from '@actions/core'
 import { createOutputs } from '../context/outputs'
 import { fetchMergeReviewData, isMergeStateClear, isReviewClear } from './fetch-merge-review-data'
+import { fetchPullRequestCommits } from './fetch-pull-request-commits'
 import { resolveChecksClear } from './resolve-checks-clear'
 import { resolveCommitVerification } from './resolve-commit-verification'
+import { resolveConventionalCommits } from './resolve-conventional-commits'
 import { resolveCommitAgeMinute } from './resolve-commit-age-minute'
 import { fetchPullRequest } from './fetch-pull-request'
 import { PullRequestActionError } from './error'
@@ -118,6 +128,8 @@ describe('setOutputPullRequest', () => {
     mockPayload.pull_request = { number: 95 }
     context = createPrContext()
     vi.mocked(resolveCommitAgeMinute).mockResolvedValue(0)
+    vi.mocked(fetchPullRequestCommits).mockResolvedValue([])
+    vi.mocked(resolveConventionalCommits).mockResolvedValue('none')
   })
 
   it('emits default values on push events', async () => {
@@ -135,6 +147,7 @@ describe('setOutputPullRequest', () => {
     expect(nonPrContext.outputs['pr-checks-clear']).toBe(false)
     expect(nonPrContext.outputs['pr-merge-state-clear']).toBe(false)
     expect(nonPrContext.outputs['pr-commits-trusted']).toBe(false)
+    expect(nonPrContext.outputs['pr-conventional-commits']).toBe('none')
     expect(nonPrContext.outputs['pr-last-commit-age-minute']).toBe(0)
 
     expect(fetchPullRequest).not.toHaveBeenCalled()
@@ -162,6 +175,7 @@ describe('setOutputPullRequest', () => {
       mergeable: true,
       notDraft: true,
       number: 95,
+      title: 'feat: test change',
     })
 
     vi.mocked(fetchMergeReviewData).mockResolvedValue({
@@ -207,6 +221,7 @@ describe('setOutputPullRequest', () => {
       mergeable: true,
       notDraft: true,
       number: 95,
+      title: 'feat: test change',
     })
 
     vi.mocked(fetchMergeReviewData).mockResolvedValue({
@@ -225,7 +240,7 @@ describe('setOutputPullRequest', () => {
 
     await setOutputPullRequest(context)
 
-    expect(resolveCommitVerification).toHaveBeenCalledWith(context)
+    expect(resolveCommitVerification).toHaveBeenCalledWith(context, [])
   })
 
   it('fetches checks using head sha and merge/review data from combined query', async () => {
@@ -237,6 +252,7 @@ describe('setOutputPullRequest', () => {
       mergeable: true,
       notDraft: true,
       number: 95,
+      title: 'feat: test change',
     })
 
     vi.mocked(fetchMergeReviewData).mockResolvedValue({
@@ -298,6 +314,7 @@ describe('setOutputPullRequest', () => {
       mergeable: true,
       notDraft: true,
       number: 95,
+      title: 'feat: test change',
     })
 
     vi.mocked(fetchMergeReviewData).mockResolvedValue({

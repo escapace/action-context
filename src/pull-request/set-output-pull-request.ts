@@ -1,8 +1,10 @@
 import * as core from '@actions/core'
 import type { ActionOutputs, Context } from '../types'
 import { fetchMergeReviewData, isMergeStateClear, isReviewClear } from './fetch-merge-review-data'
+import { fetchPullRequestCommits } from './fetch-pull-request-commits'
 import { resolveChecksClear } from './resolve-checks-clear'
 import { resolveCommitVerification } from './resolve-commit-verification'
+import { resolveConventionalCommits } from './resolve-conventional-commits'
 import { getPullRequestErrorCode, type PullRequestErrorCode } from './error'
 import { resolveCommitAgeMinute } from './resolve-commit-age-minute'
 import { fetchPullRequest } from './fetch-pull-request'
@@ -13,6 +15,7 @@ const DEFAULT_OUTPUTS: PullRequestOutputs = {
   'pr-base-ref': '',
   'pr-checks-clear': false,
   'pr-commits-trusted': false,
+  'pr-conventional-commits': 'none',
   'pr-head-ref': '',
   'pr-last-commit-age-minute': 0,
   'pr-merge-state-clear': false,
@@ -90,6 +93,7 @@ const warnAndDegrade = (outputs: ActionOutputs, error: unknown): void => {
 interface BuildPullRequestOutputsInput {
   checksClear: boolean
   commitsTrusted: boolean
+  conventionalCommits: string
   lastCommitAgeMinute: number
   mergeStateClear: boolean
   prData: {
@@ -111,6 +115,7 @@ const buildPullRequestOutputs = (input: BuildPullRequestOutputsInput): PullReque
   'pr-base-ref': input.prData.baseRef,
   'pr-checks-clear': input.checksClear,
   'pr-commits-trusted': input.commitsTrusted,
+  'pr-conventional-commits': input.conventionalCommits,
   'pr-head-ref': input.prData.headRef,
   'pr-last-commit-age-minute': input.lastCommitAgeMinute,
   'pr-merge-state-clear': input.mergeStateClear,
@@ -136,16 +141,27 @@ export const setOutputPullRequest = async (context: Context): Promise<void> => {
   }
 
   try {
-    // Fetch basic PR data (with mergeable retry logic)
-    const prData = await fetchPullRequest(context, context.pullRequestNumber)
-
-    // Fetch review data, check status, merge state, and commit trust in parallel
-    const [mergeReviewData, checksClear, commitsTrusted, lastCommitAgeMinute] = await Promise.all([
-      fetchMergeReviewData(context),
-      resolveChecksClear(context, prData.headSha),
-      resolveCommitVerification(context),
-      resolveCommitAgeMinute(context, prData.headSha),
+    // Fetch basic PR data (with mergeable retry logic) and commits
+    const [prData, commits] = await Promise.all([
+      fetchPullRequest(context, context.pullRequestNumber),
+      fetchPullRequestCommits(context, context.pullRequestNumber),
     ])
+
+    // Resolve review data, check status, commit trust, commit age,
+    // and conventional commit compliance in parallel.
+    // Commits are fetched once above and shared by both resolveCommitVerification
+    // and resolveConventionalCommits to avoid duplicate API calls.
+    const [mergeReviewData, checksClear, commitsTrusted, lastCommitAgeMinute, conventionalCommits] =
+      await Promise.all([
+        fetchMergeReviewData(context),
+        resolveChecksClear(context, prData.headSha),
+        resolveCommitVerification(context, commits),
+        resolveCommitAgeMinute(context, prData.headSha),
+        resolveConventionalCommits(
+          prData.title,
+          commits.map((c) => c.message),
+        ),
+      ])
 
     const mergeStateClear = isMergeStateClear(mergeReviewData.mergeStateStatus)
     const reviewClear = isReviewClear(mergeReviewData.reviewData)
@@ -153,6 +169,7 @@ export const setOutputPullRequest = async (context: Context): Promise<void> => {
     const prOutputs = buildPullRequestOutputs({
       checksClear,
       commitsTrusted,
+      conventionalCommits,
       lastCommitAgeMinute,
       mergeStateClear,
       prData,

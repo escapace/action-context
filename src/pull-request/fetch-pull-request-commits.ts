@@ -28,6 +28,7 @@ export const fetchPullRequestCommits = async (
             : null,
         authorDate: item.commit.author?.date ?? null,
         committerDate: item.commit.committer?.date ?? null,
+        message: item.commit.message,
         sha: item.sha,
         verification:
           item.commit.verification !== null && item.commit.verification !== undefined
