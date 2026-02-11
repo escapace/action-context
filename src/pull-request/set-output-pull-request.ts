@@ -147,21 +147,22 @@ export const setOutputPullRequest = async (context: Context): Promise<void> => {
       fetchPullRequestCommits(context, context.pullRequestNumber),
     ])
 
-    // Resolve review data, check status, commit trust, commit age,
-    // and conventional commit compliance in parallel.
+    // Resolve review data, check status, commit trust, and commit age in parallel.
+    // Conventional commit compliance is local CPU work and runs after the async
+    // API-bound checks complete.
     // Commits are fetched once above and shared by both resolveCommitVerification
     // and resolveConventionalCommits to avoid duplicate API calls.
-    const [mergeReviewData, checksClear, commitsTrusted, lastCommitAgeMinute, conventionalCommits] =
-      await Promise.all([
-        fetchMergeReviewData(context),
-        resolveChecksClear(context, prData.headSha),
-        resolveCommitVerification(context, commits),
-        resolveCommitAgeMinute(context, prData.headSha),
-        resolveConventionalCommits(
-          prData.title,
-          commits.map((c) => c.message),
-        ),
-      ])
+    const [mergeReviewData, checksClear, commitsTrusted, lastCommitAgeMinute] = await Promise.all([
+      fetchMergeReviewData(context),
+      resolveChecksClear(context, prData.headSha),
+      resolveCommitVerification(context, commits),
+      resolveCommitAgeMinute(context, prData.headSha),
+    ])
+
+    const conventionalCommits = resolveConventionalCommits(
+      prData.title,
+      commits.map((c) => c.message),
+    )
 
     const mergeStateClear = isMergeStateClear(mergeReviewData.mergeStateStatus)
     const reviewClear = isReviewClear(mergeReviewData.reviewData)
