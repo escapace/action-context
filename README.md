@@ -223,7 +223,7 @@ Version discovery is best effort and source-isolated:
 
 ## Automerge
 
-Reference workflow: [`.github/workflows/automerge.yaml`](.github/workflows/automerge.yaml)
+Reference workflow: [`.github/workflows/auto-merge.yaml`](.github/workflows/auto-merge.yaml)
 
 For use outside this repository, change `uses: ./` to `uses: escapace/action-context@0.12.0` in the `evaluate pull request context` step.
 
@@ -233,7 +233,7 @@ Core behavior:
 
 - workflow triggers are `schedule` and `workflow_dispatch`,
 - pull request evaluation uses `context-source: pr` with explicit `pr-number`, `pr-head-ref`, and `pr-head-sha`,
-- policy gate is strict and requires all of: `pr-number != 0`, `pr-author-bot`, `pr-not-draft`, `pr-mergeable`, `pr-commits-trusted`, `pr-checks-clear`, and `pr-merge-state-clear`,
+- policy gate is strict and requires all of: `pr-number != 0`, `pr-author-bot`, `pr-not-draft`, `pr-mergeable`, `pr-commits-trusted`, `pr-review-clear`, `pr-checks-clear`, `pr-merge-state-clear`, and `pr-last-commit-age-minute >= 60`,
 - merge execution is guarded with `--match-head-commit` to prevent stale-head merges,
 - one command path is used for both queue-required and non-queue branches.
 
