@@ -23,10 +23,10 @@ env:
   NODE_OPTIONS: --max-old-space-size=6144
 
 jobs:
-  main:
-    runs-on: ubuntu-latest
+  continuous-integration:
     permissions:
       contents: read
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v6
