@@ -117,4 +117,39 @@ describe('resolveConventionalCommits', () => {
       }
     })
   })
+
+  describe('false-positive guards', () => {
+    it('rejects near-conventional but invalid headers', async () => {
+      const invalid = [
+        'feat add missing colon',
+        'feat(scope) add missing colon',
+        'Feat: uppercase type',
+        'fix : extra space before colon',
+        'fix(scope):',
+        'fix(scope): ',
+        'feat(scope)! breaking missing colon',
+        'feat(scope)! : misplaced breaking marker',
+        'feat(scope):. invalid subject',
+        ': missing type',
+      ]
+
+      expect(await resolveConventionalCommits('invalid title', invalid)).toBe('none')
+    })
+
+    it('rejects invalid commit types not in type-enum', async () => {
+      const invalidTypes = ['feature: add', 'bugfix: patch', 'hotfix: patch', 'deps: bump']
+
+      expect(await resolveConventionalCommits('invalid title', invalidTypes)).toBe('none')
+    })
+
+    it('does not classify mixed invalid commits as commits-only', async () => {
+      expect(
+        await resolveConventionalCommits('Not conventional', ['fix: valid', 'not valid commit']),
+      ).toBe('none')
+    })
+
+    it('does not classify invalid title with empty commit list as title-only or commits-only', async () => {
+      expect(await resolveConventionalCommits('Not conventional', [])).toBe('none')
+    })
+  })
 })
