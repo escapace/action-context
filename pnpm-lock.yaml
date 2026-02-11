@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@commitlint/config-conventional':
+        specifier: 20.4.1
+        version: 20.4.1
+      '@commitlint/lint':
+        specifier: 20.4.1
+        version: 20.4.1
     devDependencies:
       '@actions/core':
         specifier: 3.0.0
@@ -17,12 +24,6 @@ importers:
       '@commitlint/cli':
         specifier: 20.4.1
         version: 20.4.1(@types/node@25.2.0)(typescript@5.9.3)
-      '@commitlint/config-conventional':
-        specifier: 20.4.1
-        version: 20.4.1
-      '@commitlint/lint':
-        specifier: 20.4.1
-        version: 20.4.1
       '@escapace/pnpm-pack':
         specifier: 0.6.1
         version: 0.6.1(@pnpm/logger@1001.0.1)
