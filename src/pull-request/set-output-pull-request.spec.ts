@@ -9,7 +9,6 @@ const { mockPayload } = vi.hoisted(() => {
 })
 
 vi.mock('@actions/core', () => ({
-  error: vi.fn(),
   info: vi.fn(),
   setOutput: vi.fn(),
   warning: vi.fn(),

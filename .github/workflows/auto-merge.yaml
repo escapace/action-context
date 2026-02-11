@@ -7,10 +7,12 @@ on:
     - cron: '*/30 * * * *'
   workflow_dispatch:
     inputs:
-      merge-method:
-        default: squash
-        description: 'merge method'
+      merge-strategy:
+        default: rebase,squash
+        description: 'ranked merge strategy preference'
         options:
+          - squash,rebase
+          - rebase,squash
           - squash
           - rebase
         required: false
@@ -33,5 +35,5 @@ jobs:
       statuses: read
     uses: escapace/workflows/.github/workflows/auto-merge.yaml@trunk
     with:
-      merge-method: ${{ inputs.merge-method }}
+      merge-strategy: ${{ inputs.merge-strategy }}
       pr-number: ${{ inputs.pr-number }}

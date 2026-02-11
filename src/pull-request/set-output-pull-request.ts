@@ -83,10 +83,6 @@ const assignDefaultPullRequestOutputs = (outputs: ActionOutputs): void => {
 const warnAndDegrade = (outputs: ActionOutputs, error: unknown): void => {
   const issue = mapPullRequestError(error)
 
-  if (error instanceof Error) {
-    core.error(`${error.name}: ${error.message}`)
-  }
-
   core.warning(
     `[${issue.code}] ${issue.summary} PR outputs were reset to defaults. Remediation: ${issue.remediation}`,
   )
