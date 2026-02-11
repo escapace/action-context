@@ -4,7 +4,8 @@ permissions: {}
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '7,37 9-16 * * 3'
+    - cron: '7,37 9-16 * * 4'
   workflow_dispatch:
     inputs:
       merge-strategy:
