@@ -30,12 +30,12 @@ Select the mode by trigger type and whether merge policy consumes `pr-*` outputs
 ### Branch metadata mode
 
 ```yaml
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
   with:
     fetch-depth: 0
     ref: ${{ github.head_ref || github.ref }}
 
-- uses: escapace/action-context@0.12.0
+- uses: escapace/action-context@0.13.0
   id: context
 ```
 
@@ -49,12 +49,12 @@ permissions:
   statuses: read
 
 steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@v6
     with:
       fetch-depth: 0
       ref: ${{ github.head_ref || github.ref }}
 
-  - uses: escapace/action-context@0.12.0
+  - uses: escapace/action-context@0.13.0
     id: context
     with:
       trusted-bots: |
@@ -74,12 +74,12 @@ permissions:
   statuses: read
 
 steps:
-  - uses: actions/checkout@v5
+  - uses: actions/checkout@v6
     with:
       fetch-depth: 0
       ref: ${{ inputs.pr-head-ref }}
 
-  - uses: escapace/action-context@0.12.0
+  - uses: escapace/action-context@0.13.0
     id: context
     with:
       context-source: pr
@@ -107,12 +107,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
 
-      - uses: escapace/action-context@0.12.0
+      - uses: escapace/action-context@0.13.0
         id: context
 ```
 
@@ -226,7 +226,7 @@ Version discovery is best effort and source-isolated:
 
 Reference workflow: [`.github/workflows/auto-merge.yaml`](.github/workflows/auto-merge.yaml)
 
-For use outside this repository, change `uses: ./` to `uses: escapace/action-context@0.12.0` in the `evaluate pull request context` step.
+For use outside this repository, change `uses: ./` to `uses: escapace/action-context@0.13.0` in the `evaluate pull request context` step.
 
 This repository includes a canonical automerge workflow that discovers open pull requests on a schedule (and optional manual dispatch), evaluates `action-context` in explicit PR mode, and enables auto-merge when policy gates pass.
 
