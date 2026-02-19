@@ -30,7 +30,7 @@
     "lefthook": "2.1.0",
     "p-memoize": "8.0.0",
     "prettier": "3.8.1",
-    "prettier-config-escapace": "1.2.1",
+    "prettier-config-escapace": "1.2.2",
     "semver": "7.7.4",
     "syncpack": "13.0.4",
     "tsx": "4.21.0",
