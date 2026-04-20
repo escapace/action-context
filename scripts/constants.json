@@ -18,7 +18,7 @@
       "platform": "node",
       "sourcemap": false,
       "splitting": false,
-      "target": ["node24.12.0"]
+      "target": ["node24.15.0"]
     }
   },
   "declaration": {
