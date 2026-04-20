@@ -323,7 +323,22 @@ Constraints are collected from:
 Selection rule:
 
 - group constraints by engine key,
-- select the range with the highest minimum satisfying version,
-- emit that minimum as `<engine>-version`.
+- for each range, compute the lowest concrete version that satisfies it,
+- select the range whose lowest satisfying version is the highest,
+- emit that lowest satisfying version as `<engine>-version`.
 
-Invalid semantic version ranges are skipped.
+Short example:
+
+- `>=20.0.0` -> minimum satisfying version `20.0.0`
+- `^22.15.0` -> minimum satisfying version `22.15.0`
+- `~24.1.3` -> minimum satisfying version `24.1.3`
+- result: `24.1.3`
+
+This favors the strictest lower bound. It does not merge all constraints into one combined range, and it does not try to pick the newest possible version.
+
+Subtle cases:
+
+- `22.15.0` is treated like a range whose minimum satisfying version is `22.15.0`.
+- `>=18.0.0 || >=20.0.0` resolves to `18.0.0`, because `18.0.0` already satisfies the full expression.
+- between `22.15.0` and `>=24.0.0`, the selected output is `24.0.0`.
+- invalid semantic version ranges are skipped.
