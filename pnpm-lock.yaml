@@ -24,8 +24,8 @@ importers:
         specifier: 0.8.0
         version: 0.8.0(@pnpm/logger@1001.0.1)
       '@escapace/syncpack-configuration':
-        specifier: 0.1.0
-        version: 0.1.0(syncpack@14.3.0)
+        specifier: 0.1.1
+        version: 0.1.1(syncpack@14.3.0)
       '@ls-lint/ls-lint':
         specifier: 2.3.1
         version: 2.3.1
@@ -548,11 +548,10 @@ packages:
     engines: {node: '>=24.13.0', pnpm: '>=10.29.2'}
     hasBin: true
 
-  '@escapace/syncpack-configuration@0.1.0':
-    resolution: {integrity: sha512-M/tKqPWilQOS8eEDZUxUKckHi9Pz7JN0Ty1winOAjHicQrqFjM00Fj2dOdL1SR55MV4Y921SwZ7okR2joD2dKQ==}
-    engines: {pnpm: '>=10.29.2'}
+  '@escapace/syncpack-configuration@0.1.1':
+    resolution: {integrity: sha512-5t50M+siQ9XIr+0RuuuUYhXh7FQ2iF40zi8ugQyY9nQ6mF5baH9Lskq+wKW6VlHu9a0QNbRWq9ky4UiR6kQQsg==}
     peerDependencies:
-      syncpack: ^14.0.0
+      syncpack: ^14.3.0
 
   '@eslint-community/eslint-utils@4.9.1':
     resolution: {integrity: sha512-phrYmNiYppR7znFEdqgfWHXR6NCkZEK7hwWDHZUjit/2/U0r6XvkDl0SYnoM51Hq7FhCGdLDT6zxCCOY1hexsQ==}
@@ -1935,9 +1934,6 @@ packages:
 
   '@types/node@24.12.2':
     resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
-
-  '@types/node@25.2.3':
-    resolution: {integrity: sha512-m0jEgYlYz+mDJZ2+F4v8D1AyQb+QzsNqRuI7xg1VQX/KlKS0qT9r1Mo16yo5F/MtifXFgaofIFsdFMox2SxIbQ==}
 
   '@types/semver@7.7.1':
     resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
@@ -4828,17 +4824,9 @@ packages:
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
 
-  tinyexec@1.0.4:
-    resolution: {integrity: sha512-u9r3uZC0bdpGOXtlxUIdwf9pkmvhqJdrVCH9fapQtgy/OeTTMZ1nqH7agtvEfmGui6e1XxjcdrlxvxJvc3sMqw==}
-    engines: {node: '>=18'}
-
   tinyexec@1.1.1:
     resolution: {integrity: sha512-VKS/ZaQhhkKFMANmAOhhXVoIfBXblQxGX1myCQ2faQrfmobMftXeJPcZGp0gS07ocvGJWDLZGyOZDadDBqYIJg==}
     engines: {node: '>=18'}
-
-  tinyglobby@0.2.15:
-    resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
-    engines: {node: '>=12.0.0'}
 
   tinyglobby@0.2.16:
     resolution: {integrity: sha512-pn99VhoACYR8nFHhxqix+uvsbXineAasWm5ojXoN8xEwK5Kd3/TrhNn1wByuD52UxWRLy8pu+kRMniEi6Eq9Zg==}
@@ -5284,7 +5272,7 @@ snapshots:
       '@commitlint/load': 20.5.0(@types/node@24.12.2)(typescript@6.0.2)
       '@commitlint/read': 20.5.0(conventional-commits-parser@6.4.0)
       '@commitlint/types': 20.5.0
-      tinyexec: 1.0.4
+      tinyexec: 1.1.1
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@types/node'
@@ -5359,7 +5347,7 @@ snapshots:
       '@commitlint/types': 20.5.0
       git-raw-commits: 5.0.1(conventional-commits-parser@6.4.0)
       minimist: 1.2.8
-      tinyexec: 1.0.4
+      tinyexec: 1.1.1
     transitivePeerDependencies:
       - conventional-commits-filter
       - conventional-commits-parser
@@ -5590,7 +5578,7 @@ snapshots:
       - react-native-b4a
       - supports-color
 
-  '@escapace/syncpack-configuration@0.1.0(syncpack@14.3.0)':
+  '@escapace/syncpack-configuration@0.1.1(syncpack@14.3.0)':
     dependencies:
       syncpack: 14.3.0
 
@@ -6265,7 +6253,7 @@ snapshots:
       '@pnpm/types': 1001.3.0
       '@pnpm/util.lex-comparator': 3.0.2
       p-filter: 2.1.0
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
     transitivePeerDependencies:
       - '@pnpm/logger'
 
@@ -7285,15 +7273,11 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
-  '@types/node@25.2.3':
-    dependencies:
-      undici-types: 7.16.0
-
   '@types/semver@7.7.1': {}
 
   '@types/ssri@7.1.5':
     dependencies:
-      '@types/node': 25.2.3
+      '@types/node': 24.12.2
 
   '@types/unist@3.0.3': {}
 
@@ -7327,8 +7311,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.56.1(typescript@6.0.2)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.56.1(typescript@6.0.2)
-      '@typescript-eslint/types': 8.56.1
+      '@typescript-eslint/tsconfig-utils': 8.58.1(typescript@6.0.2)
+      '@typescript-eslint/types': 8.58.1
       debug: 4.4.3
       typescript: 6.0.2
     transitivePeerDependencies:
@@ -7932,7 +7916,7 @@ snapshots:
       execa: 9.6.1
       ofetch: 1.5.1
       semver: 7.7.4
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
     transitivePeerDependencies:
       - magicast
 
@@ -9728,7 +9712,7 @@ snapshots:
     dependencies:
       citty: 0.2.1
       pathe: 2.0.3
-      tinyexec: 1.0.4
+      tinyexec: 1.1.1
 
   obug@2.1.1: {}
 
@@ -10507,14 +10491,7 @@ snapshots:
 
   tinyexec@0.3.2: {}
 
-  tinyexec@1.0.4: {}
-
   tinyexec@1.1.1: {}
-
-  tinyglobby@0.2.15:
-    dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
 
   tinyglobby@0.2.16:
     dependencies:
