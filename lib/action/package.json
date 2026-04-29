@@ -38,9 +38,20 @@
     "typescript": "6.0.3",
     "vitest": "4.1.4"
   },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "onFail": "warn",
+      "version": "^10.33.0"
+    },
+    "runtime": {
+      "name": "node",
+      "onFail": "warn",
+      "version": "^24.15.0"
+    }
+  },
   "engines": {
-    "node": ">=24.15.0",
-    "pnpm": ">=10.33.0"
+    "node": ">=24"
   },
   "exports": {
     ".": {
