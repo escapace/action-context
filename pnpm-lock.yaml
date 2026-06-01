@@ -51,8 +51,8 @@ importers:
         specifier: 14.0.0
         version: 14.0.0
       es-toolkit:
-        specifier: 1.46.1
-        version: 1.46.1
+        specifier: 1.47.0
+        version: 1.47.0
       eslint:
         specifier: 10.4.0
         version: 10.4.0(jiti@2.7.0)
@@ -66,8 +66,8 @@ importers:
         specifier: 9.6.1
         version: 9.6.1
       knip:
-        specifier: 6.14.1
-        version: 6.14.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+        specifier: 6.14.2
+        version: 6.14.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       lefthook:
         specifier: 2.1.8
         version: 2.1.8
@@ -81,8 +81,8 @@ importers:
         specifier: 1.2.2
         version: 1.2.2
       semver:
-        specifier: 7.8.0
-        version: 7.8.0
+        specifier: 7.8.1
+        version: 7.8.1
       syncpack:
         specifier: 15.3.1
         version: 15.3.1
@@ -2760,8 +2760,8 @@ packages:
   es-module-lexer@2.0.0:
     resolution: {integrity: sha512-5POEcUuZybH7IdmGsD8wlf0AI55wMecM9rVBTI/qEAy2c1kTOm3DjFYjrBdI2K3BaJjJYfYFeRtM0t9ssnRuxw==}
 
-  es-toolkit@1.46.1:
-    resolution: {integrity: sha512-5eNtXOs3tbfxXOj04tjjseeWkRWaoCjdEI+96DgwzZoe6c9juL49pXlzAFTI72aWC9Y8p7168g6XIKjh7k6pyQ==}
+  es-toolkit@1.47.0:
+    resolution: {integrity: sha512-n1GuoD0WEQZMBk5tttoZSqwgyLx01oqa5XsBmCHwPyNe1S9jPBEmtR2pSgp2kJuWE3ciFZ6yRHmY4pM4C3OOkw==}
 
   esbuild@0.27.4:
     resolution: {integrity: sha512-Rq4vbHnYkK5fws5NF7MYTU68FPRE1ajX7heQ/8QXXWqNgqqJ/GkmmyxIzUnf2Sr/bakf8l54716CcMGHYhMrrQ==}
@@ -3505,8 +3505,8 @@ packages:
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
 
-  knip@6.14.1:
-    resolution: {integrity: sha512-SN3Ly0ixzj5CQkY/rc4OPHpWrCC0XRIIjgdP76G9Cni5k72ur5jBYOyvJuF5oPTM14v8eHcMUgPbElHa+lnR0g==}
+  knip@6.14.2:
+    resolution: {integrity: sha512-Vg3JhIINjZew1I7qAFI4UHemW1mc4azP/BxJvsq9eGDfxpGO7oVCuD/bsWkog9TO/ZwwJeAeOMFZ1kd9jnY9+Q==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -4484,8 +4484,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.8.0:
-    resolution: {integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==}
+  semver@7.8.1:
+    resolution: {integrity: sha512-rkVq3IXh+4FDGch+KwzX3aV9W3kO54GyEgpvBzSyctDA6Xtd7RJQV1xmXbeQp5v7+VzLOfVqiutSE6GICgPFvg==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -5234,7 +5234,7 @@ snapshots:
   '@commitlint/ensure@21.0.1':
     dependencies:
       '@commitlint/types': 21.0.1
-      es-toolkit: 1.46.1
+      es-toolkit: 1.47.0
 
   '@commitlint/execute-rule@21.0.1': {}
 
@@ -5246,7 +5246,7 @@ snapshots:
   '@commitlint/is-ignored@21.0.1':
     dependencies:
       '@commitlint/types': 21.0.1
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@commitlint/lint@21.0.1':
     dependencies:
@@ -5263,7 +5263,7 @@ snapshots:
       '@commitlint/types': 21.0.1
       cosmiconfig: 9.0.1(typescript@6.0.3)
       cosmiconfig-typescript-loader: 6.2.0(@types/node@24.12.4)(cosmiconfig@9.0.1(typescript@6.0.3))(typescript@6.0.3)
-      es-toolkit: 1.46.1
+      es-toolkit: 1.47.0
       is-plain-obj: 4.1.0
       picocolors: 1.1.1
     transitivePeerDependencies:
@@ -5292,7 +5292,7 @@ snapshots:
     dependencies:
       '@commitlint/config-validator': 21.0.1
       '@commitlint/types': 21.0.1
-      es-toolkit: 1.46.1
+      es-toolkit: 1.47.0
       global-directory: 5.0.0
       resolve-from: 5.0.0
 
@@ -5318,7 +5318,7 @@ snapshots:
     dependencies:
       '@simple-libs/child-process-utils': 1.0.2
       '@simple-libs/stream-utils': 1.2.0
-      semver: 7.8.0
+      semver: 7.8.1
     optionalDependencies:
       conventional-commits-parser: 6.4.0
 
@@ -5499,11 +5499,11 @@ snapshots:
       '@pnpm/lockfile-file': 9.1.3(@pnpm/logger@1001.0.1)
       archiver: 7.0.1
       arg: 5.0.2
-      es-toolkit: 1.46.1
+      es-toolkit: 1.47.0
       execa: 9.6.1
       find-up: 8.0.0
       fs-extra: 11.3.4
-      semver: 7.8.0
+      semver: 7.8.1
       which: 6.0.1
     transitivePeerDependencies:
       - '@pnpm/logger'
@@ -5661,7 +5661,7 @@ snapshots:
 
   '@npmcli/fs@4.0.0':
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@octokit/auth-token@6.0.0': {}
 
@@ -6057,7 +6057,7 @@ snapshots:
       pretty-ms: 7.0.1
       ramda: '@pnpm/ramda@0.28.1'
       rxjs: 7.8.2
-      semver: 7.8.0
+      semver: 7.8.1
       stacktracey: 2.2.0
       string-length: 4.0.2
 
@@ -6084,13 +6084,13 @@ snapshots:
     dependencies:
       '@pnpm/crypto.hash': 1000.2.2
       '@pnpm/types': 1001.3.0
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/dependency-path@5.1.3':
     dependencies:
       '@pnpm/crypto.base32-hash': 3.0.0
       '@pnpm/types': 11.1.0
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/directory-fetcher@1000.1.24(@pnpm/logger@1001.0.1)':
     dependencies:
@@ -6237,7 +6237,7 @@ snapshots:
       '@pnpm/resolver-base': 1005.4.1
       graceful-git: 4.0.0
       hosted-git-info: '@pnpm/hosted-git-info@1.0.0'
-      semver: 7.8.0
+      semver: 7.8.1
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
@@ -6249,7 +6249,7 @@ snapshots:
       '@pnpm/resolver-base': 13.0.1
       graceful-git: 4.0.0
       hosted-git-info: '@pnpm/hosted-git-info@1.0.0'
-      semver: 7.8.0
+      semver: 7.8.1
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
@@ -6313,7 +6313,7 @@ snapshots:
       is-windows: 1.0.2
       normalize-path: 3.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.8.0
+      semver: 7.8.1
       symlink-dir: 6.0.5
 
   '@pnpm/local-resolver@1002.1.13(@pnpm/logger@1001.0.1)':
@@ -6344,7 +6344,7 @@ snapshots:
       js-yaml: '@zkochan/js-yaml@0.0.7'
       normalize-path: 3.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.8.0
+      semver: 7.8.1
       sort-keys: 4.2.0
       strip-bom: 4.0.0
       write-file-atomic: 5.0.1
@@ -6384,7 +6384,7 @@ snapshots:
       '@pnpm/logger': 1001.0.1
       '@pnpm/semver.peer-range': 1000.0.0
       '@pnpm/types': 1001.3.0
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/matcher@1000.1.0':
     dependencies:
@@ -6396,7 +6396,7 @@ snapshots:
       '@pnpm/types': 11.1.0
       comver-to-semver: 1.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/network.agent@2.0.3':
     dependencies:
@@ -6463,7 +6463,7 @@ snapshots:
       '@pnpm/fetching-types': 1000.2.1
       '@pnpm/resolver-base': 1005.4.1
       '@pnpm/types': 1001.3.0
-      semver: 7.8.0
+      semver: 7.8.1
       version-selector-type: 3.0.0
     transitivePeerDependencies:
       - '@pnpm/logger'
@@ -6519,7 +6519,7 @@ snapshots:
       path-temp: 2.1.1
       ramda: '@pnpm/ramda@0.28.1'
       rename-overwrite: 6.0.6
-      semver: 7.8.0
+      semver: 7.8.1
       semver-utils: 1.1.4
       ssri: 10.0.5
       version-selector-type: 3.0.0
@@ -6548,7 +6548,7 @@ snapshots:
       detect-libc: 2.1.2
       execa: safe-execa@0.1.2
       mem: 8.1.1
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/package-requester@1011.2.4(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.7(@pnpm/logger@1001.0.1)(@types/node@24.12.4))':
     dependencies:
@@ -6572,7 +6572,7 @@ snapshots:
       p-queue: 6.6.2
       promise-share: 1.0.0
       ramda: '@pnpm/ramda@0.28.1'
-      semver: 7.8.0
+      semver: 7.8.1
       ssri: 10.0.5
 
   '@pnpm/package-store@1007.1.6(@pnpm/logger@1001.0.1)(@pnpm/worker@1000.6.7(@pnpm/logger@1001.0.1)(@types/node@24.12.4))':
@@ -6671,7 +6671,7 @@ snapshots:
     dependencies:
       '@pnpm/logger': 1001.0.1
       '@pnpm/registry.types': 1000.1.4
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/registry.types@1000.1.4':
     dependencies:
@@ -6687,7 +6687,7 @@ snapshots:
 
   '@pnpm/resolve-workspace-range@1000.1.0':
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/resolver-base@1005.4.1':
     dependencies:
@@ -6711,7 +6711,7 @@ snapshots:
       '@pnpm/types': 1001.3.0
       '@pnpm/util.lex-comparator': 3.0.2
       '@pnpm/worker': 1000.6.7(@pnpm/logger@1001.0.1)(@types/node@24.12.4)
-      semver: 7.8.0
+      semver: 7.8.1
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
@@ -6732,7 +6732,7 @@ snapshots:
       '@pnpm/types': 1001.3.0
       '@pnpm/util.lex-comparator': 3.0.2
       '@pnpm/worker': 1000.6.7(@pnpm/logger@1001.0.1)(@types/node@24.12.4)
-      semver: 7.8.0
+      semver: 7.8.1
     transitivePeerDependencies:
       - '@pnpm/logger'
       - domexception
@@ -6745,7 +6745,7 @@ snapshots:
 
   '@pnpm/semver.peer-range@1000.0.0':
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   '@pnpm/server@1001.0.20(@pnpm/logger@1001.0.1)':
     dependencies:
@@ -7276,7 +7276,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.59.2
       debug: 4.4.3
       minimatch: 10.2.5
-      semver: 7.8.0
+      semver: 7.8.1
       tinyglobby: 0.2.16
       ts-api-utils: 2.5.0(typescript@6.0.3)
       typescript: 6.0.3
@@ -7656,7 +7656,7 @@ snapshots:
 
   builtins@5.1.0:
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   bundle-name@4.1.0:
     dependencies:
@@ -7758,7 +7758,7 @@ snapshots:
       pathe: 1.1.2
       pkg-types: 1.3.1
       scule: 1.3.0
-      semver: 7.8.0
+      semver: 7.8.1
       std-env: 3.10.0
       yaml: 2.9.0
     transitivePeerDependencies:
@@ -7777,7 +7777,7 @@ snapshots:
       pathe: 2.0.3
       pkg-types: 2.3.0
       scule: 1.3.0
-      semver: 7.8.0
+      semver: 7.8.1
       std-env: 3.10.0
     transitivePeerDependencies:
       - magicast
@@ -7791,7 +7791,7 @@ snapshots:
       convert-gitmoji: 0.1.5
       execa: 9.6.1
       ofetch: 1.5.1
-      semver: 7.8.0
+      semver: 7.8.1
       tinyglobby: 0.2.16
     transitivePeerDependencies:
       - magicast
@@ -8075,7 +8075,7 @@ snapshots:
 
   es-module-lexer@2.0.0: {}
 
-  es-toolkit@1.46.1: {}
+  es-toolkit@1.47.0: {}
 
   esbuild@0.27.4:
     optionalDependencies:
@@ -8202,7 +8202,7 @@ snapshots:
       empathic: 2.0.0
       eslint: 10.4.0(jiti@2.7.0)
       module-replacements: 2.11.0
-      semver: 7.8.0
+      semver: 7.8.1
 
   eslint-plugin-es-x@9.6.0(eslint@10.4.0(jiti@2.7.0)):
     dependencies:
@@ -8280,7 +8280,7 @@ snapshots:
       pluralize: 8.0.0
       regexp-tree: 0.1.27
       regjsparser: 0.13.1
-      semver: 7.8.0
+      semver: 7.8.1
       strip-indent: 4.1.1
 
   eslint-plugin-vue@10.9.1(@stylistic/eslint-plugin@5.10.0(eslint@10.4.0(jiti@2.7.0)))(@typescript-eslint/parser@8.59.2(eslint@10.4.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.0(jiti@2.7.0))(vue-eslint-parser@10.4.0(eslint@10.4.0(jiti@2.7.0))):
@@ -8290,7 +8290,7 @@ snapshots:
       natural-compare: 1.4.0
       nth-check: 2.1.1
       postcss-selector-parser: 7.1.1
-      semver: 7.8.0
+      semver: 7.8.1
       vue-eslint-parser: 10.4.0(eslint@10.4.0(jiti@2.7.0))
       xml-name-validator: 4.0.0
     optionalDependencies:
@@ -8408,7 +8408,7 @@ snapshots:
       common-path-prefix: 3.0.0
       console-table-printer: 2.15.0
       es-module-lexer: 2.0.0
-      es-toolkit: 1.46.1
+      es-toolkit: 1.47.0
       esbuild: 0.28.0
       find-up: 8.0.0
       github-slugger: 2.0.0
@@ -8924,7 +8924,7 @@ snapshots:
     dependencies:
       acorn: 8.16.0
       eslint-visitor-keys: 5.0.1
-      semver: 7.8.0
+      semver: 7.8.1
 
   jsonfile@6.2.0:
     dependencies:
@@ -8936,7 +8936,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  knip@6.14.1(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
+  knip@6.14.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0):
     dependencies:
       fdir: 6.5.0(picomatch@4.0.4)
       formatly: 0.3.0
@@ -9113,7 +9113,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   make-empty-dir@3.0.2:
     dependencies:
@@ -9501,7 +9501,7 @@ snapshots:
       make-fetch-happen: 14.0.3
       nopt: 8.1.0
       proc-log: 5.0.0
-      semver: 7.8.0
+      semver: 7.8.1
       tar: 7.5.13
       tinyglobby: 0.2.16
       which: 5.0.0
@@ -9521,7 +9521,7 @@ snapshots:
   normalize-package-data@7.0.1:
     dependencies:
       hosted-git-info: 8.1.0
-      semver: 7.8.0
+      semver: 7.8.1
       validate-npm-package-license: 3.0.4
 
   normalize-path@3.0.0: {}
@@ -9744,7 +9744,7 @@ snapshots:
 
   parse-npm-tarball-url@4.0.0:
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   path-absolute@1.0.1: {}
 
@@ -10076,7 +10076,7 @@ snapshots:
 
   semver@7.7.4: {}
 
-  semver@7.8.0: {}
+  semver@7.8.1: {}
 
   shebang-command@2.0.0:
     dependencies:
@@ -10489,7 +10489,7 @@ snapshots:
 
   version-selector-type@3.0.0:
     dependencies:
-      semver: 7.8.0
+      semver: 7.8.1
 
   vite@8.0.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@types/node@24.12.4)(esbuild@0.27.4)(jiti@2.7.0)(tsx@4.22.3)(yaml@2.9.0):
     dependencies:
@@ -10545,7 +10545,7 @@ snapshots:
       eslint-visitor-keys: 5.0.1
       espree: 11.2.0
       esquery: 1.7.0
-      semver: 7.8.0
+      semver: 7.8.1
     transitivePeerDependencies:
       - supports-color
 
