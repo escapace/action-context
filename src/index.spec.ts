@@ -164,6 +164,39 @@ describe('run', () => {
     })
   })
 
+  it('json-escapes logged output values so runner workflow commands cannot be injected', async () => {
+    const mods = await runModule()
+
+    const outputs = createOutputs()
+
+    vi.mocked(mods.createContext).mockResolvedValue({
+      ...baseContext,
+      inputs: {
+        contextSource: 'event',
+        nodeVersion: undefined,
+        token: 'ghp_test_token',
+        trustedBots: new Set(),
+      },
+      octokit: createMockOctokit(),
+      outputs,
+    })
+
+    simulateSetOutputVersion(mods.setOutputVersion, {
+      // Simulates a tag-event changelog whose body embeds an attacker-controlled
+      // commit message attempting to forge a workflow command on a fresh line.
+      changelog: 'release notes\n::add-mask::leaked',
+    })
+
+    await import('./index')
+
+    const infoCalls = vi.mocked(mods.core.info).mock.calls.map(([line]) => String(line))
+    const changelogLine = infoCalls.find((line) => line.startsWith('changelog: '))
+
+    expect(changelogLine).toBeDefined()
+    expect(changelogLine).not.toMatch(/^changelog: .*\n::/m)
+    expect(changelogLine).toContain('\\n::add-mask::leaked')
+  })
+
   it('calls core.setFailed when runtime token is missing', async () => {
     const mods = await runModule()
 

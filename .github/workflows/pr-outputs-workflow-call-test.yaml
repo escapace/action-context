@@ -26,21 +26,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: validate workflow_call outputs surfaced to caller
-        run: |
-          [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-number }}" == "${{ github.event.pull_request.number }}" ]] || { echo "::error::caller-visible pr-number mismatch"; exit 1; }
-          [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-checks-clear }}" =~ ^(true|false)$ ]] || { echo "::error::caller-visible pr-checks-clear should be boolean"; exit 1; }
-          [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-conventional-commits }}" =~ ^(all|title-only|commits-only|none)$ ]] || { echo "::error::caller-visible pr-conventional-commits should be one of all, title-only, commits-only, none"; exit 1; }
-          [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-merge-state-clear }}" =~ ^(true|false)$ ]] || { echo "::error::caller-visible pr-merge-state-clear should be boolean"; exit 1; }
-          [[ "${{ needs.call-reusable-pr-outputs.outputs.pr-last-commit-age-minute }}" =~ ^[0-9]+$ ]] || { echo "::error::caller-visible pr-last-commit-age-minute should be non-negative integer"; exit 1; }
+        env:
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CHECKS_CLEAR: ${{ needs.call-reusable-pr-outputs.outputs.pr-checks-clear }}
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CONVENTIONAL_COMMITS: ${{ needs.call-reusable-pr-outputs.outputs.pr-conventional-commits }}
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE: ${{ needs.call-reusable-pr-outputs.outputs.pr-last-commit-age-minute }}
 
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_MERGE_STATE_CLEAR: ${{ needs.call-reusable-pr-outputs.outputs.pr-merge-state-clear }}
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_NUMBER: ${{ needs.call-reusable-pr-outputs.outputs.pr-number }}
+        run: |
+          [[ "${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_NUMBER}" == "${{ github.event.pull_request.number }}" ]] || { echo "::error::caller-visible pr-number mismatch"; exit 1; }
+          [[ "${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CHECKS_CLEAR}" =~ ^(true|false)$ ]] || { echo "::error::caller-visible pr-checks-clear should be boolean"; exit 1; }
+          [[ "${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CONVENTIONAL_COMMITS}" =~ ^(all|title-only|commits-only|none)$ ]] || { echo "::error::caller-visible pr-conventional-commits should be one of all, title-only, commits-only, none"; exit 1; }
+          [[ "${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_MERGE_STATE_CLEAR}" =~ ^(true|false)$ ]] || { echo "::error::caller-visible pr-merge-state-clear should be boolean"; exit 1; }
+          [[ "${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE}" =~ ^[0-9]+$ ]] || { echo "::error::caller-visible pr-last-commit-age-minute should be non-negative integer"; exit 1; }
       - name: summary
+        env:
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CHECKS_CLEAR: ${{ needs.call-reusable-pr-outputs.outputs.pr-checks-clear }}
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CONVENTIONAL_COMMITS: ${{ needs.call-reusable-pr-outputs.outputs.pr-conventional-commits }}
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE: ${{ needs.call-reusable-pr-outputs.outputs.pr-last-commit-age-minute }}
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_MERGE_STATE_CLEAR: ${{ needs.call-reusable-pr-outputs.outputs.pr-merge-state-clear }}
+          NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_NUMBER: ${{ needs.call-reusable-pr-outputs.outputs.pr-number }}
         run: |
           echo "## workflow_call PR outputs" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Output | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-number | ${{ needs.call-reusable-pr-outputs.outputs.pr-number }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-checks-clear | ${{ needs.call-reusable-pr-outputs.outputs.pr-checks-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-conventional-commits | ${{ needs.call-reusable-pr-outputs.outputs.pr-conventional-commits }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-merge-state-clear | ${{ needs.call-reusable-pr-outputs.outputs.pr-merge-state-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-last-commit-age-minute | ${{ needs.call-reusable-pr-outputs.outputs.pr-last-commit-age-minute }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-number | ${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_NUMBER} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-checks-clear | ${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CHECKS_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-conventional-commits | ${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_CONVENTIONAL_COMMITS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-merge-state-clear | ${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_MERGE_STATE_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-last-commit-age-minute | ${NEEDS_CALL_REUSABLE_PR_OUTPUTS_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE} |" >> $GITHUB_STEP_SUMMARY

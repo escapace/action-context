@@ -62,6 +62,13 @@ export async function readTag(
 ): Promise<string | undefined> {
   let output: string
 
+  // Defend against argument injection: git option-takes-value parsing offers
+  // no `--` escape for `--merged <commit>`, so reject refnames that could be
+  // mistaken for flags before passing to the subprocess.
+  if (typeof branch === 'string' && branch.startsWith('-')) {
+    throw new Error(`Refusing to pass branch name with leading '-' to git: '${branch}'`)
+  }
+
   try {
     output = await exec('git', [
       '--no-pager',

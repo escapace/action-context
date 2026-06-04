@@ -99,6 +99,11 @@ describe('readTag', () => {
     expect(result).toBeUndefined()
   })
 
+  it('rejects branch names with a leading dash before invoking git', async () => {
+    await expect(readTag('-evil')).rejects.toThrow(/leading '-'/)
+    expect(exec).not.toHaveBeenCalled()
+  })
+
   it('throws actionable guidance when branch ref is not locally resolvable', async () => {
     vi.mocked(exec).mockRejectedValue(
       new Error(

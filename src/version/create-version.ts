@@ -36,6 +36,10 @@ const assertBranchLatestCommit = async (
   referenceType: 'branch' | 'tag',
 ): Promise<void> => {
   if (referenceType === 'branch' && shouldAssertBranchHead) {
+    if (branch.startsWith('-')) {
+      throw new Error(`Refusing to pass branch name with leading '-' to git: '${branch}'`)
+    }
+
     assert.equal(await exec('git', ['rev-parse', '--verify', branch]), expectedSha)
   }
 }

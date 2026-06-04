@@ -24,14 +24,15 @@ env:
 
 jobs:
   continuous-integration:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          persist-credentials: false
           ref: ${{ github.head_ref || github.ref }}
       - id: action-context
         uses: ./

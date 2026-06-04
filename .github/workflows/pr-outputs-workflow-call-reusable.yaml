@@ -49,23 +49,27 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ inputs.pr-head-ref }}
+          persist-credentials: false
 
+          ref: ${{ inputs.pr-head-ref }}
       - name: validate checkout parity for branch-based versioning
+        env:
+          INPUTS_PR_HEAD_REF: ${{ inputs.pr-head-ref }}
+          INPUTS_PR_HEAD_SHA: ${{ inputs.pr-head-sha }}
+
         run: |
           set -euo pipefail
           actual_ref="$(git rev-parse --abbrev-ref HEAD)"
-          [[ "${actual_ref}" == "${{ inputs.pr-head-ref }}" ]] || {
-            echo "::error::Expected checkout on '${{ inputs.pr-head-ref }}' but got '${actual_ref}'."
+          [[ "${actual_ref}" == "${INPUTS_PR_HEAD_REF}" ]] || {
+            echo "::error::Expected checkout on '${INPUTS_PR_HEAD_REF}' but got '${actual_ref}'."
             exit 1
           }
 
           actual_sha="$(git rev-parse HEAD)"
-          [[ "${actual_sha}" == "${{ inputs.pr-head-sha }}" ]] || {
-            echo "::error::Expected HEAD '${{ inputs.pr-head-sha }}' but got '${actual_sha}'."
+          [[ "${actual_sha}" == "${INPUTS_PR_HEAD_SHA}" ]] || {
+            echo "::error::Expected HEAD '${INPUTS_PR_HEAD_SHA}' but got '${actual_sha}'."
             exit 1
           }
-
       - name: run action in explicit pr mode
         id: context
         uses: ./
@@ -80,10 +84,18 @@ jobs:
             dependabot[bot]
 
       - name: validate reusable workflow outputs
+        env:
+          INPUTS_PR_HEAD_REF: ${{ inputs.pr-head-ref }}
+          STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS: ${{ steps.context.outputs.pr-conventional-commits }}
+          STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF: ${{ steps.context.outputs.pr-head-ref }}
+          STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE: ${{ steps.context.outputs.pr-last-commit-age-minute }}
+          STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_NUMBER: ${{ steps.context.outputs.pr-number }}
         run: |
-          [[ "${{ steps.context.outputs.pr-number }}" == "${{ inputs.pr-number }}" ]] || { echo "::error::pr-number mismatch in workflow_call mode"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-head-ref }}" == "${{ inputs.pr-head-ref }}" ]] || { echo "::error::pr-head-ref mismatch in workflow_call mode"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-checks-clear }}" =~ ^(true|false)$ ]] || { echo "::error::pr-checks-clear should be boolean"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-conventional-commits }}" =~ ^(all|title-only|commits-only|none)$ ]] || { echo "::error::pr-conventional-commits should be one of all, title-only, commits-only, none"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-merge-state-clear }}" =~ ^(true|false)$ ]] || { echo "::error::pr-merge-state-clear should be boolean"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-last-commit-age-minute }}" =~ ^[0-9]+$ ]] || { echo "::error::pr-last-commit-age-minute should be non-negative integer"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_NUMBER}" == "${{ inputs.pr-number }}" ]] || { echo "::error::pr-number mismatch in workflow_call mode"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF}" == "${INPUTS_PR_HEAD_REF}" ]] || { echo "::error::pr-head-ref mismatch in workflow_call mode"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR}" =~ ^(true|false)$ ]] || { echo "::error::pr-checks-clear should be boolean"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS}" =~ ^(all|title-only|commits-only|none)$ ]] || { echo "::error::pr-conventional-commits should be one of all, title-only, commits-only, none"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR}" =~ ^(true|false)$ ]] || { echo "::error::pr-merge-state-clear should be boolean"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE}" =~ ^[0-9]+$ ]] || { echo "::error::pr-last-commit-age-minute should be non-negative integer"; exit 1; }

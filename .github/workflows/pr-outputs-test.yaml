@@ -19,10 +19,11 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref || github.ref }}
+          persist-credentials: false
 
-      - id: context
-        name: run action
+          ref: ${{ github.head_ref || github.ref }}
+      - name: run action
+        id: context
         uses: ./
         with:
           token: ${{ github.token }}
@@ -31,114 +32,155 @@ jobs:
             dependabot[bot]
 
       - name: validate pr-number
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+
         run: |
-          echo "pr-number: ${{ steps.context.outputs.pr-number }}"
-          if [[ "${{ steps.context.outputs.pr-number }}" == "0" ]]; then
+          echo "pr-number: ${STEPS_CONTEXT_OUTPUTS_PR_NUMBER}"
+          if [[ "${STEPS_CONTEXT_OUTPUTS_PR_NUMBER}" == "0" ]]; then
             echo "::error::pr-number should not be 0 on a pull_request event"
             exit 1
           fi
-          if [[ "${{ steps.context.outputs.pr-number }}" != "${{ github.event.pull_request.number }}" ]]; then
-            echo "::error::pr-number mismatch: got ${{ steps.context.outputs.pr-number }}, expected ${{ github.event.pull_request.number }}"
+          if [[ "${STEPS_CONTEXT_OUTPUTS_PR_NUMBER}" != "${{ github.event.pull_request.number }}" ]]; then
+            echo "::error::pr-number mismatch: got ${STEPS_CONTEXT_OUTPUTS_PR_NUMBER}, expected ${{ github.event.pull_request.number }}"
             exit 1
           fi
-
       - name: validate pr-not-draft
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT: ${{ steps.context.outputs.pr-not-draft }}
+
         run: |
-          echo "pr-not-draft: ${{ steps.context.outputs.pr-not-draft }}"
+          echo "pr-not-draft: ${STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT}"
           echo "event draft: ${{ github.event.pull_request.draft }}"
           if [[ "${{ github.event.pull_request.draft }}" == "true" ]]; then
-            [[ "${{ steps.context.outputs.pr-not-draft }}" == "false" ]] || { echo "::error::pr-not-draft should be false for draft PR"; exit 1; }
+            [[ "${STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT}" == "false" ]] || { echo "::error::pr-not-draft should be false for draft PR"; exit 1; }
           else
-            [[ "${{ steps.context.outputs.pr-not-draft }}" == "true" ]] || { echo "::error::pr-not-draft should be true for non-draft PR"; exit 1; }
+            [[ "${STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT}" == "true" ]] || { echo "::error::pr-not-draft should be true for non-draft PR"; exit 1; }
           fi
-
       - name: validate pr-base-ref
-        run: |
-          echo "pr-base-ref: ${{ steps.context.outputs.pr-base-ref }}"
-          [[ "${{ steps.context.outputs.pr-base-ref }}" == "${{ github.event.pull_request.base.ref }}" ]] || { echo "::error::pr-base-ref mismatch"; exit 1; }
+        env:
+          GITHUB_EVENT_PULL_REQUEST_BASE_REF: ${{ github.event.pull_request.base.ref }}
 
+          STEPS_CONTEXT_OUTPUTS_PR_BASE_REF: ${{ steps.context.outputs.pr-base-ref }}
+        run: |
+          echo "pr-base-ref: ${STEPS_CONTEXT_OUTPUTS_PR_BASE_REF}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_BASE_REF}" == "${GITHUB_EVENT_PULL_REQUEST_BASE_REF}" ]] || { echo "::error::pr-base-ref mismatch"; exit 1; }
       - name: validate pr-head-ref
-        run: |
-          echo "pr-head-ref: ${{ steps.context.outputs.pr-head-ref }}"
-          [[ "${{ steps.context.outputs.pr-head-ref }}" == "${{ github.event.pull_request.head.ref }}" ]] || { echo "::error::pr-head-ref mismatch"; exit 1; }
+        env:
+          GITHUB_EVENT_PULL_REQUEST_HEAD_REF: ${{ github.event.pull_request.head.ref }}
 
+          STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF: ${{ steps.context.outputs.pr-head-ref }}
+        run: |
+          echo "pr-head-ref: ${STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF}" == "${GITHUB_EVENT_PULL_REQUEST_HEAD_REF}" ]] || { echo "::error::pr-head-ref mismatch"; exit 1; }
       - name: validate pr-author-bot
+        env:
+          GITHUB_EVENT_PULL_REQUEST_USER_TYPE: ${{ github.event.pull_request.user.type }}
+
+          STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT: ${{ steps.context.outputs.pr-author-bot }}
         run: |
-          echo "pr-author-bot: ${{ steps.context.outputs.pr-author-bot }}"
-          echo "author type: ${{ github.event.pull_request.user.type }}"
-          if [[ "${{ github.event.pull_request.user.type }}" == "Bot" ]]; then
-            [[ "${{ steps.context.outputs.pr-author-bot }}" == "true" ]] || { echo "::error::pr-author-bot should be true for bot author"; exit 1; }
+          echo "pr-author-bot: ${STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT}"
+          echo "author type: ${GITHUB_EVENT_PULL_REQUEST_USER_TYPE}"
+          if [[ "${GITHUB_EVENT_PULL_REQUEST_USER_TYPE}" == "Bot" ]]; then
+            [[ "${STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT}" == "true" ]] || { echo "::error::pr-author-bot should be true for bot author"; exit 1; }
           else
-            [[ "${{ steps.context.outputs.pr-author-bot }}" == "false" ]] || { echo "::error::pr-author-bot should be false for human author"; exit 1; }
+            [[ "${STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT}" == "false" ]] || { echo "::error::pr-author-bot should be false for human author"; exit 1; }
           fi
-
       - name: validate pr-mergeable
-        run: |
-          echo "pr-mergeable: ${{ steps.context.outputs.pr-mergeable }}"
-          [[ "${{ steps.context.outputs.pr-mergeable }}" =~ ^(true|false)$ ]] || { echo "::error::pr-mergeable should be a boolean"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE: ${{ steps.context.outputs.pr-mergeable }}
 
+        run: |
+          echo "pr-mergeable: ${STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE}" =~ ^(true|false)$ ]] || { echo "::error::pr-mergeable should be a boolean"; exit 1; }
       - name: validate pr-review-clear
-        run: |
-          echo "pr-review-clear: ${{ steps.context.outputs.pr-review-clear }}"
-          [[ "${{ steps.context.outputs.pr-review-clear }}" =~ ^(true|false)$ ]] || { echo "::error::pr-review-clear should be a boolean"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR: ${{ steps.context.outputs.pr-review-clear }}
 
+        run: |
+          echo "pr-review-clear: ${STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR}" =~ ^(true|false)$ ]] || { echo "::error::pr-review-clear should be a boolean"; exit 1; }
       - name: validate pr-checks-clear
-        run: |
-          echo "pr-checks-clear: ${{ steps.context.outputs.pr-checks-clear }}"
-          [[ "${{ steps.context.outputs.pr-checks-clear }}" =~ ^(true|false)$ ]] || { echo "::error::pr-checks-clear should be a boolean"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
 
+        run: |
+          echo "pr-checks-clear: ${STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR}" =~ ^(true|false)$ ]] || { echo "::error::pr-checks-clear should be a boolean"; exit 1; }
       - name: validate pr-merge-state-clear
-        run: |
-          echo "pr-merge-state-clear: ${{ steps.context.outputs.pr-merge-state-clear }}"
-          [[ "${{ steps.context.outputs.pr-merge-state-clear }}" =~ ^(true|false)$ ]] || { echo "::error::pr-merge-state-clear should be a boolean"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
 
+        run: |
+          echo "pr-merge-state-clear: ${STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR}" =~ ^(true|false)$ ]] || { echo "::error::pr-merge-state-clear should be a boolean"; exit 1; }
       - name: validate pr-commits-trusted
-        run: |
-          echo "pr-commits-trusted: ${{ steps.context.outputs.pr-commits-trusted }}"
-          [[ "${{ steps.context.outputs.pr-commits-trusted }}" =~ ^(true|false)$ ]] || { echo "::error::pr-commits-trusted should be a boolean"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED: ${{ steps.context.outputs.pr-commits-trusted }}
 
+        run: |
+          echo "pr-commits-trusted: ${STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED}" =~ ^(true|false)$ ]] || { echo "::error::pr-commits-trusted should be a boolean"; exit 1; }
       - name: validate pr-conventional-commits
-        run: |
-          echo "pr-conventional-commits: ${{ steps.context.outputs.pr-conventional-commits }}"
-          [[ "${{ steps.context.outputs.pr-conventional-commits }}" =~ ^(all|title-only|commits-only|none)$ ]] || { echo "::error::pr-conventional-commits should be one of all, title-only, commits-only, none"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS: ${{ steps.context.outputs.pr-conventional-commits }}
 
+        run: |
+          echo "pr-conventional-commits: ${STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS}" =~ ^(all|title-only|commits-only|none)$ ]] || { echo "::error::pr-conventional-commits should be one of all, title-only, commits-only, none"; exit 1; }
       - name: validate pr-last-commit-age-minute
-        run: |
-          echo "pr-last-commit-age-minute: ${{ steps.context.outputs.pr-last-commit-age-minute }}"
-          [[ "${{ steps.context.outputs.pr-last-commit-age-minute }}" =~ ^[0-9]+$ ]] || { echo "::error::pr-last-commit-age-minute should be a non-negative integer"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE: ${{ steps.context.outputs.pr-last-commit-age-minute }}
 
+        run: |
+          echo "pr-last-commit-age-minute: ${STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE}"
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE}" =~ ^[0-9]+$ ]] || { echo "::error::pr-last-commit-age-minute should be a non-negative integer"; exit 1; }
       - name: summary
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT: ${{ steps.context.outputs.pr-author-bot }}
+          STEPS_CONTEXT_OUTPUTS_PR_BASE_REF: ${{ steps.context.outputs.pr-base-ref }}
+          STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED: ${{ steps.context.outputs.pr-commits-trusted }}
+          STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS: ${{ steps.context.outputs.pr-conventional-commits }}
+          STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF: ${{ steps.context.outputs.pr-head-ref }}
+          STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE: ${{ steps.context.outputs.pr-last-commit-age-minute }}
+
+          STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE: ${{ steps.context.outputs.pr-mergeable }}
+          STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT: ${{ steps.context.outputs.pr-not-draft }}
+          STEPS_CONTEXT_OUTPUTS_PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+          STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR: ${{ steps.context.outputs.pr-review-clear }}
         run: |
           echo "## PR Outputs" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Output | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-number | ${{ steps.context.outputs.pr-number }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-not-draft | ${{ steps.context.outputs.pr-not-draft }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-base-ref | ${{ steps.context.outputs.pr-base-ref }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-head-ref | ${{ steps.context.outputs.pr-head-ref }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-author-bot | ${{ steps.context.outputs.pr-author-bot }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-mergeable | ${{ steps.context.outputs.pr-mergeable }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-review-clear | ${{ steps.context.outputs.pr-review-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-checks-clear | ${{ steps.context.outputs.pr-checks-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-merge-state-clear | ${{ steps.context.outputs.pr-merge-state-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-commits-trusted | ${{ steps.context.outputs.pr-commits-trusted }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-conventional-commits | ${{ steps.context.outputs.pr-conventional-commits }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-last-commit-age-minute | ${{ steps.context.outputs.pr-last-commit-age-minute }} |" >> $GITHUB_STEP_SUMMARY
-
+          echo "| pr-number | ${STEPS_CONTEXT_OUTPUTS_PR_NUMBER} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-not-draft | ${STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-base-ref | ${STEPS_CONTEXT_OUTPUTS_PR_BASE_REF} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-head-ref | ${STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-author-bot | ${STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-mergeable | ${STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-review-clear | ${STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-checks-clear | ${STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-merge-state-clear | ${STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-commits-trusted | ${STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-conventional-commits | ${STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-last-commit-age-minute | ${STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE} |" >> $GITHUB_STEP_SUMMARY
   test-pr-outputs-degraded:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.head_ref || github.ref }}
+          persist-credentials: false
 
-      - id: context
-        name: run action with invalid token
+          ref: ${{ github.head_ref || github.ref }}
+      - name: run action with invalid token
+        id: context
         uses: ./
         with:
           token: invalid-token
@@ -147,35 +189,61 @@ jobs:
             dependabot[bot]
 
       - name: validate degraded defaults
-        run: |
-          [[ "${{ steps.context.outputs.pr-number }}" == "0" ]] || { echo "::error::pr-number should degrade to 0"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-not-draft }}" == "false" ]] || { echo "::error::pr-not-draft should degrade to false"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-author-bot }}" == "false" ]] || { echo "::error::pr-author-bot should degrade to false"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-mergeable }}" == "false" ]] || { echo "::error::pr-mergeable should degrade to false"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-review-clear }}" == "false" ]] || { echo "::error::pr-review-clear should degrade to false"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-checks-clear }}" == "false" ]] || { echo "::error::pr-checks-clear should degrade to false"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-merge-state-clear }}" == "false" ]] || { echo "::error::pr-merge-state-clear should degrade to false"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-commits-trusted }}" == "false" ]] || { echo "::error::pr-commits-trusted should degrade to false"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-conventional-commits }}" == "none" ]] || { echo "::error::pr-conventional-commits should degrade to none"; exit 1; }
-          [[ "${{ steps.context.outputs.pr-last-commit-age-minute }}" == "0" ]] || { echo "::error::pr-last-commit-age-minute should degrade to 0"; exit 1; }
-          [[ -z "${{ steps.context.outputs.pr-base-ref }}" ]] || { echo "::error::pr-base-ref should degrade to empty"; exit 1; }
-          [[ -z "${{ steps.context.outputs.pr-head-ref }}" ]] || { echo "::error::pr-head-ref should degrade to empty"; exit 1; }
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT: ${{ steps.context.outputs.pr-author-bot }}
+          STEPS_CONTEXT_OUTPUTS_PR_BASE_REF: ${{ steps.context.outputs.pr-base-ref }}
+          STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED: ${{ steps.context.outputs.pr-commits-trusted }}
+          STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS: ${{ steps.context.outputs.pr-conventional-commits }}
+          STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF: ${{ steps.context.outputs.pr-head-ref }}
 
+          STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE: ${{ steps.context.outputs.pr-last-commit-age-minute }}
+          STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE: ${{ steps.context.outputs.pr-mergeable }}
+          STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT: ${{ steps.context.outputs.pr-not-draft }}
+          STEPS_CONTEXT_OUTPUTS_PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+          STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR: ${{ steps.context.outputs.pr-review-clear }}
+        run: |
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_NUMBER}" == "0" ]] || { echo "::error::pr-number should degrade to 0"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT}" == "false" ]] || { echo "::error::pr-not-draft should degrade to false"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT}" == "false" ]] || { echo "::error::pr-author-bot should degrade to false"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE}" == "false" ]] || { echo "::error::pr-mergeable should degrade to false"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR}" == "false" ]] || { echo "::error::pr-review-clear should degrade to false"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR}" == "false" ]] || { echo "::error::pr-checks-clear should degrade to false"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR}" == "false" ]] || { echo "::error::pr-merge-state-clear should degrade to false"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED}" == "false" ]] || { echo "::error::pr-commits-trusted should degrade to false"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS}" == "none" ]] || { echo "::error::pr-conventional-commits should degrade to none"; exit 1; }
+          [[ "${STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE}" == "0" ]] || { echo "::error::pr-last-commit-age-minute should degrade to 0"; exit 1; }
+          [[ -z "${STEPS_CONTEXT_OUTPUTS_PR_BASE_REF}" ]] || { echo "::error::pr-base-ref should degrade to empty"; exit 1; }
+          [[ -z "${STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF}" ]] || { echo "::error::pr-head-ref should degrade to empty"; exit 1; }
       - name: summary
+        env:
+          STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT: ${{ steps.context.outputs.pr-author-bot }}
+          STEPS_CONTEXT_OUTPUTS_PR_BASE_REF: ${{ steps.context.outputs.pr-base-ref }}
+          STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR: ${{ steps.context.outputs.pr-checks-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED: ${{ steps.context.outputs.pr-commits-trusted }}
+          STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS: ${{ steps.context.outputs.pr-conventional-commits }}
+          STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF: ${{ steps.context.outputs.pr-head-ref }}
+          STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE: ${{ steps.context.outputs.pr-last-commit-age-minute }}
+          STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE: ${{ steps.context.outputs.pr-mergeable }}
+          STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR: ${{ steps.context.outputs.pr-merge-state-clear }}
+          STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT: ${{ steps.context.outputs.pr-not-draft }}
+          STEPS_CONTEXT_OUTPUTS_PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+          STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR: ${{ steps.context.outputs.pr-review-clear }}
         run: |
           echo "## PR Outputs (Degraded: Invalid Token)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Output | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-number | ${{ steps.context.outputs.pr-number }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-not-draft | ${{ steps.context.outputs.pr-not-draft }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-base-ref | ${{ steps.context.outputs.pr-base-ref }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-head-ref | ${{ steps.context.outputs.pr-head-ref }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-author-bot | ${{ steps.context.outputs.pr-author-bot }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-mergeable | ${{ steps.context.outputs.pr-mergeable }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-review-clear | ${{ steps.context.outputs.pr-review-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-checks-clear | ${{ steps.context.outputs.pr-checks-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-merge-state-clear | ${{ steps.context.outputs.pr-merge-state-clear }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-commits-trusted | ${{ steps.context.outputs.pr-commits-trusted }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-conventional-commits | ${{ steps.context.outputs.pr-conventional-commits }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| pr-last-commit-age-minute | ${{ steps.context.outputs.pr-last-commit-age-minute }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-number | ${STEPS_CONTEXT_OUTPUTS_PR_NUMBER} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-not-draft | ${STEPS_CONTEXT_OUTPUTS_PR_NOT_DRAFT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-base-ref | ${STEPS_CONTEXT_OUTPUTS_PR_BASE_REF} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-head-ref | ${STEPS_CONTEXT_OUTPUTS_PR_HEAD_REF} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-author-bot | ${STEPS_CONTEXT_OUTPUTS_PR_AUTHOR_BOT} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-mergeable | ${STEPS_CONTEXT_OUTPUTS_PR_MERGEABLE} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-review-clear | ${STEPS_CONTEXT_OUTPUTS_PR_REVIEW_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-checks-clear | ${STEPS_CONTEXT_OUTPUTS_PR_CHECKS_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-merge-state-clear | ${STEPS_CONTEXT_OUTPUTS_PR_MERGE_STATE_CLEAR} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-commits-trusted | ${STEPS_CONTEXT_OUTPUTS_PR_COMMITS_TRUSTED} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-conventional-commits | ${STEPS_CONTEXT_OUTPUTS_PR_CONVENTIONAL_COMMITS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| pr-last-commit-age-minute | ${STEPS_CONTEXT_OUTPUTS_PR_LAST_COMMIT_AGE_MINUTE} |" >> $GITHUB_STEP_SUMMARY

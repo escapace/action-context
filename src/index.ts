@@ -15,7 +15,10 @@ const run = async () => {
   await setOutputPullRequest(context)
 
   for (const [name, value] of Object.entries(context.outputs)) {
-    core.info(`${name}: ${String(value)}`)
+    // JSON.stringify escapes CR/LF and quotes the value, so attacker-controlled
+    // text (e.g. commit messages embedded in `changelog`) cannot inject runner
+    // workflow commands via line-leading `::cmd::` markers on stdout.
+    core.info(`${name}: ${JSON.stringify(value)}`)
     core.setOutput(name, value)
   }
 
