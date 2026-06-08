@@ -46,7 +46,7 @@ jobs:
       pr-number: ${{ steps.context.outputs.pr-number }}
     steps:
       - name: checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
