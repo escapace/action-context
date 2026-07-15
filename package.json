@@ -19,7 +19,7 @@
     "@pnpm/workspace.read-manifest": "1000.3.1",
     "@types/node": "24.13.2",
     "@types/semver": "7.7.1",
-    "@vitest/coverage-v8": "4.1.9",
+    "@vitest/coverage-v8": "4.1.10",
     "changelogen": "0.6.2",
     "changelogithub": "14.0.0",
     "es-toolkit": "1.49.0",
@@ -27,16 +27,16 @@
     "eslint-config-escapace": "5.20.0",
     "esroll": "1.2.3",
     "execa": "9.6.1",
-    "knip": "6.23.0",
+    "knip": "6.25.0",
     "lefthook": "2.1.9",
     "p-memoize": "8.0.0",
     "prettier": "3.9.4",
     "prettier-config-escapace": "1.2.2",
     "semver": "7.8.5",
     "syncpack": "15.3.2",
-    "tsx": "4.22.4",
+    "tsx": "4.23.0",
     "typescript": "6.0.3",
-    "vitest": "4.1.9"
+    "vitest": "4.1.10"
   },
   "devEngines": {
     "packageManager": {
