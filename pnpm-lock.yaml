@@ -272,8 +272,8 @@ importers:
         specifier: 2.1.17
         version: 2.1.17
       p-memoize:
-        specifier: 8.0.0
-        version: 8.0.0
+        specifier: 9.0.0
+        version: 9.0.0
       prettier:
         specifier: 3.9.9
         version: 3.9.9
@@ -2216,6 +2216,11 @@ packages:
 
   ajv-formats@3.0.1:
     resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
+    peerDependencies:
+      ajv: ^8.0.0
+    peerDependenciesMeta:
+      ajv:
+        optional: true
 
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
@@ -4194,9 +4199,9 @@ packages:
     resolution: {integrity: sha512-km0sP12uE0dOZ5qP+s7kGVf07QngxyG0gS8sYFvFWhqlgzOsSy+m71aUejf/0akxj5W7gE//2G74qTv6b4iMog==}
     engines: {node: '>=10'}
 
-  p-memoize@8.0.0:
-    resolution: {integrity: sha512-jdZ10MCxavHoIHwJ5oweOtYy6ElPixEHaMkz0AuaEMovR1MRpVvYFzIEHRxgMEpXYzNpRVByFAniAzwmd1/uug==}
-    engines: {node: '>=20'}
+  p-memoize@9.0.0:
+    resolution: {integrity: sha512-CrDWMfDzkLVDM9qmPibiClRWbWbbLnQ7gfrvpY0F83az9zpZxtegV4SZvkYj0EeutirIK61YXLsIldlkGHORwA==}
+    engines: {node: '>=22'}
 
   p-queue@6.6.2:
     resolution: {integrity: sha512-RwFpb72c/BhQLEXIZ5K2e+AhgNVmIejGlTgiB9MzZ0e93GRvqZ7uSi0dvRF7/XIXDeNkra2fNHBxTyPDGySpjQ==}
@@ -9750,10 +9755,9 @@ snapshots:
       mem: 6.1.1
       mimic-fn: 3.1.0
 
-  p-memoize@8.0.0:
+  p-memoize@9.0.0:
     dependencies:
       mimic-function: 5.0.1
-      type-fest: 4.41.0
 
   p-queue@6.6.2:
     dependencies:
